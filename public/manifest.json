@@ -1,0 +1,16 @@
+{
+  "name": "Suluu.kg",
+  "short_name": "Suluu",
+  "description": "Красота в один клик",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ec4899",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suluu.kg — Красота в один клик</title>
+    
+    <!-- Стили -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/morphdom@2.7.4/dist/morphdom-umd.min.js"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: 'var(--theme-50, #fdfafb)',
+                100: 'var(--theme-100, #faeef1)',
+                500: 'var(--theme-500, #e58b9b)',
+                600: 'var(--theme-600, #c97181)',
+              },
+              system: {
+                main: 'var(--bg-main, #fcfafb)',
+                surface: 'var(--bg-surface, #ffffff)',
+                text: 'var(--text-main, #4a3b40)',
+                muted: 'var(--text-muted, #8c7b80)',
+                border: 'var(--border-color, #f2e6e9)',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ec4899">
+    <link rel="apple-touch-icon" href="icon.svg">
+    
+    <!-- Иконка (заглушка 404) -->
+    <link rel="icon" href="icon.svg">
+    
+    <!-- Шрифты -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="font-['Inter'] bg-system-main text-system-text min-h-screen">
+    <div id="app">
+        <!-- Сюда рендерится приложение -->
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+        </div>
+    </div>
+
+    <!-- Скрипты (Порядок важен!) -->
+    <script type="module" src="js/db.js"></script>
+    <script type="module" src="js/state.js"></script>
+    <script type="module" src="js/api.js"></script>
+    <script type="module" src="js/utils.js"></script>
+    <script type="module" src="js/app.js"></script>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').then(registration => {
+            console.log('SW registered: ', registration.scope);
+          }).catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
+        });
+      }
+    </script>
+</body>
+</html>

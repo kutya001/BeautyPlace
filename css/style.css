@@ -1,0 +1,204 @@
+/* Базовая тема (Маникюр и Ресницы) */
+:root, html[data-theme="beauty"] {
+  --theme-50: #fdfafb;
+  --theme-100: #faeef1;
+  --theme-500: #e58b9b;
+  --theme-600: #c97181;
+  --bg-main: #fcfafb;
+  --bg-surface: #ffffff;
+  --text-main: #4a3b40;
+  --text-muted: #8c7b80;
+  --border-color: #f2e6e9;
+}
+
+@theme {
+  --color-primary-50: var(--theme-50);
+  --color-primary-100: var(--theme-100);
+  --color-primary-500: var(--theme-500);
+  --color-primary-600: var(--theme-600);
+  
+  --color-system-main: var(--bg-main);
+  --color-system-surface: var(--bg-surface);
+  --color-system-text: var(--text-main);
+  --color-system-muted: var(--text-muted);
+  --color-system-border: var(--border-color);
+}
+
+/* Барбершоп (Dark mode) */
+html[data-theme="barber"] {
+  --theme-50: #3b3735;
+  --theme-100: #4a4542;
+  --theme-500: #d48b59;
+  --theme-600: #b57245;
+  --bg-main: #2a2726;
+  --bg-surface: #363230;
+  --text-main: #e8e4e1;
+  --text-muted: #9c9691;
+  --border-color: #45403d;
+}
+
+/* Парикмахерская (Лаванда) */
+html[data-theme="hair"] {
+  --theme-50: #fbfaff;  --theme-100: #f2eff7;
+  --theme-500: #9e8abc; --theme-600: #8370a1;
+  --bg-main: #f9f8fa;   --bg-surface: #ffffff;
+  --text-main: #3a3645; --text-muted: #827c8f;
+  --border-color: #ebe7f0;
+}
+
+/* SPA и Эко (Шалфей) */
+html[data-theme="eco"] {
+  --theme-50: #f4f7f5;  --theme-100: #e3ebe5;
+  --theme-500: #7b9e87; --theme-600: #62826d;
+  --bg-main: #f5f6f4;   --bg-surface: #ffffff;
+  --text-main: #364039; --text-muted: #7c8c80;
+  --border-color: #dfe6e1;
+}
+
+/* Лечебный массаж / Клиники (Аква) */
+html[data-theme="medical"] {
+  --theme-50: #f2f7f9;  --theme-100: #e0edf2;
+  --theme-500: #6b9eb3; --theme-600: #548296;
+  --bg-main: #f4f8fa;   --bg-surface: #ffffff;
+  --text-main: #2e3c45; --text-muted: #798d99;
+  --border-color: #dbe6eb;
+}
+
+/* Глобальные применения */
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', system-ui, sans-serif; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideUp { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }
+@keyframes scaleIn { from { opacity:0; transform:scale(.92); } to { opacity:1; transform:scale(1); } }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+@keyframes checkmark { 0%{stroke-dashoffset:50} 100%{stroke-dashoffset:0} }
+
+.animate-fade-in { animation: fadeIn .4s ease-out forwards; }
+.animate-slide-up { animation: slideUp .5s ease-out forwards; }
+.animate-scale-in { animation: scaleIn .3s ease-out forwards; }
+.animate-shake { animation: shake .4s ease-out; }
+
+.card-hover { transition: all .3s cubic-bezier(.4,0,.2,1); }
+.card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,.1); }
+
+.modal-overlay { background: rgba(0,0,0,.5); backdrop-filter: blur(4px); }
+.time-slot { transition: all .2s ease; }
+.time-slot:hover { transform: scale(1.05); }
+.time-slot.selected { background: linear-gradient(135deg,var(--theme-500),var(--theme-600)); color: white; border-color: transparent; }
+
+.category-pill { transition: all .25s ease; }
+.category-pill:hover { transform: translateY(-2px); }
+.category-pill.active { background: linear-gradient(135deg,var(--theme-500),var(--theme-600)); color: white; box-shadow: 0 4px 15px color-mix(in srgb, var(--theme-500) 40%, transparent); }
+
+.star { color: #fbbf24; }
+.gradient-text { background: linear-gradient(135deg,var(--theme-500),#8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-gradient { background: linear-gradient(135deg, var(--theme-50) 0%, var(--theme-100) 100%); }
+
+.btn-primary { background: linear-gradient(135deg,var(--theme-500),var(--theme-600)); transition: all .3s ease; }
+.btn-primary:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 8px 25px color-mix(in srgb, var(--theme-600) 40%, transparent); }
+.btn-primary:active { transform: translateY(0); }
+
+.salon-card-img { height: 200px; object-fit: cover; width: 100%; }
+.master-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--theme-100); }
+.badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
+.notification-badge { position: absolute; top: -4px; right: -4px; width: 18px; height: 18px; background: #ef4444; border-radius: 50%; font-size: 10px; color: white; display: flex; align-items: center; justify-content: center; }
+
+.calendar-day { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; transition: all .2s ease; font-size: 14px; }
+.calendar-day:hover:not(.disabled):not(.selected) { background: var(--theme-100); }
+.calendar-day.selected { background: linear-gradient(135deg,var(--theme-500),var(--theme-600)); color: white; }
+.calendar-day.disabled { color: #d1d5db; cursor: default; }
+.calendar-day.today { border: 2px solid var(--theme-500); }
+
+.step-indicator { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; transition: all .3s ease; }
+.step-indicator.active { background: linear-gradient(135deg,var(--theme-500),var(--theme-600)); color: white; }
+.step-indicator.completed { background: #10b981; color: white; }
+.step-indicator.pending { background: #e5e7eb; color: #9ca3af; }
+.step-line { height: 2px; flex: 1; background: #e5e7eb; transition: all .3s ease; }
+.step-line.active { background: linear-gradient(90deg,var(--theme-500),var(--theme-600)); }
+
+.confirmation-check { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg,#10b981,#059669); display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.checkmark-svg { stroke-dasharray: 50; animation: checkmark .6s ease-out .3s forwards; stroke-dashoffset: 50; }
+
+.toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; animation: slideUp .4s ease-out; }
+.role-card { transition: all .3s ease; cursor: pointer; }
+.role-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,.12); }
+.role-card.selected { border-color: var(--theme-500); background: var(--theme-50); }
+
+.auth-input { transition: all .2s ease; }
+.auth-input:focus { border-color: var(--theme-500); box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-500) 15%, transparent); }
+
+.tab-btn { position: relative; transition: all .3s ease; }
+.tab-btn.active { color: var(--theme-600); font-weight: 600; }
+.tab-btn.active::after { content:''; position: absolute; bottom: -2px; left: 0; right: 0; height: 3px; background: linear-gradient(90deg,var(--theme-500),var(--theme-600)); border-radius: 2px; }
+
+.sidebar-link { transition: all .2s ease; }
+.sidebar-link:hover, .sidebar-link.active { background: var(--theme-100); color: var(--theme-600); }
+.sidebar-link.active { font-weight: 600; }
+.stat-card { background: var(--bg-surface); border-radius: 16px; padding: 20px; border: 1px solid var(--border-color); }
+.admin-table th { background: var(--bg-main); color: var(--text-muted); }
+.admin-table tr:hover td { background: var(--theme-50); }
+
+/* css/style.css */
+@media (max-width: 768px) {
+    .admin-table, 
+    .admin-table thead, 
+    .admin-table tbody, 
+    .admin-table th, 
+    .admin-table td, 
+    .admin-table tr { 
+        display: block; 
+    }
+    
+    .admin-table thead tr { 
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    
+    .admin-table tr { 
+        border: 1px solid var(--border-color); 
+        border-radius: 1rem;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: var(--bg-surface);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    
+    .admin-table td { 
+        border: none;
+        border-bottom: 1px solid var(--bg-main); 
+        position: relative;
+        padding-left: 50% !important; 
+        text-align: right;
+        min-height: 2.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .admin-table td:last-child {
+        border-bottom: 0;
+    }
+
+    /* Подстановка заголовков через атрибут data-label (потребуется добавить data-label в HTML рендер td) */
+    .admin-table td:before { 
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        width: 45%; 
+        padding-right: 10px; 
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+}

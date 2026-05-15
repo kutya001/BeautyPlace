@@ -1,0 +1,1240 @@
+{
+    "categories": [
+        {
+            "id": 1,
+            "name": "Волосы",
+            "icon": "✂️",
+            "color": "#fce7f3",
+            "count": 24
+        },
+        {
+            "id": 2,
+            "name": "Ногти",
+            "icon": "💅",
+            "color": "#ede9fe",
+            "count": 18
+        },
+        {
+            "id": 3,
+            "name": "Лицо",
+            "icon": "🧖‍♀️",
+            "color": "#dbeafe",
+            "count": 15
+        },
+        {
+            "id": 4,
+            "name": "Тело",
+            "icon": "💆‍♀️",
+            "color": "#d1fae5",
+            "count": 12
+        },
+        {
+            "id": 5,
+            "name": "Макияж",
+            "icon": "💄",
+            "color": "#fef3c7",
+            "count": 9
+        },
+        {
+            "id": 6,
+            "name": "Брови и ресницы",
+            "icon": "👁️",
+            "color": "#fce7f3",
+            "count": 14
+        },
+        {
+            "id": 7,
+            "name": "Депиляция",
+            "icon": "🌸",
+            "color": "#ede9fe",
+            "count": 8
+        },
+        {
+            "id": 8,
+            "name": "Массаж",
+            "icon": "🤲",
+            "color": "#d1fae5",
+            "count": 11
+        }
+    ],
+    "services": [
+        {
+            "id": 1,
+            "name": "Стрижка женская",
+            "category": 1,
+            "price": 1500,
+            "duration": 60,
+            "rating": 4.9,
+            "reviews": 128,
+            "popular": true
+        },
+        {
+            "id": 2,
+            "name": "Окрашивание волос",
+            "category": 1,
+            "price": 3500,
+            "duration": 120,
+            "rating": 4.8,
+            "reviews": 95,
+            "popular": true
+        },
+        {
+            "id": 3,
+            "name": "Укладка",
+            "category": 1,
+            "price": 1000,
+            "duration": 45,
+            "rating": 4.7,
+            "reviews": 67,
+            "popular": false
+        },
+        {
+            "id": 4,
+            "name": "Маникюр классический",
+            "category": 2,
+            "price": 800,
+            "duration": 60,
+            "rating": 4.9,
+            "reviews": 203,
+            "popular": true
+        },
+        {
+            "id": 5,
+            "name": "Маникюр с покрытием",
+            "category": 2,
+            "price": 1500,
+            "duration": 90,
+            "rating": 4.8,
+            "reviews": 178,
+            "popular": true
+        },
+        {
+            "id": 6,
+            "name": "Педикюр",
+            "category": 2,
+            "price": 1800,
+            "duration": 90,
+            "rating": 4.7,
+            "reviews": 89,
+            "popular": false
+        },
+        {
+            "id": 7,
+            "name": "Чистка лица",
+            "category": 3,
+            "price": 2500,
+            "duration": 90,
+            "rating": 4.8,
+            "reviews": 56,
+            "popular": true
+        },
+        {
+            "id": 8,
+            "name": "Пилинг",
+            "category": 3,
+            "price": 2000,
+            "duration": 60,
+            "rating": 4.6,
+            "reviews": 34,
+            "popular": false
+        },
+        {
+            "id": 9,
+            "name": "Массаж лица",
+            "category": 3,
+            "price": 1500,
+            "duration": 45,
+            "rating": 4.9,
+            "reviews": 72,
+            "popular": false
+        },
+        {
+            "id": 10,
+            "name": "Обёртывание",
+            "category": 4,
+            "price": 3000,
+            "duration": 90,
+            "rating": 4.7,
+            "reviews": 41,
+            "popular": false
+        },
+        {
+            "id": 11,
+            "name": "Вечерний макияж",
+            "category": 5,
+            "price": 2500,
+            "duration": 60,
+            "rating": 4.9,
+            "reviews": 88,
+            "popular": true
+        },
+        {
+            "id": 12,
+            "name": "Свадебный макияж",
+            "category": 5,
+            "price": 4000,
+            "duration": 90,
+            "rating": 5,
+            "reviews": 45,
+            "popular": true
+        },
+        {
+            "id": 13,
+            "name": "Ламинирование ресниц",
+            "category": 6,
+            "price": 1800,
+            "duration": 60,
+            "rating": 4.8,
+            "reviews": 112,
+            "popular": true
+        },
+        {
+            "id": 14,
+            "name": "Наращивание ресниц",
+            "category": 6,
+            "price": 2500,
+            "duration": 120,
+            "rating": 4.7,
+            "reviews": 96,
+            "popular": true
+        },
+        {
+            "id": 15,
+            "name": "Коррекция бровей",
+            "category": 6,
+            "price": 700,
+            "duration": 30,
+            "rating": 4.8,
+            "reviews": 134,
+            "popular": false
+        },
+        {
+            "id": 16,
+            "name": "Восковая депиляция",
+            "category": 7,
+            "price": 1200,
+            "duration": 45,
+            "rating": 4.6,
+            "reviews": 67,
+            "popular": false
+        },
+        {
+            "id": 17,
+            "name": "Лазерная депиляция",
+            "category": 7,
+            "price": 2000,
+            "duration": 30,
+            "rating": 4.8,
+            "reviews": 89,
+            "popular": true
+        },
+        {
+            "id": 18,
+            "name": "Расслабляющий массаж",
+            "category": 8,
+            "price": 2500,
+            "duration": 60,
+            "rating": 4.9,
+            "reviews": 78,
+            "popular": true
+        },
+        {
+            "id": 19,
+            "name": "Антицеллюлитный массаж",
+            "category": 8,
+            "price": 3000,
+            "duration": 60,
+            "rating": 4.7,
+            "reviews": 52,
+            "popular": false
+        },
+        {
+            "id": 20,
+            "name": "Кератиновое выпрямление",
+            "category": 1,
+            "price": 5000,
+            "duration": 180,
+            "rating": 4.8,
+            "reviews": 63,
+            "popular": false
+        }
+    ],
+    "salons": [
+        {
+            "id": 1,
+            "name": "Beauty Lounge",
+            "address": "ул. Чуйкова, 168",
+            "city": "Бишкек",
+            "metro": "Центр",
+            "rating": 4.9,
+            "reviews": 342,
+            "priceLevel": 3,
+            "categories": [
+                1,
+                2,
+                3,
+                5
+            ],
+            "masters": 8,
+            "openTime": "9:00",
+            "closeTime": "21:00",
+            "features": [
+                "Парковка",
+                "Wi-Fi",
+                "Кофе"
+            ],
+            "verified": true,
+            "ownerId": "salon1"
+        },
+        {
+            "id": 2,
+            "name": "Nail Studio Pro",
+            "address": "ул. Ахунбаева, 92",
+            "city": "Бишкек",
+            "metro": "Ала-Тоо",
+            "rating": 4.8,
+            "reviews": 256,
+            "priceLevel": 2,
+            "categories": [
+                2,
+                6
+            ],
+            "masters": 5,
+            "openTime": "10:00",
+            "closeTime": "20:00",
+            "features": [
+                "Wi-Fi",
+                "Онлайн-запись"
+            ],
+            "verified": true,
+            "ownerId": "salon2"
+        },
+        {
+            "id": 3,
+            "name": "Face & Body",
+            "address": "ул. Токтогула, 77",
+            "city": "Бишкек",
+            "metro": "Ош базар",
+            "rating": 4.7,
+            "reviews": 189,
+            "priceLevel": 3,
+            "categories": [
+                3,
+                4,
+                7,
+                8
+            ],
+            "masters": 12,
+            "openTime": "8:00",
+            "closeTime": "22:00",
+            "features": [
+                "Парковка",
+                "Wi-Fi",
+                "Кофе",
+                "Детская зона"
+            ],
+            "verified": true,
+            "ownerId": "salon3"
+        },
+        {
+            "id": 4,
+            "name": "Lash Bar",
+            "address": "ул. Манаса, 41",
+            "city": "Бишкек",
+            "metro": "Дордой",
+            "rating": 4.9,
+            "reviews": 167,
+            "priceLevel": 2,
+            "categories": [
+                6,
+                5
+            ],
+            "masters": 6,
+            "openTime": "10:00",
+            "closeTime": "21:00",
+            "features": [
+                "Wi-Fi",
+                "Онлайн-запись"
+            ],
+            "verified": false,
+            "ownerId": "salon4"
+        },
+        {
+            "id": 5,
+            "name": "Hair Masters",
+            "address": "ул. Киевская, 55",
+            "city": "Бишкек",
+            "metro": "ЦУМ",
+            "rating": 4.6,
+            "reviews": 134,
+            "priceLevel": 2,
+            "categories": [
+                1,
+                5
+            ],
+            "masters": 4,
+            "openTime": "9:00",
+            "closeTime": "20:00",
+            "features": [
+                "Парковка"
+            ],
+            "verified": true,
+            "ownerId": "salon5"
+        },
+        {
+            "id": 6,
+            "name": "SPA Оазис",
+            "address": "ул. Абдрахманова, 176",
+            "city": "Бишкек",
+            "metro": "Южные ворота",
+            "rating": 4.9,
+            "reviews": 278,
+            "priceLevel": 3,
+            "categories": [
+                4,
+                8,
+                3
+            ],
+            "masters": 10,
+            "openTime": "8:00",
+            "closeTime": "22:00",
+            "features": [
+                "Парковка",
+                "Wi-Fi",
+                "Кофе",
+                "Бассейн",
+                "Сауна"
+            ],
+            "verified": true,
+            "ownerId": "salon6"
+        }
+    ],
+    "masters": [
+        {
+            "id": 1,
+            "name": "Анна Петрова",
+            "specialty": "Стилист-колорист",
+            "experience": 12,
+            "rating": 4.9,
+            "reviews": 234,
+            "priceLevel": 3,
+            "categories": [
+                1
+            ],
+            "salonId": 1,
+            "worksInSalon": true,
+            "services": [
+                1,
+                2,
+                3,
+                20
+            ],
+            "available": true,
+            "userId": "master1",
+            "about": "Топ-стилист с международным опытом. Призёр конкурсов колористики."
+        },
+        {
+            "id": 2,
+            "name": "Мария Козлова",
+            "specialty": "Мастер маникюра",
+            "experience": 8,
+            "rating": 4.8,
+            "reviews": 189,
+            "priceLevel": 2,
+            "categories": [
+                2
+            ],
+            "salonId": 2,
+            "worksInSalon": true,
+            "services": [
+                4,
+                5,
+                6
+            ],
+            "available": true,
+            "userId": "master2",
+            "about": "Сертифицированный мастер nail-арта. Специализация — сложный дизайн."
+        },
+        {
+            "id": 3,
+            "name": "Елена Смирнова",
+            "specialty": "Косметолог",
+            "experience": 15,
+            "rating": 5,
+            "reviews": 156,
+            "priceLevel": 3,
+            "categories": [
+                3
+            ],
+            "salonId": 3,
+            "worksInSalon": true,
+            "services": [
+                7,
+                8,
+                9
+            ],
+            "available": true,
+            "userId": "master3",
+            "about": "Врач-косметолог с медицинским образованием. 15 лет опыта."
+        },
+        {
+            "id": 4,
+            "name": "Ольга Иванова",
+            "specialty": "Визажист",
+            "experience": 10,
+            "rating": 4.9,
+            "reviews": 145,
+            "priceLevel": 3,
+            "categories": [
+                5
+            ],
+            "salonId": null,
+            "worksInSalon": false,
+            "services": [
+                11,
+                12
+            ],
+            "available": true,
+            "userId": "master4",
+            "about": "Звёздный визажист. Работаю на выезде и в студии."
+        },
+        {
+            "id": 5,
+            "name": "Дарья Новикова",
+            "specialty": "Lash-мастер",
+            "experience": 6,
+            "rating": 4.7,
+            "reviews": 112,
+            "priceLevel": 2,
+            "categories": [
+                6
+            ],
+            "salonId": 4,
+            "worksInSalon": true,
+            "services": [
+                13,
+                14,
+                15
+            ],
+            "available": true,
+            "userId": "master5",
+            "about": "Сертифицированный lash-мастер. Использую только премиум-материалы."
+        },
+        {
+            "id": 6,
+            "name": "Ирина Волкова",
+            "specialty": "Массажист",
+            "experience": 14,
+            "rating": 4.9,
+            "reviews": 198,
+            "priceLevel": 3,
+            "categories": [
+                8,
+                4
+            ],
+            "salonId": 6,
+            "worksInSalon": true,
+            "services": [
+                18,
+                19,
+                10
+            ],
+            "available": true,
+            "userId": "master6",
+            "about": "Мастер тайского и классического массажа. Медицинское образование."
+        },
+        {
+            "id": 7,
+            "name": "Светлана Кузнецова",
+            "specialty": "Мастер депиляции",
+            "experience": 9,
+            "rating": 4.8,
+            "reviews": 87,
+            "priceLevel": 2,
+            "categories": [
+                7
+            ],
+            "salonId": 3,
+            "worksInSalon": true,
+            "services": [
+                16,
+                17
+            ],
+            "available": false,
+            "userId": "master7",
+            "about": "Специалист по лазерной и восковой депиляции."
+        },
+        {
+            "id": 8,
+            "name": "Кристина Лебедева",
+            "specialty": "Парикмахер-стилист",
+            "experience": 7,
+            "rating": 4.7,
+            "reviews": 76,
+            "priceLevel": 2,
+            "categories": [
+                1
+            ],
+            "salonId": 5,
+            "worksInSalon": true,
+            "services": [
+                1,
+                3
+            ],
+            "available": true,
+            "userId": "master8",
+            "about": "Креативный стилист. Специализация — модные стрижки."
+        }
+    ],
+    "users": [
+        {
+            "id": "admin1",
+            "phone": "+996 +99 6 5 55 ",
+            "password": "admin123",
+            "role": "superadmin",
+            "name": "Администратор",
+            "email": "admin@beautyplace.kg",
+            "createdAt": "2024-01-01"
+        },
+        {
+            "id": "salon1",
+            "phone": "+996 +99 6 5 55 ",
+            "password": "salon123",
+            "role": "salon",
+            "name": "Beauty Lounge",
+            "email": "info@beautylounge.kg",
+            "salonId": 1,
+            "createdAt": "2024-02-01"
+        },
+        {
+            "id": "salon2",
+            "phone": "+996 +99 6 5 55 ",
+            "password": "salon123",
+            "role": "salon",
+            "name": "Nail Studio Pro",
+            "email": "info@nailstudio.kg",
+            "salonId": 2,
+            "createdAt": "2024-02-15"
+        },
+        {
+            "id": "salon3",
+            "phone": "+996 +99 6 5 55 ",
+            "password": "salon123",
+            "role": "salon",
+            "name": "Face & Body",
+            "email": "info@facebody.kg",
+            "salonId": 3,
+            "createdAt": "2024-03-01"
+        },
+        {
+            "id": "salon4",
+            "phone": "+996 +99 6 5 55 ",
+            "password": "salon123",
+            "role": "salon",
+            "name": "Lash Bar",
+            "email": "info@lashbar.kg",
+            "salonId": 4,
+            "createdAt": "2024-03-10"
+        },
+        {
+            "id": "salon5",
+            "phone": "+996 +99 6 5 55 ",
+            "password": "salon123",
+            "role": "salon",
+            "name": "Hair Masters",
+            "email": "info@hairmasters.kg",
+            "salonId": 5,
+            "createdAt": "2024-03-20"
+        },
+        {
+            "id": "salon6",
+            "phone": "+996 +99 6 5 55 ",
+            "password": "salon123",
+            "role": "salon",
+            "name": "SPA Оазис",
+            "email": "info@spaoasis.kg",
+            "salonId": 6,
+            "createdAt": "2024-04-01"
+        },
+        {
+            "id": "master1",
+            "phone": "+996 +99 6 7 00 ",
+            "password": "master123",
+            "role": "master",
+            "name": "Анна Петрова",
+            "email": "anna@mail.kg",
+            "masterId": 1,
+            "createdAt": "2024-02-05"
+        },
+        {
+            "id": "master2",
+            "phone": "+996 +99 6 7 00 ",
+            "password": "master123",
+            "role": "master",
+            "name": "Мария Козлова",
+            "email": "maria@mail.kg",
+            "masterId": 2,
+            "createdAt": "2024-02-10"
+        },
+        {
+            "id": "master3",
+            "phone": "+996 +99 6 7 00 ",
+            "password": "master123",
+            "role": "master",
+            "name": "Елена Смирнова",
+            "email": "elena@mail.kg",
+            "masterId": 3,
+            "createdAt": "2024-02-20"
+        },
+        {
+            "id": "master4",
+            "phone": "+996 +99 6 7 00 ",
+            "password": "master123",
+            "role": "master",
+            "name": "Ольга Иванова",
+            "email": "olga@mail.kg",
+            "masterId": 4,
+            "createdAt": "2024-03-01"
+        },
+        {
+            "id": "master5",
+            "phone": "+996 +99 6 7 00 ",
+            "password": "master123",
+            "role": "master",
+            "name": "Дарья Новикова",
+            "email": "darya@mail.kg",
+            "masterId": 5,
+            "createdAt": "2024-03-05"
+        },
+        {
+            "id": "master6",
+            "phone": "+996 +99 6 7 00 ",
+            "password": "master123",
+            "role": "master",
+            "name": "Ирина Волкова",
+            "email": "irina@mail.kg",
+            "masterId": 6,
+            "createdAt": "2024-03-15"
+        },
+        {
+            "id": "master7",
+            "phone": "+996 +99 6 7 00 ",
+            "password": "master123",
+            "role": "master",
+            "name": "Светлана Кузнецова",
+            "email": "svetlana@mail.kg",
+            "masterId": 7,
+            "createdAt": "2024-03-25"
+        },
+        {
+            "id": "master8",
+            "phone": "+996 +99 6 7 00 ",
+            "password": "master123",
+            "role": "master",
+            "name": "Кристина Лебедева",
+            "email": "kristina@mail.kg",
+            "masterId": 8,
+            "createdAt": "2024-04-01"
+        },
+        {
+            "id": "client1",
+            "phone": "+996 +99 6 5 50 ",
+            "password": "client123",
+            "role": "client",
+            "name": "Айгул Токтоналиева",
+            "email": "aigul@mail.kg",
+            "createdAt": "2024-04-10"
+        },
+        {
+            "id": "client2",
+            "phone": "+996 +99 6 7 08 ",
+            "password": "client123",
+            "role": "client",
+            "name": "Нурайым Абдыкалыкова",
+            "email": "nurayim@mail.kg",
+            "createdAt": "2024-04-15"
+        }
+    ],
+    "timeSlots": [
+        "09:00",
+        "09:30",
+        "10:00",
+        "10:30",
+        "11:00",
+        "11:30",
+        "12:00",
+        "12:30",
+        "13:00",
+        "13:30",
+        "14:00",
+        "14:30",
+        "15:00",
+        "15:30",
+        "16:00",
+        "16:30",
+        "17:00",
+        "17:30",
+        "18:00",
+        "18:30",
+        "19:00",
+        "19:30",
+        "20:00",
+        "20:30"
+    ],
+    "salonPrices": [
+        {
+            "salonId": 1,
+            "serviceId": 1,
+            "price": 1600,
+            "history": [
+                {
+                    "price": 1400,
+                    "date": "2024-02-01"
+                },
+                {
+                    "price": 1500,
+                    "date": "2024-05-01"
+                },
+                {
+                    "price": 1600,
+                    "date": "2024-09-01"
+                }
+            ]
+        },
+        {
+            "salonId": 1,
+            "serviceId": 2,
+            "price": 3800,
+            "history": [
+                {
+                    "price": 3500,
+                    "date": "2024-02-01"
+                },
+                {
+                    "price": 3800,
+                    "date": "2024-07-01"
+                }
+            ]
+        },
+        {
+            "salonId": 1,
+            "serviceId": 3,
+            "price": 1100,
+            "history": [
+                {
+                    "price": 1000,
+                    "date": "2024-02-01"
+                },
+                {
+                    "price": 1100,
+                    "date": "2024-08-01"
+                }
+            ]
+        },
+        {
+            "salonId": 1,
+            "serviceId": 7,
+            "price": 2700,
+            "history": [
+                {
+                    "price": 2500,
+                    "date": "2024-03-01"
+                },
+                {
+                    "price": 2700,
+                    "date": "2024-10-01"
+                }
+            ]
+        },
+        {
+            "salonId": 1,
+            "serviceId": 11,
+            "price": 2800,
+            "history": [
+                {
+                    "price": 2500,
+                    "date": "2024-03-01"
+                },
+                {
+                    "price": 2800,
+                    "date": "2024-09-01"
+                }
+            ]
+        },
+        {
+            "salonId": 2,
+            "serviceId": 4,
+            "price": 900,
+            "history": [
+                {
+                    "price": 800,
+                    "date": "2024-02-15"
+                },
+                {
+                    "price": 900,
+                    "date": "2024-08-01"
+                }
+            ]
+        },
+        {
+            "salonId": 2,
+            "serviceId": 5,
+            "price": 1600,
+            "history": [
+                {
+                    "price": 1500,
+                    "date": "2024-02-15"
+                },
+                {
+                    "price": 1600,
+                    "date": "2024-07-01"
+                }
+            ]
+        },
+        {
+            "salonId": 2,
+            "serviceId": 6,
+            "price": 2000,
+            "history": [
+                {
+                    "price": 1800,
+                    "date": "2024-02-15"
+                },
+                {
+                    "price": 2000,
+                    "date": "2024-09-01"
+                }
+            ]
+        },
+        {
+            "salonId": 2,
+            "serviceId": 13,
+            "price": 1900,
+            "history": [
+                {
+                    "price": 1800,
+                    "date": "2024-03-01"
+                },
+                {
+                    "price": 1900,
+                    "date": "2024-08-01"
+                }
+            ]
+        },
+        {
+            "salonId": 2,
+            "serviceId": 15,
+            "price": 800,
+            "history": [
+                {
+                    "price": 700,
+                    "date": "2024-03-01"
+                },
+                {
+                    "price": 800,
+                    "date": "2024-09-01"
+                }
+            ]
+        },
+        {
+            "salonId": 3,
+            "serviceId": 7,
+            "price": 2600,
+            "history": [
+                {
+                    "price": 2500,
+                    "date": "2024-03-01"
+                },
+                {
+                    "price": 2600,
+                    "date": "2024-10-01"
+                }
+            ]
+        },
+        {
+            "salonId": 3,
+            "serviceId": 8,
+            "price": 2200,
+            "history": [
+                {
+                    "price": 2000,
+                    "date": "2024-03-01"
+                },
+                {
+                    "price": 2200,
+                    "date": "2024-08-01"
+                }
+            ]
+        },
+        {
+            "salonId": 3,
+            "serviceId": 9,
+            "price": 1600,
+            "history": [
+                {
+                    "price": 1500,
+                    "date": "2024-03-01"
+                },
+                {
+                    "price": 1600,
+                    "date": "2024-09-01"
+                }
+            ]
+        },
+        {
+            "salonId": 3,
+            "serviceId": 10,
+            "price": 3200,
+            "history": [
+                {
+                    "price": 3000,
+                    "date": "2024-03-01"
+                },
+                {
+                    "price": 3200,
+                    "date": "2024-08-01"
+                }
+            ]
+        },
+        {
+            "salonId": 3,
+            "serviceId": 16,
+            "price": 1300,
+            "history": [
+                {
+                    "price": 1200,
+                    "date": "2024-04-01"
+                },
+                {
+                    "price": 1300,
+                    "date": "2024-09-01"
+                }
+            ]
+        },
+        {
+            "salonId": 3,
+            "serviceId": 17,
+            "price": 2100,
+            "history": [
+                {
+                    "price": 2000,
+                    "date": "2024-04-01"
+                },
+                {
+                    "price": 2100,
+                    "date": "2024-10-01"
+                }
+            ]
+        },
+        {
+            "salonId": 3,
+            "serviceId": 18,
+            "price": 2700,
+            "history": [
+                {
+                    "price": 2500,
+                    "date": "2024-04-01"
+                },
+                {
+                    "price": 2700,
+                    "date": "2024-09-01"
+                }
+            ]
+        },
+        {
+            "salonId": 3,
+            "serviceId": 19,
+            "price": 3200,
+            "history": [
+                {
+                    "price": 3000,
+                    "date": "2024-04-01"
+                },
+                {
+                    "price": 3200,
+                    "date": "2024-10-01"
+                }
+            ]
+        },
+        {
+            "salonId": 4,
+            "serviceId": 13,
+            "price": 1900,
+            "history": [
+                {
+                    "price": 1800,
+                    "date": "2024-03-10"
+                },
+                {
+                    "price": 1900,
+                    "date": "2024-09-01"
+                }
+            ]
+        },
+        {
+            "salonId": 4,
+            "serviceId": 14,
+            "price": 2700,
+            "history": [
+                {
+                    "price": 2500,
+                    "date": "2024-03-10"
+                },
+                {
+                    "price": 2700,
+                    "date": "2024-08-01"
+                }
+            ]
+        },
+        {
+            "salonId": 4,
+            "serviceId": 15,
+            "price": 750,
+            "history": [
+                {
+                    "price": 700,
+                    "date": "2024-03-10"
+                },
+                {
+                    "price": 750,
+                    "date": "2024-09-01"
+                }
+            ]
+        },
+        {
+            "salonId": 4,
+            "serviceId": 11,
+            "price": 2600,
+            "history": [
+                {
+                    "price": 2500,
+                    "date": "2024-04-01"
+                },
+                {
+                    "price": 2600,
+                    "date": "2024-09-01"
+                }
+            ]
+        },
+        {
+            "salonId": 5,
+            "serviceId": 1,
+            "price": 1400,
+            "history": [
+                {
+                    "price": 1300,
+                    "date": "2024-03-20"
+                },
+                {
+                    "price": 1400,
+                    "date": "2024-08-01"
+                }
+            ]
+        },
+        {
+            "salonId": 5,
+            "serviceId": 3,
+            "price": 900,
+            "history": [
+                {
+                    "price": 800,
+                    "date": "2024-03-20"
+                },
+                {
+                    "price": 900,
+                    "date": "2024-09-01"
+                }
+            ]
+        },
+        {
+            "salonId": 5,
+            "serviceId": 11,
+            "price": 2400,
+            "history": [
+                {
+                    "price": 2200,
+                    "date": "2024-04-01"
+                },
+                {
+                    "price": 2400,
+                    "date": "2024-09-01"
+                }
+            ]
+        },
+        {
+            "salonId": 6,
+            "serviceId": 10,
+            "price": 3500,
+            "history": [
+                {
+                    "price": 3000,
+                    "date": "2024-04-01"
+                },
+                {
+                    "price": 3500,
+                    "date": "2024-08-01"
+                }
+            ]
+        },
+        {
+            "salonId": 6,
+            "serviceId": 18,
+            "price": 2800,
+            "history": [
+                {
+                    "price": 2500,
+                    "date": "2024-04-01"
+                },
+                {
+                    "price": 2800,
+                    "date": "2024-09-01"
+                }
+            ]
+        },
+        {
+            "salonId": 6,
+            "serviceId": 19,
+            "price": 3300,
+            "history": [
+                {
+                    "price": 3000,
+                    "date": "2024-04-01"
+                },
+                {
+                    "price": 3300,
+                    "date": "2024-10-01"
+                }
+            ]
+        },
+        {
+            "salonId": 6,
+            "serviceId": 7,
+            "price": 2800,
+            "history": [
+                {
+                    "price": 2500,
+                    "date": "2024-05-01"
+                },
+                {
+                    "price": 2800,
+                    "date": "2024-10-01"
+                }
+            ]
+        },
+        {
+            "salonId": 6,
+            "serviceId": 9,
+            "price": 1700,
+            "history": [
+                {
+                    "price": 1500,
+                    "date": "2024-05-01"
+                },
+                {
+                    "price": 1700,
+                    "date": "2024-10-01"
+                }
+            ]
+        }
+    ]
+}
