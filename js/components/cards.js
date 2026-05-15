@@ -22,7 +22,7 @@ export function renderServiceCard(svc) {
     }
 
     return `
-    <div class="card-hover bg-system-surface rounded-2xl border border-system-border p-5 cursor-pointer animate-fade-in flex flex-col h-full" onclick="openServiceDetail(${svc.id})">
+    <div class="island-card p-5 cursor-pointer animate-fade-in flex flex-col h-full" onclick="openServiceDetail(${svc.id})">
 <div class="flex items-center gap-2 mb-3">
     <span class="text-lg">${cat ? cat.icon : ''}</span>
     <span class="text-xs text-system-muted font-medium">${cat ? cat.name : ''}</span>
@@ -52,7 +52,7 @@ window.renderServiceCard = renderServiceCard;
 
 export function renderSalonCard(salon) {
     return `
-    <div class="card-hover bg-system-surface rounded-2xl border border-system-border overflow-hidden cursor-pointer animate-fade-in" onclick="openSalonDetail(${salon.id})">
+    <div class="island-card overflow-hidden cursor-pointer animate-fade-in" onclick="openSalonDetail(${salon.id})">
 <img src="${salon.image}" alt="${salon.name}" class="salon-card-img">
 <div class="p-5">
     <div class="flex items-center gap-2 mb-2">
@@ -85,7 +85,7 @@ window.renderSalonCard = renderSalonCard;
 export function renderMasterCard(master) {
     const salonInfo = master.salonId ? salons.find(s => s.id === master.salonId) : null;
     return `
-    <div class="card-hover bg-system-surface rounded-2xl border border-system-border p-5 cursor-pointer animate-fade-in flex flex-col h-full" onclick="openMasterDetail(${master.id})">
+    <div class="island-card p-5 cursor-pointer animate-fade-in flex flex-col h-full" onclick="openMasterDetail(${master.id})">
 <div class="flex items-start gap-4">
     <img src="${master.avatar}" alt="${master.name}" class="master-avatar flex-shrink-0">
     <div class="min-w-0">

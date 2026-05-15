@@ -11,7 +11,7 @@ export function renderAuthPage() {
     }
     return `
     <div class="min-h-screen hero-gradient flex items-center justify-center p-4 relative">
-<div class="absolute top-4 right-4 flex items-center gap-3">
+<div class="fixed top-4 right-4 flex items-center gap-3 z-50">
     ${renderThemeSwitcher()}
     <button onclick="state.showAuthPage=false; render()" class="w-10 h-10 bg-system-surface/50 backdrop-blur rounded-xl border border-system-border/20 flex items-center justify-center text-system-text hover:bg-system-surface text-lg transition-colors" title="Вернуться к каталогу">✕</button>
 </div>
@@ -21,7 +21,7 @@ export function renderAuthPage() {
         <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center mx-auto mb-4 shadow-lg cursor-pointer" onclick="state.showAuthPage=false; render()">
             <span class="text-white text-3xl">✦</span>
         </div>
-        <h1 class="text-3xl font-bold gradient-text">BeautyPlace KG</h1>
+        <h1 class="text-3xl font-bold gradient-text">Suluu</h1>
         <p class="text-system-muted mt-2 text-sm">Маркетплейс beauty-услуг в Кыргызстане</p>
     </div>
 
@@ -325,7 +325,7 @@ window.renderRegisterForm = renderRegisterForm;
 export function renderRoleSelect() {
     return `
     <div class="min-h-screen hero-gradient flex items-center justify-center p-4 relative">
-<div class="absolute top-4 right-4 flex items-center gap-3">
+<div class="fixed top-4 right-4 flex items-center gap-3 z-50">
     ${renderThemeSwitcher()}
     <button onclick="state.showAuthPage=false; render()" class="w-10 h-10 bg-system-surface/50 backdrop-blur rounded-xl border border-system-border/20 flex items-center justify-center text-system-text hover:bg-system-surface text-lg transition-colors" title="Вернуться к каталогу">✕</button>
 </div>
@@ -386,7 +386,7 @@ export function renderLoginPage() {
         <!-- Заголовок и Логотип -->
         <div class="text-center mb-8 animate-fade-in">
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-primary-500 text-white text-3xl mb-4 shadow-lg shadow-purple-200">✦</div>
-            <h1 class="text-3xl font-bold text-primary-600 tracking-tight">BeautyPlace KG</h1>
+            <h1 class="text-3xl font-bold text-primary-600 tracking-tight">Suluu</h1>
             <p class="text-system-muted mt-1 text-sm font-medium">Маркетплейс beauty-услуг в Кыргызстане</p>
         </div>
         

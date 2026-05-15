@@ -25,12 +25,29 @@ export function renderThemeSwitcher() {
         medical: 'Мед'
     };
 
+    const dropdown = state.showThemeDropdown ? `
+        <div class="fixed inset-0 z-[90]" onclick="event.stopPropagation(); state.showThemeDropdown = false; window.render()"></div>
+        <div class="absolute top-full mt-2 right-0 bg-system-surface border border-system-border rounded-xl shadow-xl p-2 z-[100] flex flex-col gap-1 min-w-[140px] animate-fade-in"
+             onclick="event.stopPropagation()">
+            ${Object.keys(themeIcons).map(theme => `
+                <button class="flex items-center justify-between w-full text-left px-3 py-2 rounded-lg hover:bg-system-main transition-colors ${currentTheme === theme ? 'bg-system-main text-primary-600 font-medium' : 'text-system-text'}"
+                        onclick="ThemeManager.setTheme('${theme}'); state.showThemeDropdown = false; window.render()">
+                    <div class="flex items-center gap-2">
+                        <span>${themeIcons[theme]}</span>
+                        <span class="text-sm">${themeNames[theme]}</span>
+                    </div>
+                    ${currentTheme === theme ? '<span class="text-primary-600 text-xs">✓</span>' : ''}
+                </button>
+            `).join('')}
+        </div>
+    ` : '';
+
     return `
-        <div class="b-theme__switcher pull-right cursor-pointer flex items-center" onclick="ThemeManager.toggleTheme()" title="Сменить тему">
-            <div class="tumbler__wrapper relative inline-flex h-[32px] px-3 items-center rounded-full transition-colors duration-300 bg-system-main border border-system-border hover:bg-system-border">
-                <span class="text-xs mr-2 text-system-text font-bold uppercase tracking-tight">${themeNames[currentTheme]}</span>
-                <span class="text-sm">${themeIcons[currentTheme]}</span>
+        <div class="relative b-theme__switcher" onclick="state.showThemeDropdown = !state.showThemeDropdown; window.render()">
+            <div class="w-9 h-9 rounded-full bg-system-main border border-system-border hover:bg-system-border flex items-center justify-center cursor-pointer transition-colors" title="Сменить тему">
+                <span class="text-base sm:text-lg">${themeIcons[currentTheme]}</span>
             </div>
+            ${dropdown}
         </div>
     `;
 }
@@ -46,29 +63,32 @@ window.renderToast = renderToast;
 export function renderClientMobileNav() {
     const bookingsClick = "navigate('bookings')";
     const profileClick = state.currentUser ? "state.showProfileEdit=true;render()" : "state.showAuthPage=true;render()";
-    const profileIcon = state.currentUser ? "👤" : "🔑";
+    
+    const profileIcon = `<svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>`;
     const profileLabel = state.currentUser ? "Профиль" : "Войти";
 
     return `
-    <nav class="md:hidden fixed bottom-0 inset-x-0 bg-system-surface/90 backdrop-blur-xl border-t border-system-border flex justify-between items-center z-[90] px-4 pt-2 pb-[env(safe-area-inset-bottom,16px)]">
-        <a href="#" onclick="navigate('home')" class="flex flex-col items-center w-1/4 ${state.currentPage === 'home' ? 'text-primary-600' : 'text-system-muted'}">
-            <span class="text-2xl mb-0.5">🏠</span>
-            <span class="text-[10px] font-bold">Главная</span>
-        </a>
-        <a href="#" onclick="navigate('salons')" class="flex flex-col items-center w-1/4 ${state.currentPage === 'salons' ? 'text-primary-600' : 'text-system-muted'}">
-            <span class="text-2xl mb-0.5">🏢</span>
-            <span class="text-[10px] font-bold">Салоны</span>
-        </a>
-        <a href="#" onclick="${bookingsClick}" class="flex flex-col items-center w-1/4 relative ${state.currentPage === 'bookings' ? 'text-primary-600' : 'text-system-muted'}">
-            <span class="text-2xl mb-0.5">📅</span>
-            <span class="text-[10px] font-bold">Записи</span>
-            ${getUserBookings().filter(b => b.status === 'pending').length > 0 ? `<span class="absolute top-0 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-system-surface"></span>` : ''}
-        </a>
-        <a href="#" onclick="${profileClick}" class="flex flex-col items-center w-1/4 text-system-muted">
-            <span class="text-2xl mb-0.5">${profileIcon}</span>
-            <span class="text-[10px] font-bold">${profileLabel}</span>
-        </a>
-    </nav>`;
+    <div class="fixed bottom-4 left-4 right-4 z-[90] md:hidden">
+        <nav class="island-mobile-nav flex justify-around items-center px-2 py-3">
+            <a href="#" onclick="navigate('home')" class="flex flex-col items-center w-1/4 transition-colors ${state.currentPage === 'home' ? 'text-primary-600' : 'text-system-muted hover:text-system-text'}">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                <span class="text-[10px] font-bold">Главная</span>
+            </a>
+            <a href="#" onclick="navigate('salons')" class="flex flex-col items-center w-1/4 transition-colors ${state.currentPage === 'salons' ? 'text-primary-600' : 'text-system-muted hover:text-system-text'}">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                <span class="text-[10px] font-bold">Салоны</span>
+            </a>
+            <a href="#" onclick="${bookingsClick}" class="flex flex-col items-center w-1/4 relative transition-colors ${state.currentPage === 'bookings' ? 'text-primary-600' : 'text-system-muted hover:text-system-text'}">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span class="text-[10px] font-bold">Записи</span>
+                ${getUserBookings().filter(b => b.status === 'pending').length > 0 ? `<span class="absolute top-0 right-3 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-system-surface shadow-sm"></span>` : ''}
+            </a>
+            <a href="#" onclick="${profileClick}" class="flex flex-col items-center w-1/4 transition-colors text-system-muted hover:text-system-text">
+                ${profileIcon}
+                <span class="text-[10px] font-bold">${profileLabel}</span>
+            </a>
+        </nav>
+    </div>`;
 }
 
 window.renderClientMobileNav = renderClientMobileNav;
@@ -120,13 +140,12 @@ window.renderMasterMobileNav = renderMasterMobileNav;
 
 export function renderClientFooter() {
     return `
-    <footer class="bg-system-surface border-t border-system-border text-system-muted py-12">
-<div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <footer class="pb-12 px-4 sm:px-6"><div class="island max-w-7xl mx-auto text-system-muted py-12">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
         <div>
             <div class="flex items-center gap-2 mb-4">
                 <div class="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center"><span class="text-white text-sm">✦</span></div>
-                <span class="text-lg font-bold text-system-text">BeautyPlace KG</span>
+                <span class="text-lg font-bold text-system-text">Suluu</span>
             </div>
             <p class="text-sm leading-relaxed">Маркетплейс beauty-услуг в Кыргызстане. Находите лучших мастеров и записывайтесь онлайн.</p>
         </div>
@@ -139,26 +158,24 @@ export function renderClientFooter() {
             </ul>
         </div>
         <div>
-            <h4 class="text-system-text font-semibold mb-3">Партнёрам</h4>
+            <h4 class="text-system-text font-semibold mb-3">Мастерам</h4>
             <ul class="space-y-2 text-sm">
-                <li><a href="#" onclick="handleLogout()" class="hover:text-primary-600 transition-colors">Подключить салон</a></li>
                 <li><a href="#" onclick="handleLogout()" class="hover:text-primary-600 transition-colors">Стать мастером</a></li>
+                <li><a href="#" onclick="handleLogout()" class="hover:text-primary-600 transition-colors">Панель управления</a></li>
             </ul>
         </div>
         <div>
-            <h4 class="text-system-text font-semibold mb-3">Контакты</h4>
+            <h4 class="text-system-text font-semibold mb-3">Партнёрам</h4>
             <ul class="space-y-2 text-sm">
-                <li>📞 +996 555 123 456</li>
-                <li>✉️ info@beautyplace.kg</li>
-                <li>📍 Бишкек, Кыргызстан</li>
+                <li><a href="#" onclick="handleLogout()" class="hover:text-primary-600 transition-colors">Подключить салон</a></li>
+                <li><a href="#" onclick="handleLogout()" class="hover:text-primary-600 transition-colors">Для корпоративных клиентов</a></li>
             </ul>
         </div>
     </div>
     <div class="border-t border-system-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
-        <p>© 2024 BeautyPlace KG. Все права защищены.</p>
+        <p>© 2024 Suluu. Все права защищены.</p>
     </div>
-</div>
-    </footer>`;
+</div></footer>`;
 }
 
 window.renderClientFooter = renderClientFooter;

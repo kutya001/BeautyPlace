@@ -111,7 +111,7 @@ export function renderClientFooter() {
                 </div>
             </div>
             <div class="border-t border-system-border pt-6 text-center text-sm">
-                <p>© 2024 BeautyPlace KG. Все права защищены.</p>
+                <p>© 2024 Suluu. Все права защищены.</p>
             </div>
         </div>
     </footer>`;

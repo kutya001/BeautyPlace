@@ -16,8 +16,10 @@ export function renderSalonApp() {
 ${renderSalonHeader()}
 <div class="flex min-h-screen">
     ${renderSalonSidebar()}
-    <div class="flex-1 p-4 sm:p-6 bg-system-main pb-24 md:pb-6">
-        ${renderSalonContent()}
+    <div class="flex-1 p-4 sm:p-6 pb-24 md:pb-6 relative w-full overflow-hidden">
+        <div class="island mt-2 xl:mx-4">
+            ${renderSalonContent()}
+        </div>
     </div>
 </div>
 ${renderSalonMobileNav()}
@@ -32,21 +34,23 @@ export function renderSalonHeader() {
     const salon = salons.find(s => s.id === state.currentUser.salonId);
     const salonName = salon ? salon.name : (state.currentUser.name || 'Салон');
     return `
-    <header class="bg-system-surface border-b border-system-border sticky top-0 z-50">
-<div class="flex items-center justify-between h-16 px-6">
-    <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
-            <span class="text-white text-sm">🏢</span>
-        </div>
-        <span class="text-lg font-bold text-system-text">${salonName} — Панель салона</span>
-    </div>
-    <div class="flex items-center gap-4">
-        ${renderThemeSwitcher()}
-        <span class="text-sm text-system-muted">${salonName}</span>
-        <button onclick="handleLogout()" class="text-sm text-red-500 hover:text-red-700 font-medium">Выйти</button>
-    </div>
-</div>
-    </header>`;
+    <div class="px-2 sm:px-4 pt-4 sticky top-4 z-50 transition-all">
+        <header class="island-header max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-sm">
+                        <span class="text-white text-sm">🏢</span>
+                    </div>
+                    <span class="text-lg font-bold text-system-text">${salonName} — Панель салона</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    ${renderThemeSwitcher()}
+                    <span class="text-sm text-system-muted hidden md:inline">${salonName}</span>
+                    <button onclick="handleLogout()" class="text-sm text-red-500 hover:text-red-700 font-medium">Выйти</button>
+                </div>
+            </div>
+        </header>
+    </div>`;
 }
 
 window.renderSalonHeader = renderSalonHeader;

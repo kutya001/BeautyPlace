@@ -1,4 +1,4 @@
-# ✦ BeautyPlace KG (Suluu.kg)
+# ✦ Suluu (Suluu)
 
 **Маркетплейс beauty-услуг в Кыргызстане**
 
@@ -47,7 +47,7 @@ npm run dev
 ### Структура проекта
 
 ```
-Suluu.kg/
+Suluu/
 ├── index.html          # Точка входа
 ├── package.json        # Зависимости и скрипты (Vite, Tailwind, ESLint)
 ├── README.md           # Документация проекта

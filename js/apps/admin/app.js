@@ -14,6 +14,7 @@ ${renderAdminHeader()}
     ${renderAdminSidebar()}
     <div class="flex-1 p-6 bg-system-main">
         ${renderAdminContent()}
+        </div>
     </div>
 </div>
 ${state.toast ? renderToast() : ''}
@@ -25,13 +26,13 @@ window.renderSuperAdminApp = renderSuperAdminApp;
 export function renderAdminHeader() {
     const userName = state.currentUser.name || 'Администратор';
     return `
-    <header class="bg-system-surface border-b border-system-border sticky top-0 z-50">
+    <div class="px-2 sm:px-4 pt-4 sticky top-4 z-50 transition-all"><header class="island-header max-w-7xl mx-auto px-4 sm:px-6">
 <div class="flex items-center justify-between h-16 px-6">
     <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
             <span class="text-white text-sm">🛡️</span>
         </div>
-        <span class="text-lg font-bold text-system-text">BeautyPlace KG — Админ-панель</span>
+        <span class="text-lg font-bold text-system-text">Suluu — Админ-панель</span>
     </div>
     <div class="flex items-center gap-4">
         ${renderThemeSwitcher()}
@@ -39,7 +40,7 @@ export function renderAdminHeader() {
         <button onclick="handleLogout()" class="text-sm text-red-500 hover:text-red-700 font-medium">Выйти</button>
     </div>
 </div>
-    </header>`;
+    </header></div>`;
 }
 
 window.renderAdminHeader = renderAdminHeader;

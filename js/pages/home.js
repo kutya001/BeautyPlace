@@ -96,7 +96,7 @@ export function renderHomePage() {
         <section class="py-16 bg-gradient-to-r from-primary-500 to-purple-600">
             <div class="max-w-3xl mx-auto px-4 text-center">
                 <h2 class="text-3xl font-bold text-white mb-4">Вы beauty-мастер или владелец салона?</h2>
-                <p class="text-primary-100 mb-8 text-lg">Присоединяйтесь к BeautyPlace KG и получайте новых клиентов каждый день</p>
+                <p class="text-primary-100 mb-8 text-lg">Присоединяйтесь к Suluu и получайте новых клиентов каждый день</p>
                 <button onclick="handleLogout()" class="bg-system-surface text-primary-600 px-8 py-3.5 rounded-2xl font-semibold text-sm hover:bg-primary-50 transition-colors shadow-lg">
                     Зарегистрироваться
                 </button>

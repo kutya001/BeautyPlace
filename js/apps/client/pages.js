@@ -16,8 +16,7 @@ export function renderHomePage() {
 
     return `
     <main>
-<section class="hero-gradient py-16 md:py-24">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+<section class="island hero-gradient max-w-7xl mx-auto px-4 sm:px-6 mx-4 mb-8 mt-4 py-16 md:py-24">
         <div class="text-center max-w-3xl mx-auto animate-fade-in">
             <h1 class="text-4xl md:text-6xl font-bold text-system-text mb-6 leading-tight">
                 Найдите идеального <span class="gradient-text">beauty-мастера</span>
@@ -25,19 +24,7 @@ export function renderHomePage() {
             <p class="text-lg md:text-xl text-system-muted mb-10 leading-relaxed">
                 Записывайтесь в лучшие салоны красоты и к проверенным мастерам онлайн. Быстро, удобно, без звонков.
             </p>
-            <div class="flex flex-col sm:flex-row gap-3 max-w-xl mx-auto">
-                <div class="flex-1 relative">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-system-muted opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <input type="text" placeholder="Поиск услуги, салона или мастера..."
-                        class="w-full pl-10 pr-4 py-3.5 rounded-2xl border border-system-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-base sm:text-sm bg-system-surface text-system-text shadow-sm"
-                        value="${state.searchQuery}" oninput="state.searchQuery=this.value" onkeydown="if(event.key==='Enter')performSearch()">
-                </div>
-                <button onclick="performSearch()" class="btn-primary px-8 py-3.5 rounded-2xl text-white font-semibold text-sm whitespace-nowrap">
-                    Найти
-                </button>
-            </div>
+            
             <div class="flex flex-wrap justify-center gap-2 mt-6">
                 <span class="text-xs text-system-muted">Популярное:</span>
                 ${['Маникюр', 'Стрижка', 'Макияж', 'Массаж'].map(t =>
@@ -45,11 +32,9 @@ export function renderHomePage() {
     ).join('')}
             </div>
         </div>
-    </div>
 </section>
 
-<section class="py-12 bg-system-surface">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+<section class="island max-w-7xl mx-auto px-4 sm:px-6 mx-4 mb-8 mt-4">
         <h2 class="text-2xl font-bold text-system-text mb-8">Категории услуг</h2>
         <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
             ${categories.map(cat => `
@@ -61,11 +46,9 @@ export function renderHomePage() {
                 </div>
             `).join('')}
         </div>
-    </div>
-</section>
+    </section>
 
-<section class="py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+<section class="island max-w-7xl mx-auto px-4 sm:px-6 mx-4 mb-8">
         <div class="flex items-center justify-between mb-8">
             <h2 class="text-2xl font-bold text-system-text">Рекомендуемые услуги</h2>
             <a href="#" onclick="navigate('services')" class="text-sm text-primary-500 font-medium hover:underline">Все услуги →</a>
@@ -73,11 +56,9 @@ export function renderHomePage() {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             ${popularServices.map(svc => renderServiceCard(svc)).join('')}
         </div>
-    </div>
-</section>
+    </section>
 
-<section class="py-12 bg-system-surface">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+<section class="island max-w-7xl mx-auto px-4 sm:px-6 mx-4 mb-8 mt-4">
         <div class="flex items-center justify-between mb-8">
             <h2 class="text-2xl font-bold text-system-text">Лучшие салоны</h2>
             <a href="#" onclick="navigate('salons')" class="text-sm text-primary-500 font-medium hover:underline">Все салоны →</a>
@@ -85,11 +66,9 @@ export function renderHomePage() {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             ${topSalons.map(salon => renderSalonCard(salon)).join('')}
         </div>
-    </div>
-</section>
+    </section>
 
-<section class="py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+<section class="island max-w-7xl mx-auto px-4 sm:px-6 mx-4 mb-8">
         <div class="flex items-center justify-between mb-8">
             <h2 class="text-2xl font-bold text-system-text">Топ-мастера</h2>
             <a href="#" onclick="navigate('masters')" class="text-sm text-primary-500 font-medium hover:underline">Все мастера →</a>
@@ -97,31 +76,26 @@ export function renderHomePage() {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             ${topMasters.map(master => renderMasterCard(master)).join('')}
         </div>
-    </div>
-</section>
+    </section>
 
 ${!state.currentUser ? `
-<section id="track-booking" class="py-12 bg-system-main border-y border-system-border">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+<section id="track-booking" class="island max-w-3xl mx-auto px-4 sm:px-6 text-center mx-4 mb-8">
         <h2 class="text-2xl font-bold text-system-text mb-4">Проверить статус записи</h2>
         <p class="text-system-muted mb-8">Введите код отслеживания, который вы получили при создании записи</p>
         <div class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <input type="text" id="trackingCodeInput" placeholder="Например: A7X9Q2" class="flex-1 px-4 py-3.5 rounded-2xl border border-system-border focus:border-primary-400 bg-system-surface text-system-text font-mono tracking-widest uppercase text-center outline-none">
             <button onclick="trackBooking()" class="btn-primary px-8 py-3.5 rounded-2xl text-white font-bold whitespace-nowrap shadow-md shadow-primary-200 hover:-translate-y-0.5 transition-transform">Найти запись</button>
         </div>
-    </div>
-</section>
+    </section>
 ` : ''}
 
-<section class="py-16 bg-gradient-to-r from-primary-500 to-primary-600">
-    <div class="max-w-3xl mx-auto px-4 text-center">
+<section class="island max-w-3xl mx-auto px-4 text-center bg-gradient-to-r from-primary-500 to-primary-600 !border-none mx-4 mb-8">
         <h2 class="text-3xl font-bold text-white mb-4">Вы beauty-мастер или владелец салона?</h2>
-        <p class="text-primary-100 mb-8 text-lg">Присоединяйтесь к BeautyPlace KG и получайте новых клиентов каждый день</p>
+        <p class="text-primary-100 mb-8 text-lg">Присоединяйтесь к Suluu и получайте новых клиентов каждый день</p>
         <button onclick="handleLogout()" class="bg-system-surface text-primary-600 px-8 py-3.5 rounded-2xl font-semibold text-sm hover:bg-primary-50 transition-colors shadow-lg">
             Зарегистрироваться
         </button>
-    </div>
-</section>
+    </section>
     </main>`;
 }
 
@@ -136,7 +110,7 @@ export function renderSalonsPage() {
     }
 
     return `
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="island max-w-7xl mx-auto px-4 sm:px-6 mt-6 mx-4">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
     <h1 class="text-3xl font-bold text-system-text">Салоны красоты</h1>
     <div class="relative">
@@ -176,7 +150,7 @@ export function renderMastersPage() {
     }
 
     return `
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="island max-w-7xl mx-auto px-4 sm:px-6 mt-6 mx-4">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
     <h1 class="text-3xl font-bold text-system-text">Мастера</h1>
     <div class="relative">
@@ -219,7 +193,7 @@ export function renderServicesPage() {
     }
 
     return `
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="island max-w-7xl mx-auto px-4 sm:px-6 mt-6 mx-4">
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
     <h1 class="text-3xl font-bold text-system-text">Услуги</h1>
     <div class="relative">
@@ -262,7 +236,7 @@ export function renderSalonDetailPage() {
     const salonServices = getSalonServices(salon, services);
 
     return `
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="island max-w-7xl mx-auto px-4 sm:px-6 mt-6 mx-4">
 <button onclick="navigate('salons')" class="flex items-center gap-2 text-sm text-system-muted hover:text-primary-500 mb-6 transition-colors">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
     Назад к салонам
@@ -329,7 +303,7 @@ export function renderMasterDetailPage() {
     const salon = master.salonId ? salons.find(s => s.id === master.salonId) : null;
 
     return `
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="island max-w-7xl mx-auto px-4 sm:px-6 mt-6 mx-4">
 <button onclick="navigate('masters')" class="flex items-center gap-2 text-sm text-system-muted hover:text-primary-500 mb-6 transition-colors">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
     Назад к мастерам
@@ -388,7 +362,7 @@ export function renderServiceDetailPage() {
     const independentMasters = masters.filter(m => !m.salonId && m.services && m.services.includes(svc.id));
 
     return `
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <main class="island max-w-7xl mx-auto px-4 sm:px-6 mt-6 mx-4">
 <button onclick="navigate('services')" class="flex items-center gap-2 text-sm text-system-muted hover:text-primary-500 mb-6 transition-colors">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
     Назад к услугам
@@ -428,7 +402,7 @@ export function renderServiceDetailPage() {
             ${offeringSalons.map(salon => {
                 const salonPrice = getSalonPrice(salon.id, svc.id, services);
                 return `
-                <div class="bg-system-surface rounded-2xl border border-system-border/50 p-5 cart-hover cursor-pointer" onclick="openSalonDetail(${salon.id})">
+                <div class="island-card border-none p-5 cart-hover cursor-pointer" onclick="openSalonDetail(${salon.id})">
                     <div class="flex justify-between items-start mb-3">
                         <h3 class="font-bold text-system-text">${salon.name} <span class="text-xs text-system-muted opacity-70 font-normal ml-1">Салон</span></h3>
                         <div class="flex items-center gap-1 text-sm"><span class="star">★</span><span class="font-semibold">${salon.rating}</span></div>
@@ -441,7 +415,7 @@ export function renderServiceDetailPage() {
             }).join('')}
             ${independentMasters.map(master => {
                 return `
-                <div class="bg-system-surface rounded-2xl border border-system-border/50 p-5 cart-hover cursor-pointer" onclick="openMasterDetail(${master.id})">
+                <div class="island-card border-none p-5 cart-hover cursor-pointer" onclick="openMasterDetail(${master.id})">
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex items-center gap-3">
                             <img src="${master.avatar}" class="w-10 h-10 rounded-full object-cover">
@@ -483,7 +457,7 @@ export function renderBookingsPage() {
         const isExpanded = state.expandedBooking === b.id;
         
         return `
-        <div class="bg-system-surface rounded-2xl border border-system-border/50 p-4 shadow-sm hover:shadow-md transition-shadow">
+        <div class="island-card border-none p-4 shadow-sm hover:shadow-md transition-shadow">
             <div class="flex justify-between items-center cursor-pointer" onclick="state.expandedBooking = state.expandedBooking === '${b.id}' ? null : '${b.id}'; render();">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-lg shadow-inner">
@@ -526,7 +500,7 @@ export function renderBookingsPage() {
     };
 
     return `
-<div class="max-w-4xl mx-auto py-8 px-4 animate-fade-in">
+    <div class="island max-w-4xl mx-auto mt-6 mx-4 px-4 sm:px-8 animate-fade-in">
     <h1 class="text-3xl font-black text-system-text mb-6">Мои записи</h1>
     
     ${myBookings.length > 0 ? `
@@ -570,7 +544,7 @@ export function renderReviewsSection(targetType, targetId) {
         ${targetReviews.length > 0 ? `
             <div class="space-y-4">
                 ${targetReviews.map(r => `
-                    <div class="bg-system-surface rounded-2xl p-5 border border-system-border/50 shadow-sm">
+                    <div class="island-card border-none p-5">
                         <div class="flex justify-between items-start mb-2">
                             <div class="font-bold text-system-text">${r.userName}</div>
                             <div class="flex items-center gap-2">

@@ -55,31 +55,60 @@ export function renderClientHeader() {
     }
 
     return `
-    <header class="bg-system-surface/80 backdrop-blur-lg border-b border-system-border sticky top-0 z-50">
-<div class="max-w-7xl mx-auto px-4 sm:px-6">
-    <div class="flex items-center justify-between h-16">
-        <div class="flex items-center gap-2 cursor-pointer" onclick="navigate('home')">
-            <div class="w-9 h-9 rounded-xl bg-primary-500 flex items-center justify-center">
-                <span class="text-white text-lg">✦</span>
+    <div class="px-2 sm:px-4 pt-2 sm:pt-4 sticky top-0 sm:top-4 z-[100] transition-all">
+        <header class="island-header max-w-7xl mx-auto px-3 sm:px-6">
+            <div class="flex items-center justify-between h-14 sm:h-16">
+                <div class="flex items-center gap-2 cursor-pointer" onclick="navigate('home')">
+                    <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary-500 flex items-center justify-center shadow-sm shadow-primary-200">
+                        <span class="text-white text-base sm:text-lg">✦</span>
+                    </div>
+                    <span class="text-lg sm:text-xl font-bold text-system-text hidden sm:block">Suluu</span>
+                </div>
+                <nav class="hidden md:flex items-center gap-6 lg:gap-8">
+                    <a href="#" onclick="navigate('home')" class="flex items-center gap-1.5 text-sm font-medium ${state.currentPage === 'home' ? 'text-primary-600' : 'text-system-muted hover:text-system-text'} transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        Главная
+                    </a>
+                    <a href="#" onclick="navigate('salons')" class="flex items-center gap-1.5 text-sm font-medium ${state.currentPage === 'salons' ? 'text-primary-600' : 'text-system-muted hover:text-system-text'} transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        Салоны
+                    </a>
+                    <a href="#" onclick="navigate('masters')" class="flex items-center gap-1.5 text-sm font-medium ${state.currentPage === 'masters' ? 'text-primary-600' : 'text-system-muted hover:text-system-text'} transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        Мастера
+                    </a>
+                    <a href="#" onclick="navigate('services')" class="flex items-center gap-1.5 text-sm font-medium ${state.currentPage === 'services' ? 'text-primary-600' : 'text-system-muted hover:text-system-text'} transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                        Услуги
+                    </a>
+                    <a href="#" onclick="navigate('bookings')" class="flex items-center gap-1.5 text-sm font-medium ${state.currentPage === 'bookings' ? 'text-primary-600' : 'text-system-muted hover:text-system-text'} transition-colors relative">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Мои записи${bookingCount > 0 ? `<span class="absolute -top-2 -right-3 bg-primary-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold border border-system-surface">${bookingCount}</span>` : ''}
+                    </a>
+                </nav>
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="relative flex items-center justify-end h-9">
+                        <div class="flex items-center overflow-hidden transition-all duration-300 ease-in-out ${state.isSearchExpanded ? 'w-40 sm:w-64 opacity-100' : 'w-0 opacity-0'}">
+                            <input type="text" placeholder="Поиск..." 
+                                class="w-full px-4 py-1.5 rounded-full border border-system-border focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-sm bg-system-surface text-system-text shadow-sm transition-all"
+                                value="${state.searchQuery || ''}" 
+                                oninput="state.searchQuery=this.value; if(window.location.hash.includes('salons') || window.location.hash.includes('masters') || window.location.hash.includes('services')) window.render();" 
+                                onkeydown="if(event.key==='Enter'){ state.isSearchExpanded=false; window.performSearch?window.performSearch():window.render(); }"
+                                onblur="if(!this.value){ state.isSearchExpanded = false; window.render(); }"
+                                id="navSearchInput"
+                            >
+                        </div>
+                        <button onclick="state.isSearchExpanded = !state.isSearchExpanded; window.render(); if(state.isSearchExpanded) setTimeout(() => document.getElementById('navSearchInput').focus(), 100);" 
+                            class="w-9 h-9 shrink-0 outline-none rounded-full flex items-center justify-center transition-all text-system-text z-[1] ${state.isSearchExpanded ? 'absolute right-2 opacity-0 pointer-events-none' : 'hover:bg-system-border'}" title="Поиск">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </button>
+                    </div>
+                    ${renderThemeSwitcher()}
+                    ${userSection}
+                </div>
             </div>
-            <span class="text-xl font-bold text-system-text">BeautyPlace KG</span>
-        </div>
-        <nav class="hidden md:flex items-center gap-8">
-            <a href="#" onclick="navigate('home')" class="text-sm font-medium ${state.currentPage === 'home' ? 'text-primary-600' : 'text-system-muted hover:text-primary-600'} transition-colors">Главная</a>
-            <a href="#" onclick="navigate('salons')" class="text-sm font-medium ${state.currentPage === 'salons' ? 'text-primary-600' : 'text-system-muted hover:text-primary-600'} transition-colors">Салоны</a>
-            <a href="#" onclick="navigate('masters')" class="text-sm font-medium ${state.currentPage === 'masters' ? 'text-primary-600' : 'text-system-muted hover:text-primary-600'} transition-colors">Мастера</a>
-            <a href="#" onclick="navigate('services')" class="text-sm font-medium ${state.currentPage === 'services' ? 'text-primary-600' : 'text-system-muted hover:text-primary-600'} transition-colors">Услуги</a>
-            <a href="#" onclick="navigate('bookings')" class="text-sm font-medium ${state.currentPage === 'bookings' ? 'text-primary-600' : 'text-system-muted hover:text-primary-600'} transition-colors relative">
-                Мои записи${bookingCount > 0 ? `<span class="absolute -top-2 -right-3 bg-primary-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold border border-system-surface">${bookingCount}</span>` : ''}
-            </a>
-        </nav>
-        <div class="flex items-center gap-3">
-            ${renderThemeSwitcher()}
-            ${userSection}
-        </div>
-    </div>
-</div>
-    </header>`;
+        </header>
+    </div>`;
 }
 
 window.renderClientHeader = renderClientHeader;
