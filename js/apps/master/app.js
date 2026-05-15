@@ -26,32 +26,39 @@ export function renderMasterHeader() {
     const master = masters.find(m => m.id === state.currentUser.masterId);
     const masterName = master ? master.name : (state.currentUser.name || 'Мастер');
     return `
-    <div class="px-2 sm:px-4 pt-4 sticky top-4 z-50 transition-all"><header class="island-header max-w-7xl mx-auto px-4 sm:px-6">
-<div class="flex items-center justify-between h-16 px-6">
-    <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center">
-            <span class="text-white text-sm">💇‍♀️</span>
-        </div>
-        <span class="text-lg font-bold text-system-text">${masterName} — Панель мастера</span>
-    </div>
-    <div class="flex items-center gap-4">
-        ${renderThemeSwitcher()}
-        <span class="text-sm text-system-muted">${masterName}</span>
-        <button onclick="handleLogout()" class="text-sm text-red-500 hover:text-red-700 font-medium">Выйти</button>
-    </div>
-</div>
-    </header></div>`;
+    <div class="px-2 sm:px-4 pt-1 sm:pt-2 sticky top-1 sm:top-2 z-[100] transition-all">
+        <header class="island-header max-w-7xl mx-auto px-3 sm:px-4">
+            <div class="flex items-center justify-between h-11 sm:h-12">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary-500 flex items-center justify-center shadow-md">
+                        <span class="text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="14.48" y2="14.48"/><line x1="20" y1="20" x2="8.12" y2="8.12"/></svg></span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="leading-none text-base sm:text-lg font-bold text-system-text">SuluuMaster</span>
+                        <span class="leading-none text-[10px] sm:text-xs text-system-muted mt-0.5">${masterName}</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    ${renderThemeSwitcher()}
+                    <button onclick="handleLogout()" class="text-sm px-3 py-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-700 font-medium transition-colors hidden sm:block">Выйти</button>
+                    <button onclick="handleLogout()" class="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 sm:hidden">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline stroke-linecap="round" stroke-linejoin="round" points="16 17 21 12 16 7"/><line stroke-linecap="round" stroke-linejoin="round" x1="21" x2="9" y1="12" y2="12"/></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+    </div>`;
 }
 
 window.renderMasterHeader = renderMasterHeader;
 
 export function renderMasterSidebar() {
     const tabs = [
-        { id: 'schedule', icon: '📅', label: 'Расписание' },
-        { id: 'bookings', icon: '📋', label: 'Записи' },
-        { id: 'my_salons', icon: '🏢', label: 'Мои салоны' },
-        { id: 'services', icon: '💅', label: 'Мои услуги' },
-        { id: 'profile', icon: '⚙️', label: 'Профиль' },
+        { id: 'schedule', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg>', label: 'Расписание' },
+        { id: 'bookings', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 3"/></svg>', label: 'Записи' },
+        { id: 'my_salons', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 6h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 10h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 14h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 18h4"/></svg>', label: 'Мои салоны' },
+        { id: 'services', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7h-3a2 2 0 0 1-2-2V2"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 15h6"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 18h6"/></svg>', label: 'Мои услуги' },
+        { id: 'profile', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 20v2"/><path stroke-linecap="round" stroke-linejoin="round" d="m4.93 4.93 1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="m17.66 17.66 1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M20 12h2"/><path stroke-linecap="round" stroke-linejoin="round" d="m6.34 17.66-1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="m19.07 4.93-1.41 1.41"/></svg>', label: 'Профиль' },
     ];
     return `
     <aside class="w-64 bg-system-surface border-r border-system-border min-h-screen p-4 hidden md:block">
@@ -103,7 +110,7 @@ export function renderMasterContent() {
     </div>
     ${masterBookings.filter(b => b.status === 'pending').length > 0 ? `
         <div class="bg-system-surface rounded-2xl border border-2 border-yellow-400 overflow-hidden mb-6">
-            <h3 class="font-semibold text-system-text p-4 border-b border-system-border bg-transparent text-yellow-500">⏳ Записи для подтверждения</h3>
+            <h3 class="font-semibold text-system-text p-4 border-b border-system-border bg-transparent text-yellow-500"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 22h14"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 2h14"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg> Записи для подтверждения</h3>
             <div class="divide-y divide-system-border">
                 ${masterBookings.filter(b => b.status === 'pending').map(b => {
             const svc = services.find(s => s.id === b.serviceId);
@@ -119,7 +126,7 @@ export function renderMasterContent() {
         </div>
     ` : ''}
     <div class="bg-system-surface rounded-2xl border border-system-border overflow-hidden mb-6">
-        <h3 class="font-semibold text-system-text p-4 border-b border-system-border bg-system-main">📅 Записи на сегодня (${today})</h3>
+        <h3 class="font-semibold text-system-text p-4 border-b border-system-border bg-system-main"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg> Записи на сегодня (${today})</h3>
         ${todayBookings.length > 0 ? `
             <div class="divide-y divide-system-border">
                 ${todayBookings.map(b => {
@@ -174,8 +181,8 @@ export function renderMasterContent() {
                     </div>
                     <div class="flex flex-wrap gap-4 text-sm text-system-muted">
                         <span>👤 ${b.clientName}</span><span>📞 ${b.clientPhone}</span>
-                        <span>📅 ${b.date}</span><span>🕐 ${b.time}</span>
-                        <span>💰 ${svc ? formatPrice(svc.price) : ''}</span>
+                        <span><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg> ${b.date}</span><span>🕐 ${b.time}</span>
+                        <span><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 18V6"/></svg> ${svc ? formatPrice(svc.price) : ''}</span>
                     </div>
                 </div>`;
         }).join('')}

@@ -5,7 +5,7 @@ import { getUserBookings } from '../utils.js';
 export function renderClientHeader() {
     const bookingCount = getUserBookings().filter(b => b.status === 'pending').length;
     const userName = state.currentUser ? (state.currentUser.name || state.currentUser.phone) : 'Гость';
-    const initials = state.currentUser ? userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '👤';
+    const initials = state.currentUser ? userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '<svg class="w-5 h-5 inline-block text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 
     return `
     <header class="bg-system-surface/80 backdrop-blur-lg border-b border-system-border sticky top-0 z-50">
@@ -59,10 +59,10 @@ function renderUserDropdown() {
         </div>
         <div class="p-2">
             <a href="#" onclick="state.showProfileEdit=true;render()" class="sidebar-link block px-3 py-2 rounded-lg text-sm text-system-text">
-                ⚙️ Настройки
+                <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 20v2"/><path stroke-linecap="round" stroke-linejoin="round" d="m4.93 4.93 1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="m17.66 17.66 1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M20 12h2"/><path stroke-linecap="round" stroke-linejoin="round" d="m6.34 17.66-1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="m19.07 4.93-1.41 1.41"/></svg> Настройки
             </a>
             <a href="#" onclick="navigate('bookings')" class="sidebar-link block px-3 py-2 rounded-lg text-sm text-system-text">
-                📅 Мои записи
+                <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg> Мои записи
             </a>
             <a href="#" onclick="handleLogout()" class="sidebar-link block px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 hover:text-red-600">
                 🚪 Выйти

@@ -372,7 +372,7 @@ export function renderServiceDetailPage() {
         <!-- If there's an image, we can show it here. For now, a placeholder or icon. -->
         <div class="w-full md:w-1/3 flex-shrink-0">
             <div class="w-full h-48 md:h-64 rounded-2xl bg-gradient-to-br from-primary-50 to-purple-50 flex items-center justify-center border-2 border-dashed border-primary-100">
-                <span class="text-6xl">${cat ? cat.icon : '✨'}</span>
+                <span class="text-6xl">${cat ? cat.icon : '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/></svg>'}</span>
             </div>
         </div>
         <div class="flex-1 text-center md:text-left flex flex-col justify-center">
@@ -461,7 +461,7 @@ export function renderBookingsPage() {
             <div class="flex justify-between items-center cursor-pointer" onclick="state.expandedBooking = state.expandedBooking === '${b.id}' ? null : '${b.id}'; render();">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-lg shadow-inner">
-                        ${svc ? '💇‍♀️' : '💅'}
+                        ${svc ? '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="4" y2="15.88"/><line stroke-linecap="round" stroke-linejoin="round" x1="14.47" x2="14.48" y1="14.48" y2="14.48"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="20" y2="8.12"/></svg>' : '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7h-3a2 2 0 0 1-2-2V2"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 15h6"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 18h6"/></svg>'}
                     </div>
                     <div>
                         <h3 class="font-bold text-system-text leading-none">${svc ? svc.name : 'Услуга'}</h3>
@@ -520,7 +520,7 @@ export function renderBookingsPage() {
         `}
     ` : `
         <div class="text-center py-20 bg-system-surface rounded-[40px] border-2 border-dashed border-system-border/50">
-            <div class="text-6xl mb-4">📅</div>
+            <div class="text-6xl mb-4"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg></div>
             <h3 class="text-xl font-bold text-system-text">У вас пока нет записей</h3>
             <p class="text-system-muted mt-2 mb-8">Найдите подходящую услугу и запишитесь онлайн</p>
             <button onclick="navigate('services')" class="btn-primary px-8 py-4 rounded-2xl text-white font-bold">Найти услуги</button>

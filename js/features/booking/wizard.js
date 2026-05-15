@@ -125,7 +125,7 @@ export function renderBookingStep1() {
                                          class="p-5 rounded-3xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg ${bd.serviceId === svc.id ? 'border-primary-500 bg-primary-50 ring-4 ring-primary-50' : 'border-system-border hover:border-primary-400'}">
                                         <div class="flex justify-between items-center">
                                             <span class="font-bold ${bd.serviceId === svc.id ? 'text-primary-500' : 'text-system-text'} text-lg">${svc.name}</span>
-                                            <span class="text-xs text-system-muted font-medium ml-2 min-w-[70px]">⏳ ${svc.duration} мин</span>
+                                            <span class="text-xs text-system-muted font-medium ml-2 min-w-[70px]"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 22h14"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 2h14"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg> ${svc.duration} мин</span>
                                             <span class="font-black text-primary-500 ml-auto whitespace-nowrap pl-2">${formatPrice(price)}</span>
                                         </div>
                                     </div>
@@ -271,7 +271,7 @@ export function renderBookingStep4() {
     return `
 <div class="space-y-4 animate-fade-in">
     <h3 class="font-bold text-system-text text-lg">Выберите время</h3>
-    <p class="text-sm font-medium text-primary-500 bg-primary-50 py-2 px-4 rounded-xl inline-block">📅 ${bd.date ? formatDate(bd.date) : ''}</p>
+    <p class="text-sm font-medium text-primary-500 bg-primary-50 py-2 px-4 rounded-xl inline-block"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg> ${bd.date ? formatDate(bd.date) : ''}</p>
     <div class="grid grid-cols-4 gap-3">
         ${slots.length > 0 ? slots.map(t => {
             const unavailable = isSlotTaken(t);
@@ -474,7 +474,7 @@ export function renderBookingStep1Old() {
 
     return `
 ${target ? `<div class="flex items-center gap-3 mb-5 p-3 bg-primary-50 rounded-xl">
-    ${bd.type === 'salon' ? '<span class="text-2xl">🏢</span>' : `<img src="${target.avatar}" class="w-10 h-10 rounded-full">`}
+    ${bd.type === 'salon' ? '<span class="text-2xl"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 6h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 10h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 14h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 18h4"/></svg></span>' : `<img src="${target.avatar}" class="w-10 h-10 rounded-full">`}
     <div><p class="text-sm font-semibold text-system-text">${target.name}</p><p class="text-xs text-system-muted">${bd.type === 'salon' ? 'Салон красоты' : target.specialty}</p></div>
 </div>` : ''}
 <div class="space-y-2">

@@ -52,30 +52,33 @@ export function renderSalonDashboard(salon, salonBookings, confirmedRevenue, sal
 
     return `
 <div class="animate-fade-in">
-    <h1 class="text-2xl font-bold text-system-text mb-6">Дашборд — ${salon.name}</h1>
+    <div class="mb-5 sm:mb-6 mt-1">
+        <h2 class="text-xs sm:text-sm font-semibold text-system-muted uppercase tracking-wider mb-0.5 sm:mb-1">${salon.name}</h2>
+        <h1 class="text-2xl sm:text-3xl font-bold text-system-text">Дашборд</h1>
+    </div>
 
     <!-- Основные метрики -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <div class="stat-card"><div class="text-2xl mb-1">📅</div><div class="text-2xl font-bold text-system-text">${salonBookings.length}</div><div class="text-xs text-system-muted">Всего записей</div></div>
-        <div class="stat-card"><div class="text-2xl mb-1">⏳</div><div class="text-2xl font-bold text-yellow-600">${pending}</div><div class="text-xs text-system-muted">Ожидают</div></div>
-        <div class="stat-card"><div class="text-2xl mb-1">💇‍♀️</div><div class="text-2xl font-bold text-system-text">${salonMasters.length}</div><div class="text-xs text-system-muted">Мастеров</div></div>
-        <div class="stat-card"><div class="text-2xl mb-1">💼</div><div class="text-2xl font-bold text-green-600">${formatPrice(salonNetProfit)}</div><div class="text-xs text-system-muted">Чистая прибыль салонa</div></div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6">
+        <div class="stat-card p-3 sm:p-5 flex flex-col justify-between"><div class="text-3xl text-primary-500 mb-2"><svg class="w-8 h-8 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg></div><div class="text-xl sm:text-2xl font-bold text-system-text">${salonBookings.length}</div><div class="text-[10px] sm:text-xs text-system-muted leading-tight mt-0.5">Всего записей</div></div>
+        <div class="stat-card p-3 sm:p-5 flex flex-col justify-between"><div class="text-3xl text-primary-500 mb-2"><svg class="w-8 h-8 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 22h14"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 2h14"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg></div><div class="text-xl sm:text-2xl font-bold text-yellow-600">${pending}</div><div class="text-[10px] sm:text-xs text-system-muted leading-tight mt-0.5">Ожидают</div></div>
+        <div class="stat-card p-3 sm:p-5 flex flex-col justify-between"><div class="text-3xl text-primary-500 mb-2"><svg class="w-8 h-8 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="4" y2="15.88"/><line stroke-linecap="round" stroke-linejoin="round" x1="14.47" x2="14.48" y1="14.48" y2="14.48"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="20" y2="8.12"/></svg></div><div class="text-xl sm:text-2xl font-bold text-system-text">${salonMasters.length}</div><div class="text-[10px] sm:text-xs text-system-muted leading-tight mt-0.5">Мастеров</div></div>
+        <div class="stat-card p-3 sm:p-5 flex flex-col justify-between"><div class="text-3xl text-primary-500 mb-2"><svg class="w-8 h-8 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="text-xl sm:text-2xl font-bold text-green-600">${formatPrice(salonNetProfit)}</div><div class="text-[10px] sm:text-xs text-system-muted leading-tight mt-0.5">Чистая прибыль салонa</div></div>
     </div>
 
     <!-- Финансы -->
-    <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 mb-6 text-white shadow-xl">
-        <h3 class="font-bold text-gray-100 mb-4 flex items-center gap-2"><span class="text-xl">💳</span> Бухгалтерия и комиссии</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-4 sm:p-6 mb-6 text-white shadow-xl">
+        <h3 class="font-bold text-gray-100 mb-4 flex items-center gap-2"><span class="text-xl"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="2" x2="22" y1="10" y2="10"/></svg></span> Бухгалтерия и комиссии</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             <div>
-                <p class="text-system-muted opacity-70 text-sm mb-1">Общая выручка</p>
+                <p class="text-system-muted opacity-70 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Общая выручка</p>
                 <p class="text-2xl font-bold">${formatPrice(confirmedRevenue)}</p>
             </div>
             <div>
-                <p class="text-system-muted opacity-70 text-sm mb-1">Выплачено мастерам</p>
+                <p class="text-system-muted opacity-70 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Выплачено мастерам</p>
                 <p class="text-2xl font-bold text-primary-400">${formatPrice(totalMastersEarnings)}</p>
             </div>
             <div>
-                <p class="text-system-muted opacity-70 text-sm mb-1">Чистая прибыль салона</p>
+                <p class="text-system-muted opacity-70 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Чистая прибыль салона</p>
                 <p class="text-2xl font-bold text-green-400">${formatPrice(salonNetProfit)}</p>
             </div>
         </div>
@@ -83,7 +86,7 @@ export function renderSalonDashboard(salon, salonBookings, confirmedRevenue, sal
 
     <!-- Воронка статусов -->
     <div class="bg-system-surface rounded-2xl border border-system-border p-5 mb-6">
-        <h3 class="font-bold text-system-text mb-4">📊 Воронка статусов</h3>
+        <h3 class="font-bold text-system-text mb-4"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 17V9"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 17V5"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 17v-3"/></svg> Воронка статусов</h3>
         <div class="space-y-3">
             <div>
                 <div class="flex justify-between text-sm mb-1"><span class="text-system-muted">Подтверждено</span><span class="font-bold text-green-600">${confirmRate}%</span></div>
@@ -104,7 +107,7 @@ export function renderSalonDashboard(salon, salonBookings, confirmedRevenue, sal
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <!-- Загрузка мастеров -->
         <div class="bg-system-surface rounded-2xl border border-system-border p-5">
-            <h3 class="font-bold text-system-text mb-4">⚡ Мастера: Загрузка и Доход</h3>
+            <h3 class="font-bold text-system-text mb-4"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Мастера: Загрузка и Доход</h3>
             <div class="space-y-4">
                 ${masterUtil.map(m => `
                 <div>
@@ -125,7 +128,7 @@ export function renderSalonDashboard(salon, salonBookings, confirmedRevenue, sal
 
         <!-- Когортный анализ клиентов (LTV) -->
         <div class="bg-system-surface rounded-2xl border border-system-border p-5">
-            <h3 class="font-bold text-system-text mb-4">👥 Топ клиенты (LTV)</h3>
+            <h3 class="font-bold text-system-text mb-4"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" stroke-linejoin="round" d="M22 21v-2a4 4 0 0 0-3-3.87"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Топ клиенты (LTV)</h3>
             ${clientCohorts.length > 0 ? `
             <div class="space-y-2">
                 ${clientCohorts.slice(0, 5).map((c, i) => `
@@ -146,11 +149,11 @@ export function renderSalonDashboard(salon, salonBookings, confirmedRevenue, sal
     <!-- Pending bookings -->
     ${pending > 0 ? `
         <div class="bg-system-surface rounded-2xl border border-2 border-yellow-400 overflow-hidden">
-            <h3 class="font-semibold text-system-text p-4 border-b border-system-border bg-transparent text-yellow-500">⏳ Записи, требующие подтверждения</h3>
+            <h3 class="font-semibold text-system-text p-4 border-b border-system-border bg-transparent text-yellow-500"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 22h14"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 2h14"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg> Записи, требующие подтверждения</h3>
             <div class="divide-y divide-system-border">
                 ${salonBookings.filter(b => b.status === 'pending').map(b => {
         const svc = services.find(s => s.id === b.serviceId);
-        return `<div class="p-4 flex items-center justify-between">
+        return `<div class="p-4 flex flex-col sm:flex-row sm:items-center justify-between">
                         <div>
                             <p class="font-medium text-system-text">${svc ? svc.name : 'Услуга'}</p>
                             <p class="text-sm text-system-muted">${b.clientName} · ${b.clientPhone}</p>
@@ -178,9 +181,9 @@ export function renderSalonPricesTab(salon, allServices) {
     const currentSubTab = state.salonServicesTab || 'my';
 
     const navHTML = `
-    <div class="flex gap-2 mb-6 border-b border-system-border pb-2">
-        <button onclick="state.salonServicesTab='my'; render()" class="px-4 py-2 text-sm font-bold transition-colors ${currentSubTab === 'my' ? 'text-primary-600 border-b-2 border-primary-500' : 'text-system-muted hover:text-system-text'}">Мои услуги</button>
-        <button onclick="state.salonServicesTab='all'; render()" class="px-4 py-2 text-sm font-bold transition-colors ${currentSubTab === 'all' ? 'text-primary-600 border-b-2 border-primary-500' : 'text-system-muted hover:text-system-text'}">Все услуги</button>
+    <div class="flex gap-2 mb-4 sm:mb-6 border-b border-system-border pb-2 overflow-x-auto hide-scrollbar">
+        <button onclick="state.salonServicesTab='my'; render()" class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold transition-colors whitespace-nowrap ${currentSubTab === 'my' ? 'text-primary-600 border-b-2 border-primary-500' : 'text-system-muted hover:text-system-text'}">Мои услуги</button>
+        <button onclick="state.salonServicesTab='all'; render()" class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold transition-colors whitespace-nowrap ${currentSubTab === 'all' ? 'text-primary-600 border-b-2 border-primary-500' : 'text-system-muted hover:text-system-text'}">Все услуги</button>
     </div>`;
 
     let contentHTML = '';
@@ -205,7 +208,7 @@ export function renderSalonPricesTab(salon, allServices) {
                 <div class="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-system-main transition-colors" onclick="if (!state.expandedCategoriesAll) state.expandedCategoriesAll={}; state.expandedCategoriesAll[${catId}]=${!isOpen}; render()">
                     <div class="flex items-center gap-3" onclick="event.stopPropagation()">
                         <input type="checkbox" class="w-5 h-5 rounded border-system-border text-primary-500 focus:ring-primary-400" ${isAllCatSelected ? 'checked' : ''} onchange="toggleSalonCategory(${salon.id}, parseInt('${catId}'), this.checked)">
-                        <span class="text-xl">${g.cat ? g.cat.icon : '📋'}</span>
+                        <span class="text-xl">${g.cat ? g.cat.icon : '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 3"/></svg>'}</span>
                         <h3 class="font-bold text-system-text">${g.cat ? g.cat.name : 'Другое'}</h3>
                         <span class="text-xs text-system-muted opacity-70 bg-system-main px-2 py-0.5 rounded-full">${catSelectedCount}/${g.services.length}</span>
                     </div>
@@ -247,7 +250,7 @@ export function renderSalonPricesTab(salon, allServices) {
             <div class="bg-system-surface rounded-2xl border border-system-border overflow-hidden">
                 <div class="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-system-main transition-colors" onclick="if (!state.expandedCategoriesMy) state.expandedCategoriesMy={}; state.expandedCategoriesMy[${catId}]=${!isOpen}; render()">
                     <div class="flex items-center gap-3">
-                        <span class="text-xl">${g.cat ? g.cat.icon : '📋'}</span>
+                        <span class="text-xl">${g.cat ? g.cat.icon : '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 3"/></svg>'}</span>
                         <h3 class="font-bold text-system-text">${g.cat ? g.cat.name : 'Другое'}</h3>
                         <span class="text-xs text-system-muted opacity-70 bg-system-main px-2 py-0.5 rounded-full">${g.services.length}</span>
                     </div>
@@ -286,8 +289,8 @@ export function renderSalonPricesTab(salon, allServices) {
                                 </div>
                             </div>
                             <div class="flex items-center self-end border-l border-system-border pl-2 ml-1">
-                                <button onclick="state.showPriceHistory={salonId:${salon.id},serviceId:${svc.id}}; render()" class="text-primary-500 hover:text-primary-700 text-xl mx-1" title="История изменений">📊</button>
-                                <button onclick="state.showServiceEdit=${svc.id}; render()" class="text-blue-500 hover:text-blue-700 text-xl mx-1" title="Редактировать услугу">✏️</button>
+                                <button onclick="state.showPriceHistory={salonId:${salon.id},serviceId:${svc.id}}; render()" class="text-primary-500 hover:text-primary-700 text-xl mx-1" title="История изменений"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 17V9"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 17V5"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 17v-3"/></svg></button>
+                                <button onclick="state.showServiceEdit=${svc.id}; render()" class="text-blue-500 hover:text-blue-700 text-xl mx-1" title="Редактировать услугу"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m15 5 4 4"/></svg></button>
                             </div>
                         </div>
                     </div>`;
@@ -428,7 +431,7 @@ export function renderBookingEditModal(bookingId, salonMasters) {
             <div class="p-6 space-y-5">
                 <div class="flex items-start gap-4 p-4 rounded-2xl bg-primary-50 border border-primary-100/50">
                     <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
-                        <span class="text-xl">🧑</span>
+                        <span class="text-xl"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
                     </div>
                     <div>
                         <p class="text-xs text-primary-400 font-medium mb-0.5 uppercase tracking-wider">Клиент</p>
@@ -440,7 +443,7 @@ export function renderBookingEditModal(bookingId, salonMasters) {
                 <div>
                     <p class="text-xs text-system-muted opacity-70 font-medium mb-1 uppercase tracking-wider ml-1">Услуга</p>
                     <div class="p-3 rounded-xl border border-system-border bg-system-main font-medium text-system-text flex items-center gap-3">
-                        <span class="text-xl">✨</span> ${svc ? svc.name : 'Неизвестно'}
+                        <span class="text-xl"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/></svg></span> ${svc ? svc.name : 'Неизвестно'}
                     </div>
                 </div>
 
@@ -471,7 +474,7 @@ export function renderBookingEditModal(bookingId, salonMasters) {
                         <button onclick="window.salonCancelBooking('${b.id}'); state.editingBookingId=null;" class="flex-1 bg-system-main text-system-muted rounded-xl py-3 text-sm font-bold hover:bg-system-border transition-colors">Отменить</button>
                     ` : `
                         <div class="w-full text-center py-3 rounded-xl ${b.status === 'completed' ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-700'} border ${b.status === 'completed' ? 'border-blue-100' : 'border-red-100'}">
-                            <span class="font-bold text-sm">Статус: ${b.status === 'completed' ? '✅ Завершена' : '❌ Отменена'}</span>
+                            <span class="font-bold text-sm">Статус: ${b.status === 'completed' ? '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 11 3 3L22 4"/></svg> Завершена' : '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 6 6 18"/><path stroke-linecap="round" stroke-linejoin="round" d="m6 6 12 12"/></svg> Отменена'}</span>
                         </div>
                     `}
                 </div>
@@ -587,8 +590,8 @@ export function renderSalonBookings(salonBookings) {
             <button onclick="window.openBookingForSalon(${salon.id})" class="btn-primary px-4 py-2 rounded-xl text-white font-semibold text-sm flex items-center gap-1"><span class="text-lg leading-none">+</span> Добавить запись</button>
         </div>
         <div class="flex bg-system-main rounded-xl p-0.5">
-            <button onclick="state.salonViewMode='table'; render()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${viewMode === 'table' ? 'bg-system-surface shadow-sm text-system-text' : 'text-system-muted'}">📋 Таблица</button>
-            <button onclick="state.salonViewMode='timeline'; render()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${viewMode === 'timeline' ? 'bg-system-surface shadow-sm text-system-text' : 'text-system-muted'}">📅 Timeline</button>
+            <button onclick="state.salonViewMode='table'; render()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${viewMode === 'table' ? 'bg-system-surface shadow-sm text-system-text' : 'text-system-muted'}"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 3"/></svg> Таблица</button>
+            <button onclick="state.salonViewMode='timeline'; render()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${viewMode === 'timeline' ? 'bg-system-surface shadow-sm text-system-text' : 'text-system-muted'}"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg> Timeline</button>
         </div>
     </div>
     
@@ -620,7 +623,9 @@ export function renderSalonBookings(salonBookings) {
                         ${filteredBookings.map(b => {
                 const svc = services.find(s => s.id === b.serviceId);
                 return `<tr class="border-b border-system-border">
-                                <td data-label="Клиент" class="p-3 text-system-text">
+                                <td data-label="Клиент" class="p-3 text-system-text text-right md:text-left">
+    <div class="font-medium inline-block sm:block">${b.clientName}</div>
+    <div class="flex items-center justify-end md:justify-start gap-1.5 mt-0.5">
                                     <div class="font-medium">${b.clientName}</div>
                                     <div class="flex items-center gap-1.5 mt-0.5">
                                         <span class="text-xs text-system-muted opacity-70">${b.clientPhone}</span>
@@ -629,19 +634,19 @@ export function renderSalonBookings(salonBookings) {
                                         </button>
                                     </div>
                                 </td>
-                                <td data-label="Услуга" class="p-3">${svc ? svc.name : '-'}</td>
-                                <td data-label="Дата/Время" class="p-3 font-bold">${b.date}<br><span class="text-xs text-system-muted opacity-70">${b.time}</span></td>
-                                <td data-label="Мастер" class="p-3">
-                                    <select onchange="assignMasterToBooking('${b.id}', this.value)" class="text-xs border-none bg-system-main rounded-lg p-1.5 font-medium outline-none focus:ring-2 focus:ring-primary-200">
+                                <td data-label="Услуга" class="p-3 text-right md:text-left">${svc ? svc.name : '-'}</td>
+                                <td data-label="Дата/Время" class="p-3 font-bold text-right md:text-left">${b.date}<br><span class="text-xs text-system-muted opacity-70">${b.time}</span></td>
+                                <td data-label="Мастер" class="p-3 text-right md:text-left">
+                                    <select onchange="assignMasterToBooking('${b.id}', this.value)" class="text-xs border border-system-border bg-system-main rounded-lg p-2 font-medium outline-none focus:ring-2 focus:ring-primary-200">
                                         <option value="" ${!b.masterId ? 'selected' : ''}>— Назначить —</option>
                                         ${salonMasters.map(m => `
                                             <option value="${m.id}" ${b.masterId === m.id ? 'selected' : ''}>${m.name}</option>
                                         `).join('')}
                                     </select>
                                 </td>
-                                <td data-label="Сумма" class="p-3 font-bold text-primary-600">${svc ? formatPrice(getSalonPrice(salon.id, svc.id, services)) : '-'}</td>
-                                <td data-label="Статус" class="p-3"><span class="badge ${statusColors[b.status]}">${statusLabels[b.status]}</span></td>
-                                <td data-label="Действия" class="p-3">
+                                <td data-label="Сумма" class="p-3 font-bold text-primary-600 text-right md:text-left">${svc ? formatPrice(getSalonPrice(salon.id, svc.id, services)) : '-'}</td>
+                                <td data-label="Статус" class="p-3 flex justify-end md:table-cell"><span class="badge ${statusColors[b.status]}">${statusLabels[b.status]}</span></td>
+                                <td data-label="Действия" class="p-3 text-right md:text-left">
                                     ${b.status === 'pending' ? `
                                         <button onclick="salonConfirmBooking('${b.id}')" class="text-xs text-green-600 hover:text-green-700 font-bold mr-2">OK</button>
                                         <button onclick="salonCancelBooking('${b.id}')" class="text-xs text-red-500 hover:text-red-700 font-bold">✕</button>
@@ -980,14 +985,14 @@ window.handleProcessApp = handleProcessApp;
 export function renderSalonStaffTab(salon) {
     const staffList = salonStaff.filter(s => s.salonId === salon.id);
     const modules = [
-        { id: 'dashboard', label: '📊 Дашборд' },
-        { id: 'bookings', label: '📅 Записи' },
-        { id: 'masters', label: '💇‍♀️ Мастера' },
-        { id: 'applications', label: '📩 Заявки' },
-        { id: 'staff', label: '👥 Штат' },
-        { id: 'services', label: '💰 Услуги' },
-        { id: 'subscription', label: '💳 Подписка' },
-        { id: 'profile', label: '⚙️ Профиль' }
+        { id: 'dashboard', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 17V9"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 17V5"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 17v-3"/></svg> Дашборд' },
+        { id: 'bookings', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg> Записи' },
+        { id: 'masters', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="4" y2="15.88"/><line stroke-linecap="round" stroke-linejoin="round" x1="14.47" x2="14.48" y1="14.48" y2="14.48"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="20" y2="8.12"/></svg> Мастера' },
+        { id: 'applications', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M22 12V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h16"/><path stroke-linecap="round" stroke-linejoin="round" d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Заявки' },
+        { id: 'staff', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" stroke-linejoin="round" d="M22 21v-2a4 4 0 0 0-3-3.87"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Штат' },
+        { id: 'services', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 18V6"/></svg> Услуги' },
+        { id: 'subscription', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="2" x2="22" y1="10" y2="10"/></svg> Подписка' },
+        { id: 'profile', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 20v2"/><path stroke-linecap="round" stroke-linejoin="round" d="m4.93 4.93 1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="m17.66 17.66 1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M20 12h2"/><path stroke-linecap="round" stroke-linejoin="round" d="m6.34 17.66-1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="m19.07 4.93-1.41 1.41"/></svg> Профиль' }
     ];
     const actions = [
         { id: 'view', label: 'Просмотр' },
@@ -1020,7 +1025,7 @@ export function renderSalonStaffTab(salon) {
                                 <div class="text-xs text-system-muted opacity-70 font-medium">${user?.phone}</div>
                             </div>
                         </div>
-                        ${!isOwner ? `<button onclick="handleDeleteStaff('${item.id}')" class="p-2 text-red-400 hover:text-red-500 hover:bg-system-surface rounded-xl transition-all shadow-sm">🗑️</button>` : ''}
+                        ${!isOwner ? `<button onclick="handleDeleteStaff('${item.id}')" class="p-2 text-red-400 hover:text-red-500 hover:bg-system-surface rounded-xl transition-all shadow-sm"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18"/><path stroke-linecap="round" stroke-linejoin="round" d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line stroke-linecap="round" stroke-linejoin="round" x1="10" x2="10" y1="11" y2="17"/><line stroke-linecap="round" stroke-linejoin="round" x1="14" x2="14" y1="11" y2="17"/></svg></button>` : ''}
                     </div>
                     
                     <div class="p-6">
@@ -1202,7 +1207,7 @@ export function renderWhatsAppModal() {
     if (phone.length < 9) {
         return `<div class="fixed inset-0 z-[100] p-4 flex items-center justify-center modal-overlay" onclick="window.closeWhatsAppModal()">
             <div class="bg-system-surface max-w-sm w-full rounded-2xl p-6 text-center shadow-xl" onclick="event.stopPropagation()">
-                <div class="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-xl mx-auto mb-4">⚠️</div>
+                <div class="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-xl mx-auto mb-4"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line stroke-linecap="round" stroke-linejoin="round" x1="12" x2="12" y1="9" y2="13"/><line stroke-linecap="round" stroke-linejoin="round" x1="12" x2="12.01" y1="17" y2="17"/></svg></div>
                 <h3 class="font-bold text-system-text mb-2">Некорректный номер телефона</h3>
                 <p class="text-system-muted text-sm mb-6">Отредактируйте номер клиента перед отправкой сообщения.</p>
                 <button onclick="window.closeWhatsAppModal()" class="w-full btn-primary py-3 rounded-xl font-bold">Закрыть</button>

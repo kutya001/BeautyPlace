@@ -170,9 +170,9 @@ export function renderTrackModal() {
     const master = masters.find(m => m.id === b.masterId);
     
     const statusConfig = { 
-        pending: { color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200', icon: '⏳', text: 'Ожидает' },
+        pending: { color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 22h14"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 2h14"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>', text: 'Ожидает' },
         confirmed: { color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', icon: '✓', text: 'Подтверждена' },
-        completed: { color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', icon: '⭐', text: 'Завершена' },
+        completed: { color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>', text: 'Завершена' },
         cancelled: { color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', icon: '✕', text: 'Отменена' }
     };
     const sConf = statusConfig[b.status] || statusConfig.pending;
@@ -197,7 +197,7 @@ export function renderTrackModal() {
 
         <div class="space-y-4 mb-8">
             <div class="flex items-start gap-4">
-                <div class="w-10 h-10 rounded-xl bg-system-main flex items-center justify-center text-xl shrink-0">📅</div>
+                <div class="w-10 h-10 rounded-xl bg-system-main flex items-center justify-center text-xl shrink-0"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg></div>
                 <div>
                     <div class="text-sm font-medium text-system-text">${b.date} в ${b.time}</div>
                     <div class="text-xs text-system-muted">Дата и время</div>
@@ -206,7 +206,7 @@ export function renderTrackModal() {
             
             ${svc ? `
             <div class="flex items-start gap-4">
-                <div class="w-10 h-10 rounded-xl bg-system-main flex items-center justify-center text-xl shrink-0">💅</div>
+                <div class="w-10 h-10 rounded-xl bg-system-main flex items-center justify-center text-xl shrink-0"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7h-3a2 2 0 0 1-2-2V2"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 15h6"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 18h6"/></svg></div>
                 <div>
                     <div class="text-sm font-medium text-system-text">${svc.name}</div>
                     <div class="text-xs text-system-muted text-primary-600 font-semibold">${formatPrice(svc.price)}</div>
@@ -216,7 +216,7 @@ export function renderTrackModal() {
 
             ${salon ? `
             <div class="flex items-start gap-4">
-                <div class="w-10 h-10 rounded-xl bg-system-main flex items-center justify-center text-xl shrink-0">🏢</div>
+                <div class="w-10 h-10 rounded-xl bg-system-main flex items-center justify-center text-xl shrink-0"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 6h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 10h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 14h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 18h4"/></svg></div>
                 <div>
                     <div class="text-sm font-medium text-system-text">${salon.name}</div>
                     <div class="text-xs text-system-muted">${salon.address}</div>
@@ -285,7 +285,7 @@ export function renderPriceHistoryModal() {
                         <div class="flex items-center justify-center w-3 h-3 rounded-full border-2 border-white bg-slate-300 group-[.is-active]:bg-primary-500 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ml-[1.125rem] md:ml-0 z-10 shadow"></div>
                         <div class="w-[calc(100%-3rem)] md:w-[calc(50%-1.5rem)] p-3 rounded-xl border border-slate-200 bg-system-surface shadow-sm">
                             <div class="flex items-center justify-between mb-1">
-                                <div class="font-bold text-slate-900 text-xs">${h.type === 'time' ? '🕒 Время' : (h.type === 'price' ? '💰 Цена' : 'Изменение')}</div>
+                                <div class="font-bold text-slate-900 text-xs">${h.type === 'time' ? '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg> Время' : (h.type === 'price' ? '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 18V6"/></svg> Цена' : 'Изменение')}</div>
                                 <time class="text-[10px] text-primary-500 font-medium">${h.date}</time>
                             </div>
                             <div class="text-slate-500 text-xs mt-1">

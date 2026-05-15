@@ -55,14 +55,14 @@ export function renderClientHeader() {
     }
 
     return `
-    <div class="px-2 sm:px-4 pt-2 sm:pt-4 sticky top-0 sm:top-4 z-[100] transition-all">
-        <header class="island-header max-w-7xl mx-auto px-3 sm:px-6">
-            <div class="flex items-center justify-between h-14 sm:h-16">
+    <div class="px-2 sm:px-4 pt-1 sm:pt-2 sticky top-1 sm:top-2 z-[100] transition-all">
+        <header class="island-header max-w-7xl mx-auto px-3 sm:px-4">
+            <div class="flex items-center justify-between h-11 sm:h-12">
                 <div class="flex items-center gap-2 cursor-pointer" onclick="navigate('home')">
-                    <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary-500 flex items-center justify-center shadow-sm shadow-primary-200">
-                        <span class="text-white text-base sm:text-lg">✦</span>
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary-500 flex items-center justify-center shadow-md">
+                        <span class="text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
                     </div>
-                    <span class="text-lg sm:text-xl font-bold text-system-text hidden sm:block">Suluu</span>
+                    <span class="text-base sm:text-lg font-bold text-system-text hidden sm:block">SuluuMarket</span>
                 </div>
                 <nav class="hidden md:flex items-center gap-6 lg:gap-8">
                     <a href="#" onclick="navigate('home')" class="flex items-center gap-1.5 text-sm font-medium ${state.currentPage === 'home' ? 'text-primary-600' : 'text-system-muted hover:text-system-text'} transition-colors">

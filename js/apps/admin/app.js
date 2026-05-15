@@ -26,32 +26,39 @@ window.renderSuperAdminApp = renderSuperAdminApp;
 export function renderAdminHeader() {
     const userName = state.currentUser.name || 'Администратор';
     return `
-    <div class="px-2 sm:px-4 pt-4 sticky top-4 z-50 transition-all"><header class="island-header max-w-7xl mx-auto px-4 sm:px-6">
-<div class="flex items-center justify-between h-16 px-6">
-    <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
-            <span class="text-white text-sm">🛡️</span>
-        </div>
-        <span class="text-lg font-bold text-system-text">Suluu — Админ-панель</span>
-    </div>
-    <div class="flex items-center gap-4">
-        ${renderThemeSwitcher()}
-        <span class="text-sm text-system-muted">${userName}</span>
-        <button onclick="handleLogout()" class="text-sm text-red-500 hover:text-red-700 font-medium">Выйти</button>
-    </div>
-</div>
-    </header></div>`;
+    <div class="px-2 sm:px-4 pt-1 sm:pt-2 sticky top-1 sm:top-2 z-[100] transition-all">
+        <header class="island-header max-w-7xl mx-auto px-3 sm:px-4">
+            <div class="flex items-center justify-between h-11 sm:h-12">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary-500 flex items-center justify-center shadow-md">
+                        <span class="text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="leading-none text-base sm:text-lg font-bold text-system-text">SuluuAdmin</span>
+                        <span class="leading-none text-[10px] sm:text-xs text-system-muted mt-0.5">${userName}</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    ${renderThemeSwitcher()}
+                    <button onclick="handleLogout()" class="text-sm px-3 py-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-700 font-medium transition-colors hidden sm:block">Выйти</button>
+                    <button onclick="handleLogout()" class="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 sm:hidden">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline stroke-linecap="round" stroke-linejoin="round" points="16 17 21 12 16 7"/><line stroke-linecap="round" stroke-linejoin="round" x1="21" x2="9" y1="12" y2="12"/></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+    </div>`;
 }
 
 window.renderAdminHeader = renderAdminHeader;
 
 export function renderAdminSidebar() {
     const tabs = [
-        { id: 'dashboard', icon: '📊', label: 'Дашборд' },
-        { id: 'users', icon: '👥', label: 'Пользователи' },
-        { id: 'subscriptions', icon: '💰', label: 'Подписки' },
-        { id: 'services', icon: '💅', label: 'Справочники' },
-        { id: 'bookings', icon: '📅', label: 'Все записи' },
+        { id: 'dashboard', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 17V9"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 17V5"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 17v-3"/></svg>', label: 'Дашборд' },
+        { id: 'users', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" stroke-linejoin="round" d="M22 21v-2a4 4 0 0 0-3-3.87"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>', label: 'Пользователи' },
+        { id: 'subscriptions', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 18V6"/></svg>', label: 'Подписки' },
+        { id: 'services', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7h-3a2 2 0 0 1-2-2V2"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 15h6"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 18h6"/></svg>', label: 'Справочники' },
+        { id: 'bookings', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg>', label: 'Все записи' },
     ];
     return `
     <aside class="w-64 bg-system-surface border-r border-system-border min-h-screen p-4 hidden md:block">
@@ -98,10 +105,10 @@ export function renderAdminContent() {
 <div class="animate-fade-in">
     <h1 class="text-2xl font-bold text-system-text mb-6">Дашборд (Общая аналитика)</h1>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="stat-card"><div class="text-3xl mb-1">🏢</div><div class="text-2xl font-bold text-system-text">${salons.length}</div><div class="text-sm text-system-muted">Салонов</div></div>
-        <div class="stat-card"><div class="text-3xl mb-1">💇‍♀️</div><div class="text-2xl font-bold text-system-text">${masters.length}</div><div class="text-sm text-system-muted">Мастеров</div></div>
+        <div class="stat-card"><div class="text-3xl mb-1"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 6h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 10h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 14h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 18h4"/></svg></div><div class="text-2xl font-bold text-system-text">${salons.length}</div><div class="text-sm text-system-muted">Салонов</div></div>
+        <div class="stat-card"><div class="text-3xl mb-1"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="4" y2="15.88"/><line stroke-linecap="round" stroke-linejoin="round" x1="14.47" x2="14.48" y1="14.48" y2="14.48"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="20" y2="8.12"/></svg></div><div class="text-2xl font-bold text-system-text">${masters.length}</div><div class="text-sm text-system-muted">Мастеров</div></div>
         <div class="stat-card"><div class="text-3xl mb-1">👤</div><div class="text-2xl font-bold text-system-text">${users.filter(u => u.role === 'client').length}</div><div class="text-sm text-system-muted">Клиентов</div></div>
-        <div class="stat-card"><div class="text-3xl mb-1">📅</div><div class="text-2xl font-bold text-system-text">${allBookings.length}</div><div class="text-sm text-system-muted">Записей</div></div>
+        <div class="stat-card"><div class="text-3xl mb-1"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg></div><div class="text-2xl font-bold text-system-text">${allBookings.length}</div><div class="text-sm text-system-muted">Записей</div></div>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
         <div class="stat-card bg-transparent text-yellow-500 border-2 border-yellow-400"><div class="text-xl font-bold text-yellow-700">${allBookings.filter(b => b.status === 'pending').length}</div><div class="text-sm text-yellow-600">Ожидают</div></div>
@@ -292,7 +299,7 @@ export function renderAdminContent() {
     <div class="flex flex-wrap items-center justify-between mb-6 gap-3">
         <h1 class="text-2xl font-bold text-system-text">Все записи</h1>
         <button onclick="exportBookingsToExcel()" class="bg-system-main hover:bg-system-border text-system-text px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2">
-            <span>📊</span> Экспорт в Excel (CSV)
+            <span><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 17V9"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 17V5"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 17v-3"/></svg></span> Экспорт в Excel (CSV)
         </button>
     </div>
     ${allBookings.length > 0 ? `
@@ -377,7 +384,7 @@ export function renderAdminContent() {
                     `).join('')}
                     <tr class="bg-primary-50">
                         <td class="p-3 text-system-muted opacity-70">Нов</td>
-                        <td class="p-3"><input type="text" id="newCatIcon" class="w-10 px-1 py-1 text-center border rounded" placeholder="💅"></td>
+                        <td class="p-3"><input type="text" id="newCatIcon" class="w-10 px-1 py-1 text-center border rounded" placeholder="<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7h-3a2 2 0 0 1-2-2V2"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 15h6"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 18h6"/></svg>"></td>
                         <td class="p-3"><input type="text" id="newCatName" class="w-full px-2 py-1 border rounded" placeholder="Новая категория"></td>
                         <td class="p-3"><button onclick="addCategory()" class="text-blue-600 font-medium">Добавить</button></td>
                     </tr>
@@ -463,22 +470,22 @@ export function renderAdminContent() {
     
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div class="stat-card">
-            <div class="text-3xl mb-1">💳</div>
+            <div class="text-3xl mb-1"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="2" x2="22" y1="10" y2="10"/></svg></div>
             <div class="text-2xl font-bold text-system-text">${(salonTransactions || []).length}</div>
             <div class="text-sm text-system-muted">Транзакций</div>
         </div>
         <div class="stat-card">
-            <div class="text-3xl mb-1">📈</div>
+            <div class="text-3xl mb-1"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18"/><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-5 5-4-4-3 3"/></svg></div>
             <div class="text-2xl font-bold text-system-text">${formatPrice(totalSubsRevenue)}</div>
             <div class="text-sm text-system-muted">Доход от подписок</div>
         </div>
         <div class="stat-card">
-            <div class="text-3xl mb-1">✨</div>
+            <div class="text-3xl mb-1"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/></svg></div>
             <div class="text-2xl font-bold text-system-text">${(salonSubscriptions || []).filter(s => s.status === 'active').length}</div>
             <div class="text-sm text-system-muted">Активных подписок</div>
         </div>
         <div class="stat-card">
-            <div class="text-3xl mb-1">🏢</div>
+            <div class="text-3xl mb-1"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 6h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 10h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 14h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 18h4"/></svg></div>
             <div class="text-2xl font-bold text-system-text">${salons.length}</div>
             <div class="text-sm text-system-muted">Всего салонов</div>
         </div>
@@ -622,7 +629,7 @@ export function deleteCategory(id) {
 window.deleteCategory = deleteCategory;
 
 export function addCategory() {
-    const icon = document.getElementById('newCatIcon').value || '📋';
+    const icon = document.getElementById('newCatIcon').value || '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 3"/></svg>';
     const name = document.getElementById('newCatName').value;
     if (!name) return;
     const newId = categories.length ? Math.max(...categories.map(c => c.id)) + 1 : 1;

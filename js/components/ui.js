@@ -10,11 +10,11 @@ export function renderThemeSwitcher() {
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'beauty';
     
     const themeIcons = {
-        beauty: '🌸',
-        barber: '🤵',
-        hair: '🔮',
-        eco: '🌿',
-        medical: '💧'
+        beauty: '<svg class="w-5 h-5 inline-block text-primary-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 22c-4.97-1.63-8-6-8-12a8 8 0 0 1 16 0c0 6-3.03 10.37-8 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 22V10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/></svg>',
+        barber: '<svg class="w-5 h-5 inline-block text-blue-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M12 14v7"/></svg>',
+        hair: '<svg class="w-5 h-5 inline-block text-purple-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 12v.01"/></svg>',
+        eco: '<svg class="w-5 h-5 inline-block text-green-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>',
+        medical: '<svg class="w-5 h-5 inline-block text-cyan-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7Z"/></svg>'
     };
 
     const themeNames = {
@@ -98,42 +98,94 @@ export function renderSalonMobileNav() {
     if (!salon) return '';
 
     const tabs = [
-        { id: 'dashboard', icon: '📊', label: 'Дашборд', show: checkPermission(state.currentUser.id, salon.id, 'dashboard:view') },
-        { id: 'bookings', icon: '📅', label: 'Записи', show: checkPermission(state.currentUser.id, salon.id, 'bookings:view') },
-        { id: 'masters', icon: '💇‍♀️', label: 'Мастера', show: checkPermission(state.currentUser.id, salon.id, 'masters:view') },
-        { id: 'applications', icon: '📩', label: 'Заявки', show: checkPermission(state.currentUser.id, salon.id, 'applications:view') },
-        { id: 'staff', icon: '👥', label: 'Штат', show: checkPermission(state.currentUser.id, salon.id, 'staff:view') }
+        { id: 'dashboard', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 17V9"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 17V5"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 17v-3"/></svg>', label: 'Дашборд', show: checkPermission(state.currentUser.id, salon.id, 'dashboard:view') },
+        { id: 'bookings', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg>', label: 'Записи', show: checkPermission(state.currentUser.id, salon.id, 'bookings:view') },
+        { id: 'masters', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="4" y2="15.88"/><line stroke-linecap="round" stroke-linejoin="round" x1="14.47" x2="14.48" y1="14.48" y2="14.48"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="20" y2="8.12"/></svg>', label: 'Мастера', show: checkPermission(state.currentUser.id, salon.id, 'masters:view') },
+        { id: 'applications', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M22 12V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h16"/><path stroke-linecap="round" stroke-linejoin="round" d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>', label: 'Заявки', show: checkPermission(state.currentUser.id, salon.id, 'applications:view') },
+        { id: 'staff', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" stroke-linejoin="round" d="M22 21v-2a4 4 0 0 0-3-3.87"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>', label: 'Штат', show: checkPermission(state.currentUser.id, salon.id, 'staff:view') },
+        { id: 'services', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7h-3a2 2 0 0 1-2-2V2"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 15h6"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 18h6"/></svg>', label: 'Услуги', show: checkPermission(state.currentUser.id, salon.id, 'services:view') },
+        { id: 'subscription', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 3h12l4 6-10 13L2 9Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M11 3 8 9l4 13"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 3l3 6-4 13"/></svg>', label: 'Подписка', show: checkPermission(state.currentUser.id, salon.id, 'subscription:view') },
+        { id: 'profile', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>', label: 'Профиль', show: checkPermission(state.currentUser.id, salon.id, 'profile:view') }
     ];
+
+    const visibleTabs = tabs.filter(t => t.show);
+    const mainTabs = visibleTabs.slice(0, 4);
+    const menuTabs = visibleTabs.slice(4);
+
+    const menuIcon = `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><line stroke-linecap="round" stroke-linejoin="round" x1="4" x2="20" y1="12" y2="12"/><line stroke-linecap="round" stroke-linejoin="round" x1="4" x2="20" y1="6" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="4" x2="20" y1="18" y2="18"/></svg>`;
+
     return `
-    <nav class="md:hidden fixed bottom-0 inset-x-0 bg-system-surface border-t border-system-border flex justify-around items-center z-[90] pb-[env(safe-area-inset-bottom)]">
-        ${tabs.filter(t => t.show).map(tab => `
-            <a href="#" onclick="state.salonTab='${tab.id}';render()" class="flex flex-col items-center py-2 px-1 ${state.salonTab === tab.id ? 'text-primary-600' : 'text-system-muted'}">
-                <span class="text-xl mb-1">${tab.icon}</span>
-                <span class="text-[10px] font-bold truncate">${tab.label}</span>
-            </a>
-        `).join('')}
-    </nav>`;
+    <div class="fixed bottom-4 left-4 right-4 z-[90] md:hidden">
+        ${state.showSalonMobileMenu ? `
+        <div class="absolute bottom-full mb-2 left-0 right-0 bg-system-surface/95 backdrop-blur-md border border-system-border rounded-2xl shadow-xl p-2 flex flex-col gap-1 animate-fade-in">
+            ${menuTabs.map(tab => `
+                <a href="#" onclick="state.salonTab='${tab.id}'; state.showSalonMobileMenu=false; render()" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${state.salonTab === tab.id ? 'bg-system-main text-primary-600 font-bold' : 'text-system-muted hover:bg-system-main hover:text-system-text'}">
+                    <span>${tab.icon}</span>
+                    <span>${tab.label}</span>
+                </a>
+            `).join('')}
+        </div>
+        ` : ''}
+        <nav class="island flex justify-around items-center px-2 py-3 bg-system-surface/80 backdrop-blur-xl border border-system-border/50 shadow-2xl rounded-2xl">
+            ${mainTabs.map(tab => `
+                <a href="#" onclick="state.salonTab='${tab.id}'; state.showSalonMobileMenu=false; render()" class="flex flex-col items-center w-1/5 py-1 ${state.salonTab === tab.id ? 'text-primary-600' : 'text-system-muted hover:text-system-text'}">
+                    <div class="mb-1 ${state.salonTab === tab.id ? 'scale-110' : ''} transition-transform">${tab.icon}</div>
+                    <span class="text-[10px] font-bold truncate w-full text-center">${tab.label}</span>
+                </a>
+            `).join('')}
+            ${menuTabs.length > 0 ? `
+                <a href="#" onclick="state.showSalonMobileMenu=!state.showSalonMobileMenu; render()" class="flex flex-col items-center w-1/5 py-1 ${state.showSalonMobileMenu ? 'text-primary-600' : 'text-system-muted hover:text-system-text'}">
+                    <div class="mb-1 ${state.showSalonMobileMenu ? 'scale-110' : ''} transition-transform">${menuIcon}</div>
+                    <span class="text-[10px] font-bold">Меню</span>
+                </a>
+            ` : ''}
+        </nav>
+    </div>
+    `;
 }
 
 window.renderSalonMobileNav = renderSalonMobileNav;
 
 export function renderMasterMobileNav() {
     const tabs = [
-        { id: 'schedule', icon: '📅', label: 'График' },
-        { id: 'bookings', icon: '📋', label: 'Записи' },
-        { id: 'my_salons', icon: '🏢', label: 'Салоны' },
-        { id: 'services', icon: '💅', label: 'Услуги' },
-        { id: 'profile', icon: '⚙️', label: 'Профиль' },
+        { id: 'schedule', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg>', label: 'График' },
+        { id: 'bookings', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 3"/></svg>', label: 'Записи' },
+        { id: 'my_salons', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 6h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 10h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 14h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 18h4"/></svg>', label: 'Салоны' },
+        { id: 'services', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7h-3a2 2 0 0 1-2-2V2"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 15h6"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 18h6"/></svg>', label: 'Услуги' },
+        { id: 'profile', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>', label: 'Профиль' },
     ];
+    
+    const mainTabs = tabs.slice(0, 4);
+    const menuTabs = tabs.slice(4);
+    const menuIcon = `<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><line stroke-linecap="round" stroke-linejoin="round" x1="4" x2="20" y1="12" y2="12"/><line stroke-linecap="round" stroke-linejoin="round" x1="4" x2="20" y1="6" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="4" x2="20" y1="18" y2="18"/></svg>`;
+
     return `
-    <nav class="md:hidden fixed bottom-0 inset-x-0 bg-system-surface border-t border-system-border flex justify-around items-center z-[90] pb-[env(safe-area-inset-bottom)]">
-        ${tabs.map(tab => `
-            <a href="#" onclick="state.masterTab='${tab.id}';render()" class="flex flex-col items-center py-2 px-1 ${state.masterTab === tab.id ? 'text-primary-600' : 'text-system-muted'}">
-                <span class="text-xl mb-1">${tab.icon}</span>
-                <span class="text-[10px] font-bold truncate">${tab.label}</span>
-            </a>
-        `).join('')}
-    </nav>`;
+    <div class="fixed bottom-4 left-4 right-4 z-[90] md:hidden">
+        ${state.showMasterMobileMenu ? `
+        <div class="absolute bottom-full mb-2 left-0 right-0 bg-system-surface/95 backdrop-blur-md border border-system-border rounded-2xl shadow-xl p-2 flex flex-col gap-1 animate-fade-in">
+            ${menuTabs.map(tab => `
+                <a href="#" onclick="state.masterTab='${tab.id}'; state.showMasterMobileMenu=false; render()" class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${state.masterTab === tab.id ? 'bg-system-main text-primary-600 font-bold' : 'text-system-muted hover:bg-system-main hover:text-system-text'}">
+                    <span>${tab.icon}</span>
+                    <span>${tab.label}</span>
+                </a>
+            `).join('')}
+        </div>
+        ` : ''}
+        <nav class="island flex justify-around items-center px-2 py-3 bg-system-surface/80 backdrop-blur-xl border border-system-border/50 shadow-2xl rounded-2xl">
+            ${mainTabs.map(tab => `
+                <a href="#" onclick="state.masterTab='${tab.id}'; state.showMasterMobileMenu=false; render()" class="flex flex-col items-center w-1/5 py-1 ${state.masterTab === tab.id ? 'text-primary-600' : 'text-system-muted hover:text-system-text'}">
+                    <div class="mb-1 ${state.masterTab === tab.id ? 'scale-110' : ''} transition-transform">${tab.icon}</div>
+                    <span class="text-[10px] font-bold truncate w-full text-center">${tab.label}</span>
+                </a>
+            `).join('')}
+            ${menuTabs.length > 0 ? `
+                <a href="#" onclick="state.showMasterMobileMenu=!state.showMasterMobileMenu; render()" class="flex flex-col items-center w-1/5 py-1 ${state.showMasterMobileMenu ? 'text-primary-600' : 'text-system-muted hover:text-system-text'}">
+                    <div class="mb-1 ${state.showMasterMobileMenu ? 'scale-110' : ''} transition-transform">${menuIcon}</div>
+                    <span class="text-[10px] font-bold">Меню</span>
+                </a>
+            ` : ''}
+        </nav>
+    </div>`;
 }
 
 window.renderMasterMobileNav = renderMasterMobileNav;
@@ -192,14 +244,17 @@ export function renderUserDropdown() {
 </div>
 <div class="p-2">
     <a href="#" onclick="state.showProfileEdit=true;state.mobileMenu=false;render()" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-system-text hover:bg-system-main transition-colors">
-        <span>👤</span> Мой профиль
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Мой профиль
     </a>
     <a href="#" onclick="navigate('bookings');state.mobileMenu=false" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-system-text hover:bg-system-main transition-colors">
-        <span>📅</span> Мои записи
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg>
+        Мои записи
     </a>
     <div class="border-t border-system-border my-1"></div>
     <a href="#" onclick="handleLogout()" class="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors">
-        <span>🚪</span> Выйти
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline stroke-linecap="round" stroke-linejoin="round" points="16 17 21 12 16 7"/><line stroke-linecap="round" stroke-linejoin="round" x1="21" x2="9" y1="12" y2="12"/></svg>
+        Выйти
     </a>
 </div>
     </div>`;

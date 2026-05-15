@@ -107,7 +107,7 @@ export function handleRegStep3() {
         const newSalon = {
             id: newSalonId, name: state.regSalonName, address: state.regSalonAddress,
             city: 'Бишкек', metro: '', rating: 0, reviews: 0, priceLevel: 2,
-            image: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#fce7f3"/><text x="200" y="100" text-anchor="middle" font-size="48">🏢</text></svg>'),
+            image: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#fce7f3"/><text x="200" y="100" text-anchor="middle" font-size="48"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 6h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 10h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 14h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 18h4"/></svg></text></svg>'),
             categories: [], masters: 0, openTime: '9:00', closeTime: '21:00',
             features: [], verified: false, ownerId: newUser.id
         };

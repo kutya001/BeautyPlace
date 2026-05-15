@@ -223,14 +223,14 @@ export function handleTimelineDrop(event, newMasterId, newTime) {
     // Валидация: мастер должен владеть услугой из записи
     if (booking.serviceId && !(newMaster.services || []).includes(booking.serviceId)) {
         const svc = services.find(s => s.id === booking.serviceId);
-        showToast(`❌ ${newMaster.name} не выполняет услугу "${svc ? svc.name : ''}"`);
+        showToast(`<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 6 6 18"/><path stroke-linecap="round" stroke-linejoin="round" d="m6 6 12 12"/></svg> ${newMaster.name} не выполняет услугу "${svc ? svc.name : ''}"`);
         return;
     }
 
     // Проверка конфликта: нет ли уже записи у мастера на это время
     const conflict = state.bookings.find(b => b.id !== bookingId && b.masterId === newMasterId && b.time === newTime && b.status !== 'cancelled');
     if (conflict) {
-        showToast(`❌ У ${newMaster.name} уже есть запись на ${newTime}`);
+        showToast(`<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 6 6 18"/><path stroke-linecap="round" stroke-linejoin="round" d="m6 6 12 12"/></svg> У ${newMaster.name} уже есть запись на ${newTime}`);
         return;
     }
 

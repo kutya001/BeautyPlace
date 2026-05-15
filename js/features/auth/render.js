@@ -205,12 +205,12 @@ ${state.authError ? `<div class="bg-red-50 border border-red-200 text-red-600 te
         <div class="text-xs text-system-muted opacity-70 mt-1">Искать услуги и записываться</div>
     </div>
     <div class="role-card border-2 rounded-2xl p-4 text-center ${state.regRole === 'master' ? 'selected border-primary-400' : 'border-system-border'}" onclick="state.regRole='master';render()">
-        <div class="text-3xl mb-2">💇‍♀️</div>
+        <div class="text-3xl mb-2"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="4" y2="15.88"/><line stroke-linecap="round" stroke-linejoin="round" x1="14.47" x2="14.48" y1="14.48" y2="14.48"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="20" y2="8.12"/></svg></div>
         <div class="font-semibold text-sm text-system-text">Мастер</div>
         <div class="text-xs text-system-muted opacity-70 mt-1">Принимать клиентов</div>
     </div>
     <div class="role-card border-2 rounded-2xl p-4 text-center ${state.regRole === 'salon' ? 'selected border-primary-400' : 'border-system-border'}" onclick="state.regRole='salon';render()">
-        <div class="text-3xl mb-2">🏢</div>
+        <div class="text-3xl mb-2"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 6h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 10h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 14h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 18h4"/></svg></div>
         <div class="font-semibold text-sm text-system-text">Салон</div>
         <div class="text-xs text-system-muted opacity-70 mt-1">Управлять салоном</div>
     </div>
@@ -339,35 +339,36 @@ export function renderRoleSelect() {
     </div>
 
     <div class="grid grid-cols-2 gap-4 animate-slide-up">
-        <div class="role-card bg-system-surface rounded-2xl border-2 border-system-border p-6 text-center" onclick="selectRole('superadmin')">
-            <div class="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-3">
-                <span class="text-2xl">🛡️</span>
+        <div class="role-card bg-system-surface rounded-2xl border-2 border-system-border p-5 sm:p-6 text-center" onclick="selectRole('client')">
+            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-primary-500 flex items-center justify-center mx-auto mb-3 text-white shadow-md">
+                <svg class="w-6 h-6 sm:w-7 sm:h-7 stroke-current opacity-90" fill="none" stroke-width="1.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
             </div>
-            <h3 class="font-bold text-system-text">Супер-админ</h3>
-            <p class="text-xs text-system-muted opacity-70 mt-1">Управление платформой</p>
+            <h3 class="font-bold text-system-text text-sm sm:text-base">SuluuMarket</h3>
+            <p class="text-xs text-system-muted opacity-70 mt-1 leading-tight">Поиск и запись</p>
         </div>
-        <div class="role-card bg-system-surface rounded-2xl border-2 border-system-border p-6 text-center" onclick="selectRole('salon')">
-            <div class="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center mx-auto mb-3">
-                <span class="text-2xl">🏢</span>
+        <div class="role-card bg-system-surface rounded-2xl border-2 border-system-border p-5 sm:p-6 text-center" onclick="selectRole('salon')">
+            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-blue-500 flex items-center justify-center mx-auto mb-3 text-white shadow-md">
+                <svg class="w-6 h-6 sm:w-7 sm:h-7 stroke-current opacity-90" fill="none" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
             </div>
-            <h3 class="font-bold text-system-text">Салон</h3>
-            <p class="text-xs text-system-muted opacity-70 mt-1">Управление салоном</p>
+            <h3 class="font-bold text-system-text text-sm sm:text-base">SuluuBusiness</h3>
+            <p class="text-xs text-system-muted opacity-70 mt-1 leading-tight">Управление бизнесом</p>
         </div>
-        <div class="role-card bg-system-surface rounded-2xl border-2 border-system-border p-6 text-center" onclick="selectRole('master')">
-            <div class="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center mx-auto mb-3">
-                <span class="text-2xl">💇‍♀️</span>
+        <div class="role-card bg-system-surface rounded-2xl border-2 border-system-border p-5 sm:p-6 text-center" onclick="selectRole('master')">
+            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-green-500 flex items-center justify-center mx-auto mb-3 text-white shadow-md">
+                <svg class="w-6 h-6 sm:w-7 sm:h-7 stroke-current opacity-90" fill="none" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="14.48" y2="14.48"/><line x1="20" y1="20" x2="8.12" y2="8.12"/></svg>
             </div>
-            <h3 class="font-bold text-system-text">Мастер</h3>
-            <p class="text-xs text-system-muted opacity-70 mt-1">Расписание и клиенты</p>
+            <h3 class="font-bold text-system-text text-sm sm:text-base">SuluuMaster</h3>
+            <p class="text-xs text-system-muted opacity-70 mt-1 leading-tight">Клиенты и расписание</p>
         </div>
-        <div class="role-card bg-system-surface rounded-2xl border-2 border-system-border p-6 text-center" onclick="selectRole('client')">
-            <div class="w-14 h-14 rounded-2xl bg-primary-100 flex items-center justify-center mx-auto mb-3">
-                <span class="text-2xl">👤</span>
+        <div class="role-card bg-system-surface rounded-2xl border-2 border-system-border p-5 sm:p-6 text-center" onclick="selectRole('superadmin')">
+            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-red-500 flex items-center justify-center mx-auto mb-3 text-white shadow-md">
+                <svg class="w-6 h-6 sm:w-7 sm:h-7 stroke-current opacity-90" fill="none" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             </div>
-            <h3 class="font-bold text-system-text">Клиент</h3>
-            <p class="text-xs text-system-muted opacity-70 mt-1">Поиск и запись на услуги</p>
+            <h3 class="font-bold text-system-text text-sm sm:text-base">SuluuAdmin</h3>
+            <p class="text-xs text-system-muted opacity-70 mt-1 leading-tight">Платформа</p>
         </div>
     </div>
+</div>
 
     <div class="mt-6 text-center">
         <a href="#" onclick="state.authMode='login';state.authError='';render()" class="text-sm text-system-muted hover:text-primary-500 transition-colors">← Вернуться ко входу</a>
