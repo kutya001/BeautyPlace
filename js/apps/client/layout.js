@@ -3,7 +3,7 @@
 import { render } from '../../core/engine.js';
 import { renderClientMobileNav, renderThemeSwitcher, renderUserDropdown, renderClientFooter, toggleMobileMenu, renderToast } from '../../components/ui.js';
 import { renderHomePage, renderSalonsPage, renderMastersPage, renderServicesPage, renderSalonDetailPage, renderMasterDetailPage, renderServiceDetailPage, renderBookingsPage } from './pages.js';
-import { renderReviewModal, renderProfileEditModal, renderTrackModal } from '../../components/modals.js';
+import {  renderReviewModal, renderProfileEditModal, renderTrackModal , renderBecomeMasterModal, renderBecomeSalonModal } from '../../components/modals.js';
 import { renderBookingModal } from '../../features/booking/wizard.js';
 import { navigate } from '../../core/router.js';
 import { state } from '../../state.js';
@@ -20,6 +20,8 @@ ${renderClientMobileNav()}
 ${state.bookingModal ? renderBookingModal() : ''}
 ${state.toast ? renderToast() : ''}
 ${state.showProfileEdit ? renderProfileEditModal() : ''}
+${state.showBecomeMasterModal ? renderBecomeMasterModal() : ''}
+${state.showBecomeSalonModal ? renderBecomeSalonModal() : ''}
 ${state.reviewModalTarget ? renderReviewModal() : ''}
 ${state.trackModalTarget ? renderTrackModal() : ''}
     `;

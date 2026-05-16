@@ -48,130 +48,72 @@ export function handleLogin() {
 window.handleLogin = handleLogin;
 
 export function handleRegStep1() {
-    state.authError = '';
+    state.authError = "";
     const phone = state.regPhone.trim();
-    const pass = state.regPassword;
-    const passConfirm = state.regPasswordConfirm;
 
-    if (!phone) { state.authError = 'Введите номер телефона'; render(); return; }
-    if (!validatePhone(phone)) { state.authError = 'Введите корректный номер Кыргызстана (+996)'; render(); return; }
-    if (pass.length < 6) { state.authError = 'Пароль должен быть не менее 6 символов'; render(); return; }
-    if (pass !== passConfirm) { state.authError = 'Пароли не совпадают'; render(); return; }
-    if (users.find(u => u.phone === phone)) { state.authError = 'Этот номер уже зарегистрирован'; render(); return; }
+    if (!phone) { state.authError = "Введите номер телефона"; render(); return; }
+    if (!validatePhone(phone)) { state.authError = "Введите корректный номер Кыргызстана (+996)"; render(); return; }
+    if (users.find(u => u.phone === phone)) { state.authError = "Этот номер уже зарегистрирован"; render(); return; }
 
     state.regStep = 2;
-    state.authError = '';
+    state.authError = "";
     render();
 }
 
 window.handleRegStep1 = handleRegStep1;
 
 export function handleRegStep2() {
-    const name = (state.regName || '').trim();
-    if (!name) {
-        state.authError = 'Введите имя';
+    const code = (state.regCode || "").trim();
+    if (code.length !== 4) {
+        state.authError = "Введите 4-значный код (можно ввести любые 4 цифры для теста)";
         render();
         return;
     }
     state.regStep = 3;
-    state.authError = '';
+    state.authError = "";
     render();
 }
 
 window.handleRegStep2 = handleRegStep2;
 
 export function handleRegStep3() {
-    const role = state.regRole;
-    if (role === 'salon') {
-        if (!(state.regSalonName || '').trim()) { state.authError = 'Введите название салона'; render(); return; }
-        if (!(state.regSalonAddress || '').trim()) { state.authError = 'Введите адрес салона'; render(); return; }
-    }
-    if (role === 'master') {
-        if (!(state.regMasterSpecialty || '').trim()) { state.authError = 'Введите специальность'; render(); return; }
-    }
+    const pass = state.regPassword;
+    const passConfirm = state.regPasswordConfirm;
+
+    if (!pass || pass.length < 6) { state.authError = "Пароль должен быть не менее 6 символов"; render(); return; }
+    if (pass !== passConfirm) { state.authError = "Пароли не совпадают"; render(); return; }
 
     // Create user
     const newUser = {
-        id: generateId(),
+        id: "U" + Date.now(),
         phone: state.regPhone.trim(),
         password: state.regPassword,
-        role: role,
-        name: state.regName || '',
-        email: state.regEmail || '',
-        createdAt: new Date().toISOString().split('T')[0]
+        role: "client",
+        name: "",
+        email: "",
+        createdAt: new Date().toISOString().split("T")[0]
     };
-
-    if (role === 'salon') {
-        // Create new salon
-        const newSalonId = salons.length + 1;
-        const newSalon = {
-            id: newSalonId, name: state.regSalonName, address: state.regSalonAddress,
-            city: 'Бишкек', metro: '', rating: 0, reviews: 0, priceLevel: 2,
-            image: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200"><rect width="400" height="200" fill="#fce7f3"/><text x="200" y="100" text-anchor="middle" font-size="48"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 6h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 10h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 14h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 18h4"/></svg></text></svg>'),
-            categories: [], masters: 0, openTime: '9:00', closeTime: '21:00',
-            features: [], verified: false, ownerId: newUser.id
-        };
-        salons.push(newSalon);
-        newUser.salonId = newSalonId;
-
-        // Инициализируем штат и подписку
-        salonStaff.push({
-            id: 'ST' + Date.now(),
-            userId: newUser.id,
-            salonId: newSalonId,
-            baseRole: 'owner',
-            permissions: ['view_all_schedules', 'manage_bookings', 'view_applications', 'process_applications', 'manage_staff_permissions', 'manage_services', 'manage_salon_settings'],
-            status: 'active'
-        });
-
-        const trialExpiry = new Date();
-        trialExpiry.setDate(trialExpiry.getDate() + 7);
-        salonSubscriptions.push({
-            salonId: newSalonId,
-            planId: 'basic',
-            status: 'active',
-            expiresAt: trialExpiry.toISOString()
-        });
-    }
-
-    if (role === 'master') {
-        const newMasterId = masters.length + 1;
-        const newMaster = {
-            id: newMasterId, name: state.regName, specialty: state.regMasterSpecialty,
-            experience: parseInt(state.regMasterExperience) || 0,
-            rating: 0, reviews: 0, priceLevel: 2,
-            avatar: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><circle cx="40" cy="40" r="40" fill="#fce7f3"/><circle cx="40" cy="32" r="14" fill="#f9a8d4"/><ellipse cx="40" cy="65" rx="22" ry="18" fill="#f9a8d4"/></svg>'),
-            categories: [], salonId: null, worksInSalon: false,
-            services: [], available: true, userId: newUser.id,
-            about: ''
-        };
-        masters.push(newMaster);
-        newUser.masterId = newMasterId;
-    }
 
     users.push(newUser);
     state.currentUser = newUser;
-    document.body.dataset.theme = '';
+    document.body.dataset.theme = "";
     state.isAuthenticated = true;
-    state.authMode = 'login';
-    state.authError = '';
+    state.authMode = "login";
+    state.authError = "";
     state.regStep = 1;
-    state.regPhone = '';
-    state.regPassword = '';
-    state.regPasswordConfirm = '';
-    state.regName = '';
-    state.regEmail = '';
-    state.regRole = 'client';
-    state.regSalonName = '';
-    state.regSalonAddress = '';
-    state.regMasterSpecialty = '';
-    state.regMasterExperience = '';
-    state.currentPage = 'home';
+    state.regPhone = "";
+    state.regCode = "";
+    state.regPassword = "";
+    state.regPasswordConfirm = "";
+    state.regName = "";
+    state.regEmail = "";
+    state.regRole = "client";
+    state.currentPage = "home";
     state.bookingData.clientName = newUser.name;
     state.bookingData.clientPhone = newUser.phone;
 
     state.showAuthPage = false;
-    showToast('Регистрация успешна! Добро пожаловать!');
+    showToast("Регистрация успешна! Добро пожаловать!");
     render();
 }
 

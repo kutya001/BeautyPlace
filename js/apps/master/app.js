@@ -3,7 +3,7 @@
 import { render } from '../../core/engine.js';
 import { handleLogout } from '../../features/auth/actions.js';
 import { renderThemeSwitcher, renderMasterMobileNav, renderToast } from '../../components/ui.js';
-import { state, masters, salons, services, timeSlots, salonApplications, users } from '../../state.js';
+import { state, masters, salons, services, timeSlots, salonApplications, users, categories } from '../../state.js';
 import { formatPrice, getSalonPrice, showToast, getSalonPriceHistory, getDurationText } from '../../utils.js';
 
 export function renderMasterApp() {
@@ -191,35 +191,91 @@ export function renderMasterContent() {
 </div>`;
     }
 
-    if (tab === 'services') {
+        if (tab === 'services') {
+        const grouped = services.reduce((acc, svc) => {
+            const catId = svc.category;
+            if (!acc[catId]) { acc[catId] = { cat: categories.find(c => c.id === catId), services: [] }; }
+            acc[catId].services.push(svc);
+            return acc;
+        }, {});
+
         return `
-<div class="animate-fade-in">
-    <h1 class="text-2xl font-bold text-system-text mb-6">Мои услуги</h1>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        ${masterServices.map(svc => `
-            <div class="bg-system-surface rounded-xl border border-system-border p-5">
-                <h3 class="font-medium text-system-text">${svc.name}</h3>
-                <div class="flex items-center gap-2 mt-2 text-sm text-system-muted">
-                    <span>${getDurationText(svc.duration)}</span><span>·</span>
-                    <span><span class="star text-xs">★</span> ${svc.rating} (${svc.reviews})</span>
+<div class="animate-fade-in max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold text-system-text mb-6">Услуги и стоимость</h1>
+    <div class="space-y-4">
+        ${Object.values(grouped).map(g => {
+            const isExpanded = state.expandedMasterCat !== undefined ? state.expandedMasterCat[g.cat?.id || 0] : false;
+            const selectedCount = g.services.filter(s => (master.services || []).includes(s.id)).length;
+            return `
+            <div class="bg-system-surface rounded-2xl border border-system-border overflow-hidden">
+                <div class="p-4 flex items-center justify-between cursor-pointer hover:bg-system-main transition-colors"
+                     onclick="if(!state.expandedMasterCat) state.expandedMasterCat={}; state.expandedMasterCat[${g.cat?.id || 0}] = !${isExpanded}; render()">
+                    <div class="flex items-center gap-3">
+                        <span class="text-xl">${g.cat ? g.cat.icon : '✨'}</span>
+                        <h3 class="font-bold text-system-text">${g.cat ? g.cat.name : 'Другое'}</h3>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-system-main text-system-muted">${selectedCount}/${g.services.length}</span>
+                    </div>
+                    <span class="text-system-muted transition-transform ${isExpanded ? 'rotate-180' : ''}">▾</span>
                 </div>
-                <p class="font-bold text-system-text mt-3">${formatPrice(svc.price)}</p>
+                ${isExpanded ? `
+                <div class="border-t border-system-border divide-y divide-system-border">
+                    ${g.services.map(svc => {
+                        const isChecked = (master.services || []).includes(svc.id);
+                        const customVal = (master.customPrices && master.customPrices[svc.id] !== undefined) ? master.customPrices[svc.id] : svc.price;
+                        return `
+                        <div class="p-4 flex flex-col sm:flex-row gap-3 sm:items-center justify-between hover:bg-system-main/50 transition-colors ${!isChecked ? 'opacity-60' : ''}">
+                            <div class="flex items-start sm:items-center gap-3">
+                                <input type="checkbox" ${isChecked ? 'checked' : ''} class="mt-1 sm:mt-0 w-5 h-5 rounded border-system-border text-primary-500 focus:ring-primary-400 cursor-pointer"
+                                       onchange="toggleMasterSelfService(${master.id}, ${svc.id})">
+                                <div>
+                                    <h4 class="text-sm font-medium text-system-text">${svc.name}</h4>
+                                    <p class="text-xs text-system-muted">${Math.floor(svc.duration / 60) > 0 ? Math.floor(svc.duration / 60) + ' ч ' : ''}${svc.duration % 60 > 0 ? (svc.duration % 60) + ' мин' : ''} · Базовая цена: ${svc.price} сом</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 self-end sm:self-auto">
+                                <label class="text-[10px] text-system-muted font-medium w-16 text-right leading-tight">Ваша цена<br>(сом)</label>
+                                <input type="number" min="0" ${!isChecked ? 'disabled' : ''} class="w-20 px-3 py-1.5 rounded-xl border border-system-border text-sm font-bold focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-center"
+                                       value="${customVal}" onchange="updateMasterSelfPrice(${master.id}, ${svc.id}, this.value)">
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+                ` : ''}
             </div>
-        `).join('')}
+            `;
+        }).join('')}
     </div>
 </div>`;
     }
 
     if (tab === 'profile') {
+        let tariffText = 'Работа за процент (40% по умолчанию)';
+        if (master.tariff_type === 'rent') {
+             tariffText = `Аренда места: ${master.tariff_details ? master.tariff_details.rent_amount : 0} сом / ${master.tariff_details && master.tariff_details.rent_period === 'monthly' ? 'месяц' : master.tariff_details && master.tariff_details.rent_period === 'weekly' ? 'неделю' : 'день'}`;
+        } else if (master.tariff_type === 'percentage') {
+             tariffText = `Процент от услуг: ${master.tariff_details && master.tariff_details.percentage_value !== undefined ? master.tariff_details.percentage_value : (master.commissionRate || 40)}%`;
+        }
+
         return `
 <div class="animate-fade-in max-w-lg">
     <h1 class="text-2xl font-bold text-system-text mb-6">Мой профиль</h1>
     <div class="bg-system-surface rounded-2xl border border-system-border p-6 space-y-4">
+        
+        <div class="p-4 rounded-xl bg-primary-50 border border-primary-100 flex items-start gap-3 mb-2">
+            <span class="text-primary-500 mt-0.5"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></span>
+            <div>
+                <p class="text-xs font-bold text-primary-600 uppercase tracking-wide mb-1">Мой тариф</p>
+                <p class="text-sm font-medium text-system-text">${tariffText}</p>
+                <p class="text-[10px] text-system-muted mt-1 leading-tight">Установлено вашим салоном. Для изменения свяжитесь с руководителем.</p>
+            </div>
+        </div>
+
         <div class="flex items-center gap-4 mb-4">
-            <img src="${master.avatar}" class="w-20 h-20 rounded-full border-4 border-pink-100">
+            <img src="${master.avatar}" class="w-20 h-20 rounded-full border-4 border-primary-100">
             <div>
                 <h2 class="font-bold text-system-text text-lg">${master.name}</h2>
-                <p class="text-pink-500">${master.specialty}</p>
+                <p class="text-primary-500">${master.specialty}</p>
             </div>
         </div>
         <div>
@@ -237,11 +293,30 @@ export function renderMasterContent() {
                 <button onclick="masters.find(m=>m.id===${master.id}).available=false;showToast('Статус: Недоступна');render()" class="flex-1 py-2.5 rounded-xl border-2 ${!master.available ? 'border-red-400 bg-red-50 text-red-700' : 'border-system-border text-system-muted'} text-sm font-medium">○ Недоступна</button>
             </div>
         </div>
-        <button onclick="showToast('Профиль сохранён')" class="w-full btn-primary py-3.5 rounded-2xl text-white font-semibold text-sm">Сохранить</button>
+        <button onclick="showToast('Профиль сохранён')" class="w-full btn-primary py-3.5 rounded-2xl text-white font-semibold text-sm shadow-xl shadow-primary-200">Сохранить</button>
     </div>
 </div>`;
     }
 }
+
+
+window.toggleMasterSelfService = function(masterId, serviceId) {
+    const m = masters.find(x => x.id === masterId);
+    if (!m) return;
+    if (!m.services) m.services = [];
+    const idx = m.services.indexOf(serviceId);
+    if (idx >= 0) { m.services.splice(idx, 1); }
+    else { m.services.push(serviceId); }
+    render();
+};
+
+window.updateMasterSelfPrice = function(masterId, serviceId, val) {
+    const m = masters.find(x => x.id === masterId);
+    if (!m) return;
+    if (!m.customPrices) m.customPrices = {};
+    m.customPrices[serviceId] = parseInt(val, 10) || 0;
+    render();
+};
 
 window.renderMasterContent = renderMasterContent;
 

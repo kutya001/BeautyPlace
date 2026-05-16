@@ -51,12 +51,16 @@ ${providerInfoHtml}
 window.renderServiceCard = renderServiceCard;
 
 export function renderSalonCard(salon) {
+    const salonMasters = masters.filter(m => m.salonId === salon.id);
+    const mastersCount = salonMasters.length;
+    const isPrivateMaster = mastersCount === 1;
+
     return `
     <div class="island-card overflow-hidden cursor-pointer animate-fade-in" onclick="openSalonDetail(${salon.id})">
 <img src="${salon.image}" alt="${salon.name}" class="salon-card-img">
 <div class="p-5">
     <div class="flex items-center gap-2 mb-2">
-        <h3 class="font-bold text-system-text text-lg">${salon.name}</h3>
+        <h3 class="font-bold text-system-text text-lg">${salon.name}${isPrivateMaster ? ' <span class="text-xs text-system-muted font-normal ml-1 opacity-70">Частный мастер</span>' : ''}</h3>
         ${salon.verified ? '<span class="badge bg-blue-100 text-blue-600">✓ Проверен</span>' : ''}
     </div>
     <div class="flex items-center gap-1 mb-2">
@@ -73,7 +77,7 @@ export function renderSalonCard(salon) {
     }).join('')}
     </div>
     <div class="flex items-center justify-between">
-        <span class="text-xs text-system-muted">${salon.masters} мастеров · ${salon.openTime}–${salon.closeTime}</span>
+        <span class="text-xs text-system-muted">${isPrivateMaster ? 'Частный мастер' : mastersCount + ' мастеров'} · ${salon.openTime}–${salon.closeTime}</span>
         <button class="btn-primary px-4 py-2 rounded-xl text-white text-xs font-semibold" onclick="event.stopPropagation();openBookingForSalon(${salon.id})">Записаться</button>
     </div>
 </div>

@@ -119,7 +119,7 @@ export function renderBookingStep1() {
                                 ${grouped[gKey][cId].map(svc => {
                                     const price = (bd.type === 'master' && !masters.find(m => m.id === bd.targetId).salonId) 
                                         ? svc.price 
-                                        : getSalonPrice(priceTargetId, svc.id, services);
+                                        : getSalonPrice(priceTargetId, svc.id, services, state.bookingData.masterId);
                                     return `
                                     <div onclick="state.bookingData.serviceId = ${svc.id}; goToBookingStep(2)" 
                                          class="p-5 rounded-3xl border-2 cursor-pointer transition-all duration-300 hover:shadow-lg ${bd.serviceId === svc.id ? 'border-primary-500 bg-primary-50 ring-4 ring-primary-50' : 'border-system-border hover:border-primary-400'}">
@@ -318,14 +318,14 @@ export function renderBookingStep5() {
 
     if (bd.type === 'salon') {
         placeName = target ? target.name : 'Салон не найден';
-        price = getSalonPrice(bd.targetId, bd.serviceId, services);
+        price = getSalonPrice(bd.targetId, bd.serviceId, services, state.bookingData.masterId);
     } else {
         // Если это запись напрямую к мастеру
         if (target && target.salonId) {
             // Мастер привязан к салону
             const salon = salons.find(s => s.id === target.salonId);
             placeName = salon ? salon.name : 'На выезде';
-            price = getSalonPrice(target.salonId, bd.serviceId, services);
+            price = getSalonPrice(target.salonId, bd.serviceId, services, state.bookingData.masterId);
         } else {
             // Независимый мастер
             placeName = 'На выезде / Частный мастер';
@@ -595,7 +595,7 @@ export function renderBookingStep4Old() {
     const svc = services.find(s => s.id === bd.serviceId);
     const target = bd.type === 'salon' ? salons.find(s => s.id === bd.targetId) : masters.find(m => m.id === bd.targetId);
     const master = bd.masterId ? masters.find(m => m.id === bd.masterId) : null;
-    const price = bd.type === 'salon' ? getSalonPrice(bd.targetId, bd.serviceId, services) : svc.price;
+    const price = bd.type === 'salon' ? getSalonPrice(bd.targetId, bd.serviceId, services, state.bookingData.masterId) : svc.price;
 
     return `
 <div class="space-y-4">

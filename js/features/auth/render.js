@@ -121,10 +121,10 @@ export function renderRegisterForm() {
         return `
 <div class="text-center mb-6">
     <h2 class="text-xl font-bold text-system-text">Регистрация</h2>
-    <p class="text-sm text-system-muted mt-1">Шаг 1 из 3: Номер телефона и пароль</p>
+    <p class="text-sm text-system-muted mt-1">Шаг 1 из 3: Введите номер телефона</p>
 </div>
 
-${state.authError ? `<div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4 animate-shake">${state.authError}</div>` : ''}
+${state.authError ? `<div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4 animate-shake">${state.authError}</div>` : ""}
 
 <div class="space-y-4">
     <div>
@@ -133,24 +133,11 @@ ${state.authError ? `<div class="bg-red-50 border border-red-200 text-red-600 te
             <span class="absolute left-3 top-1/2 -translate-y-1/2 text-system-muted opacity-70 text-sm">🇰🇬</span>
             <input type="tel" id="reg-phone" placeholder="(___) ___ ___"
                 class="auth-input w-full pl-10 pr-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm"
-                value="${state.regPhone || ''}" oninput="if(window.formatPhoneInput) window.formatPhoneInput(this); state.regPhone=this.value">
+                value="${state.regPhone || ""}" oninput="if(window.formatPhoneInput) window.formatPhoneInput(this); state.regPhone=this.value" onkeydown="if(event.key==='Enter')handleRegStep1()">
         </div>
     </div>
-    <div>
-        <label class="block text-sm font-medium text-system-text mb-1.5">Пароль *</label>
-        <input type="password" id="reg-password" placeholder="Минимум 6 символов"
-            class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm"
-            value="${state.regPassword}" oninput="state.regPassword=this.value">
-    </div>
-    <div>
-        <label class="block text-sm font-medium text-system-text mb-1.5">Подтвердите пароль *</label>
-        <input type="password" id="reg-password-confirm" placeholder="Повторите пароль"
-            class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm"
-            value="${state.regPasswordConfirm}" oninput="state.regPasswordConfirm=this.value"
-            onkeydown="if(event.key==='Enter')handleRegStep1()">
-    </div>
     <button onclick="handleRegStep1()" class="w-full btn-primary py-3.5 rounded-2xl text-white font-semibold text-sm">
-        Далее
+        Получить код
     </button>
 </div>
 
@@ -162,30 +149,30 @@ ${state.authError ? `<div class="bg-red-50 border border-red-200 text-red-600 te
     if (state.regStep === 2) {
         return `
 <div class="text-center mb-6">
-    <h2 class="text-xl font-bold text-system-text">Регистрация</h2>
-    <p class="text-sm text-system-muted mt-1">Шаг 2 из 3: Личные данные</p>
+    <h2 class="text-xl font-bold text-system-text">Подтверждение</h2>
+    <p class="text-sm text-system-muted mt-1">Шаг 2 из 3: Введите код из SMS</p>
 </div>
 
+${state.authError ? `<div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4 animate-shake">${state.authError}</div>` : ""}
+
 <div class="space-y-4">
-    <div>
-        <label class="block text-sm font-medium text-system-text mb-1.5">Имя и фамилия *</label>
-        <input type="text" id="reg-name" placeholder="Например: Айгул Токтоналиева"
-            class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm"
-            value="${state.regName || ''}" oninput="state.regName=this.value">
+    <div class="text-center">
+        <p class="text-sm text-system-text">Мы отправили код на номер <b>${state.regPhone}</b></p>
     </div>
     <div>
-        <label class="block text-sm font-medium text-system-text mb-1.5">Email (необязательно)</label>
-        <input type="email" id="reg-email" placeholder="email@example.kg"
-            class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm"
-            value="${state.regEmail || ''}" oninput="state.regEmail=this.value"
-            onkeydown="if(event.key==='Enter')handleRegStep2()">
+        <label class="block text-sm font-medium text-system-text mb-1.5 text-center">4-значный код</label>
+        <div class="flex justify-center">
+            <input type="text" id="reg-code" placeholder="0000" maxlength="4"
+                class="auth-input w-32 px-4 py-3 text-center tracking-widest rounded-xl border border-system-border outline-none text-xl font-bold"
+                value="${state.regCode || ""}" oninput="state.regCode=this.value.replace(/[^0-9]/g, '');" onkeydown="if(event.key==='Enter')handleRegStep2()">
+        </div>
     </div>
     <div class="flex gap-3">
         <button onclick="state.regStep=1;render()" class="flex-1 py-3.5 rounded-2xl border-2 border-system-border text-system-text font-semibold text-sm hover:border-system-border transition-colors">
             Назад
         </button>
         <button onclick="handleRegStep2()" class="flex-1 btn-primary py-3.5 rounded-2xl text-white font-semibold text-sm">
-            Далее
+            Подтвердить
         </button>
     </div>
 </div>`;
@@ -194,128 +181,34 @@ ${state.authError ? `<div class="bg-red-50 border border-red-200 text-red-600 te
     if (state.regStep === 3) {
         return `
 <div class="text-center mb-6">
-    <h2 class="text-xl font-bold text-system-text">Регистрация</h2>
-    <p class="text-sm text-system-muted mt-1">Шаг 3 из 3: Выберите роль</p>
+    <h2 class="text-xl font-bold text-system-text">Создание пароля</h2>
+    <p class="text-sm text-system-muted mt-1">Шаг 3 из 3: Придумайте надежный пароль</p>
 </div>
 
-<div class="grid grid-cols-2 gap-3 mb-6">
-    <div class="role-card border-2 rounded-2xl p-4 text-center ${state.regRole === 'client' ? 'selected border-primary-400' : 'border-system-border'}" onclick="state.regRole='client';render()">
-        <div class="text-3xl mb-2">👤</div>
-        <div class="font-semibold text-sm text-system-text">Клиент</div>
-        <div class="text-xs text-system-muted opacity-70 mt-1">Искать услуги и записываться</div>
-    </div>
-    <div class="role-card border-2 rounded-2xl p-4 text-center ${state.regRole === 'master' ? 'selected border-primary-400' : 'border-system-border'}" onclick="state.regRole='master';render()">
-        <div class="text-3xl mb-2"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="4" y2="15.88"/><line stroke-linecap="round" stroke-linejoin="round" x1="14.47" x2="14.48" y1="14.48" y2="14.48"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="20" y2="8.12"/></svg></div>
-        <div class="font-semibold text-sm text-system-text">Мастер</div>
-        <div class="text-xs text-system-muted opacity-70 mt-1">Принимать клиентов</div>
-    </div>
-    <div class="role-card border-2 rounded-2xl p-4 text-center ${state.regRole === 'salon' ? 'selected border-primary-400' : 'border-system-border'}" onclick="state.regRole='salon';render()">
-        <div class="text-3xl mb-2"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 6h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 10h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 14h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 18h4"/></svg></div>
-        <div class="font-semibold text-sm text-system-text">Салон</div>
-        <div class="text-xs text-system-muted opacity-70 mt-1">Управлять салоном</div>
-    </div>
-    <div class="role-card border-2 rounded-2xl p-4 text-center opacity-50 cursor-not-allowed border-system-border">
-        <div class="text-3xl mb-2">🛡️</div>
-        <div class="font-semibold text-sm text-system-text">Супер-админ</div>
-        <div class="text-xs text-system-muted opacity-70 mt-1">Только по приглашению</div>
-    </div>
-</div>
+${state.authError ? `<div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4 animate-shake">${state.authError}</div>` : ""}
 
-${state.regRole === 'salon' ? `
-    <div class="space-y-3 mb-6 animate-slide-up">
-        <div>
-            <label class="block text-sm font-medium text-system-text mb-1.5">Вид организации *</label>
-            <select id="reg-salon-type" class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-sm bg-system-surface font-medium text-system-text" onchange="state.regSalonType=this.value">
-                <option value="Салон красоты" ${state.regSalonType === 'Салон красоты' ? 'selected' : ''}>Салон красоты</option>
-                <option value="Барбер" ${state.regSalonType === 'Барбер' ? 'selected' : ''}>Барбер</option>
-                <option value="Парикмахерская" ${state.regSalonType === 'Парикмахерская' ? 'selected' : ''}>Парикмахерская</option>
-                <option value="СПА" ${state.regSalonType === 'СПА' ? 'selected' : ''}>СПА</option>
-                <option value="Массажный салон" ${state.regSalonType === 'Массажный салон' ? 'selected' : ''}>Массажный салон</option>
-                <option value="Лечебный салон" ${state.regSalonType === 'Лечебный салон' ? 'selected' : ''}>Лечебный салон</option>
-            </select>
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-system-text mb-1.5">Название *</label>
-            <input type="text" id="reg-salon-name" placeholder="Название вашей организации"
-                class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm"
-                value="${state.regSalonName || ''}" oninput="state.regSalonName=this.value">
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-system-text mb-1.5">Адрес *</label>
-            <input type="text" id="reg-salon-address" placeholder="ул. Чуйкова, 168, Бишкек"
-                class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm"
-                value="${state.regSalonAddress || ''}" oninput="state.regSalonAddress=this.value">
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-system-text mb-1.5">Принимаемые категории</label>
-            <div class="grid grid-cols-2 gap-2">
-                ${categories.map(c => `
-                <label class="flex items-center gap-2 text-sm cursor-pointer border p-2 rounded-xl transition-colors ${state.regSalonCategories?.includes(c.id) ? 'border-primary-500 bg-primary-50 text-system-text shadow-sm' : 'border-system-border hover:border-primary-300 text-system-muted'}">
-                    <input type="checkbox" class="hidden" 
-                        ${state.regSalonCategories?.includes(c.id) ? 'checked' : ''}
-                        onchange="
-                            state.regSalonCategories = state.regSalonCategories || [];
-                            if(this.checked) state.regSalonCategories.push(${c.id});
-                            else state.regSalonCategories = state.regSalonCategories.filter(id => id !== ${c.id});
-                            window.render();
-                        ">
-                    <span class="text-lg">${c.icon}</span> <span class="font-bold">${c.name}</span>
-                </label>
-                `).join('')}
-            </div>
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-system-text mb-1.5">Оказываемые услуги</label>
-            <div class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-1">
-                ${services.filter(s => !(state.regSalonCategories?.length > 0) || state.regSalonCategories.includes(s.category)).map(s => `
-                <label class="flex items-center gap-2 text-sm cursor-pointer border p-3 rounded-xl transition-colors shadow-sm ${state.regSalonServices?.includes(s.id) ? 'border-primary-500 bg-primary-50' : 'border-system-border hover:border-primary-300'}">
-                    <input type="checkbox" class="hidden" 
-                        ${state.regSalonServices?.includes(s.id) ? 'checked' : ''}
-                        onchange="
-                            state.regSalonServices = state.regSalonServices || [];
-                            if(this.checked) state.regSalonServices.push(${s.id});
-                            else state.regSalonServices = state.regSalonServices.filter(id => id !== ${s.id});
-                            window.render();
-                        ">
-                    <div class="flex flex-col flex-1 gap-0.5">
-                        <span class="font-bold text-system-text">${s.name}</span>
-                        <span class="text-xs text-system-muted font-medium whitespace-nowrap overflow-hidden text-ellipsis w-64">${s.price} сом · ${s.duration} мин</span>
-                    </div>
-                    <div class="w-6 h-6 rounded-md border-2 flex flex-shrink-0 items-center justify-center transition-colors ${state.regSalonServices?.includes(s.id) ? 'bg-primary-500 border-primary-500 text-white' : 'border-system-muted bg-system-surface shadow-inner'}">
-                        ${state.regSalonServices?.includes(s.id) ? '<svg class="w-3 h-3 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"/></svg>' : ''}
-                    </div>
-                </label>
-                `).join('')}
-            </div>
-            ${(!state.regSalonCategories || state.regSalonCategories.length === 0) ? '<p class="text-xs text-system-muted font-medium mt-2">💡 Выберите категории выше, чтобы отфильтровать список услуг.</p>' : ''}
-        </div>
+<div class="space-y-4">
+    <div>
+        <label class="block text-sm font-medium text-system-text mb-1.5">Пароль *</label>
+        <input type="password" id="reg-password" placeholder="Минимум 6 символов"
+            class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm"
+            value="${state.regPassword || ""}" oninput="state.regPassword=this.value">
     </div>
-` : ''}
-
-${state.regRole === 'master' ? `
-    <div class="space-y-3 mb-6">
-        <div>
-            <label class="block text-sm font-medium text-system-text mb-1.5">Специальность *</label>
-            <input type="text" id="master-specialty" placeholder="Например: Стилист-колорист"
-                class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm"
-                value="${state.regMasterSpecialty || ''}" oninput="state.regMasterSpecialty=this.value">
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-system-text mb-1.5">Опыт работы (лет)</label>
-            <input type="number" id="master-experience" placeholder="5"
-                class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm"
-                value="${state.regMasterExperience || ''}" oninput="state.regMasterExperience=this.value">
-        </div>
+    <div>
+        <label class="block text-sm font-medium text-system-text mb-1.5">Подтвердите пароль *</label>
+        <input type="password" id="reg-password-confirm" placeholder="Повторите пароль"
+            class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm"
+            value="${state.regPasswordConfirm || ""}" oninput="state.regPasswordConfirm=this.value"
+            onkeydown="if(event.key==='Enter')handleRegStep3()">
     </div>
-` : ''}
-
-<div class="flex gap-3">
-    <button onclick="state.regStep=2;render()" class="flex-1 py-3.5 rounded-2xl border-2 border-system-border text-system-text font-semibold text-sm hover:border-system-border transition-colors">
-        Назад
-    </button>
-    <button onclick="handleRegStep3()" class="flex-1 btn-primary py-3.5 rounded-2xl text-white font-semibold text-sm">
-        Зарегистрироваться
-    </button>
+    <div class="flex gap-3">
+        <button onclick="state.regStep=2;render()" class="flex-1 py-3.5 rounded-2xl border-2 border-system-border text-system-text font-semibold text-sm hover:border-system-border transition-colors">
+            Назад
+        </button>
+        <button onclick="handleRegStep3()" class="flex-1 btn-primary py-3.5 rounded-2xl text-white font-semibold text-sm">
+            Завершить
+        </button>
+    </div>
 </div>`;
     }
 }

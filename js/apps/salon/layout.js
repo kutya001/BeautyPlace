@@ -41,7 +41,7 @@ export function renderSalonHeader() {
                         <span class="text-white"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
                     </div>
                     <div class="flex flex-col">
-                        <span class="leading-none text-base sm:text-lg font-bold text-system-text">SuluuBusiness</span>
+                        <span class="leading-none text-base sm:text-lg font-bold text-system-text">${salon && masters.filter(m=>m.salonId===salon.id).length === 1 ? 'Частный мастер' : 'SuluuBusiness'}</span>
                         <span class="leading-none text-[10px] sm:text-xs text-system-muted mt-0.5">${salon ? salon.name : 'Мой салон'}</span>
                     </div>
                 </div>
@@ -69,7 +69,6 @@ export function renderSalonSidebar() {
     const tabs = [
         { id: 'dashboard', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 17V9"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 17V5"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 17v-3"/></svg>', label: 'Дашборд', show: checkPermission(state.currentUser.id, salon.id, 'dashboard:view') },
         { id: 'bookings', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg>', label: 'Записи', show: checkPermission(state.currentUser.id, salon.id, 'bookings:view') },
-        { id: 'masters', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="4" y2="15.88"/><line stroke-linecap="round" stroke-linejoin="round" x1="14.47" x2="14.48" y1="14.48" y2="14.48"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="20" y2="8.12"/></svg>', label: 'Мастера', show: checkPermission(state.currentUser.id, salon.id, 'masters:view') },
         { id: 'applications', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M22 12V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h16"/><path stroke-linecap="round" stroke-linejoin="round" d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>', label: 'Заявки', show: checkPermission(state.currentUser.id, salon.id, 'applications:view') },
         { id: 'staff', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" stroke-linejoin="round" d="M22 21v-2a4 4 0 0 0-3-3.87"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>', label: 'Штат', show: checkPermission(state.currentUser.id, salon.id, 'staff:view') },
         { id: 'services', icon: '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7h-3a2 2 0 0 1-2-2V2"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 15h6"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 18h6"/></svg>', label: 'Услуги', show: checkPermission(state.currentUser.id, salon.id, 'services:view') },
@@ -114,8 +113,11 @@ export function renderSalonContent() {
 
     const salonBookings = getUserBookings();
     const salonMasters = masters.filter(m => m.salonId === salon.id);
-    const confirmedRevenue = salonBookings.filter(b => b.status === 'confirmed').reduce((sum, b) => {
-        return sum + getSalonPrice(salon.id, b.serviceId, services);
+        const confirmedRevenue = salonBookings.filter(b => b.status === 'confirmed').reduce((sum, b) => {
+        const m = salonMasters.find(master => master.id === b.masterId);
+        // Если мастер на аренде, не считаем его услуги в общую валовую выручку салона от услуг
+        if (m && m.tariff_type === 'rent') return sum;
+        return sum + getSalonPrice(salon.id, b.serviceId, services, b.masterId);
     }, 0);
 
     // RBAC: определяем роль внутри салона
@@ -125,12 +127,10 @@ export function renderSalonContent() {
         return renderSalonDashboard(salon, salonBookings, confirmedRevenue, salonMasters);
     } else if (tab === 'bookings' && checkPermission(state.currentUser.id, salon.id, 'bookings:view')) {
         return renderSalonBookings(salonBookings);
-    } else if (tab === 'masters' && checkPermission(state.currentUser.id, salon.id, 'masters:view')) {
-        return renderSalonMasters(salonMasters, salon);
     } else if (tab === 'applications' && checkPermission(state.currentUser.id, salon.id, 'applications:view')) {
         return renderSalonApplicationsTab(salon);
     } else if (tab === 'staff' && checkPermission(state.currentUser.id, salon.id, 'staff:view')) {
-        return renderSalonStaffTab(salon);
+        return renderSalonStaffTab(salon, salonMasters);
     } else if (tab === 'services' && checkPermission(state.currentUser.id, salon.id, 'services:view')) {
         return renderSalonPricesTab(salon, services);
     } else if (tab === 'subscription' && checkPermission(state.currentUser.id, salon.id, 'subscription:view')) {

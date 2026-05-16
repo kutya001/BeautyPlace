@@ -26,7 +26,7 @@ export function renderSalonDashboard(salon, salonBookings, confirmedRevenue, sal
         
         let revenue = 0;
         salonBookings.filter(b => b.masterId === m.id && b.status === 'confirmed').forEach(b => {
-            revenue += getSalonPrice(salon.id, b.serviceId, services);
+            revenue += getSalonPrice(salon.id, b.serviceId, services, b.masterId);
         });
         
         const commissionRate = m.commissionRate || 40;
@@ -35,15 +35,18 @@ export function renderSalonDashboard(salon, salonBookings, confirmedRevenue, sal
         return { ...m, booked, rate: Math.min(rate, 100), revenue, earnings, commissionRate };
     });
 
-    const totalMastersEarnings = masterUtil.reduce((acc, m) => acc + m.earnings, 0);
-    const salonNetProfit = confirmedRevenue - totalMastersEarnings;
+    const totalMastersEarnings = masterUtil.reduce((acc, m) => acc + (m.tariff_type === 'rent' ? 0 : m.earnings), 0);
+    const rentRevenue = salonMasters.filter(m => m.tariff_type === 'rent').reduce((sum, m) => sum + (m.tariff_details?.rent_amount || 0), 0);
+    const grossServicesRevenue = masterUtil.reduce((acc, m) => acc + (m.tariff_type === 'rent' ? 0 : m.revenue), 0);
+    const totalSalonRevenue = (grossServicesRevenue - totalMastersEarnings) + rentRevenue;
+    const salonNetProfit = totalSalonRevenue; // As per text: Общая выручка салона = (Выручка от услуг мастеров на проценте - Доля мастеров) + Доход от аренды мест.
 
     // Когортный анализ клиентов (LTV)
     const clientMap = {};
     salonBookings.filter(b => b.clientUserId && b.status === 'confirmed').forEach(b => {
         if (!clientMap[b.clientUserId]) clientMap[b.clientUserId] = { name: b.clientName, visits: 0, revenue: 0 };
         clientMap[b.clientUserId].visits++;
-        clientMap[b.clientUserId].revenue += getSalonPrice(salon.id, b.serviceId, services);
+        clientMap[b.clientUserId].revenue += getSalonPrice(salon.id, b.serviceId, services, b.masterId);
     });
     const clientCohorts = Object.values(clientMap).sort((a, b) => b.revenue - a.revenue);
 
@@ -68,15 +71,12 @@ export function renderSalonDashboard(salon, salonBookings, confirmedRevenue, sal
     <!-- Финансы -->
     <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-4 sm:p-6 mb-6 text-white shadow-xl">
         <h3 class="font-bold text-gray-100 mb-4 flex items-center gap-2"><span class="text-xl"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="2" x2="22" y1="10" y2="10"/></svg></span> Бухгалтерия и комиссии</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             <div>
-                <p class="text-system-muted opacity-70 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Общая выручка</p>
-                <p class="text-2xl font-bold">${formatPrice(confirmedRevenue)}</p>
+                <p class="text-system-muted opacity-70 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Выручка от услуг (Процент)</p>
+<p class="text-2xl font-bold">${formatPrice(grossServicesRevenue)}</p>
             </div>
-            <div>
-                <p class="text-system-muted opacity-70 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Выплачено мастерам</p>
-                <p class="text-2xl font-bold text-primary-400">${formatPrice(totalMastersEarnings)}</p>
-            </div>
+            <div><p class="text-system-muted opacity-70 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Выплачено мастерам</p><p class="text-2xl font-bold text-red-500">-${formatPrice(totalMastersEarnings)}</p></div><div><p class="text-system-muted opacity-70 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Доход с аренды</p><p class="text-2xl font-bold text-green-400">+${formatPrice(rentRevenue)}</p></div>
             <div>
                 <p class="text-system-muted opacity-70 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Чистая прибыль салона</p>
                 <p class="text-2xl font-bold text-green-400">${formatPrice(salonNetProfit)}</p>
@@ -624,13 +624,12 @@ export function renderSalonBookings(salonBookings) {
                 const svc = services.find(s => s.id === b.serviceId);
                 return `<tr class="border-b border-system-border">
                                 <td data-label="Клиент" class="p-3 text-system-text text-right md:text-left">
-    <div class="font-medium inline-block sm:block">${b.clientName}</div>
-    <div class="flex items-center justify-end md:justify-start gap-1.5 mt-0.5">
-                                    <div class="font-medium">${b.clientName}</div>
-                                    <div class="flex items-center gap-1.5 mt-0.5">
+                                    <div class="font-medium inline-block sm:block">${b.clientName}</div>
+                                    <div class="flex items-center justify-end md:justify-start gap-1.5 mt-0.5">
                                         <span class="text-xs text-system-muted opacity-70">${b.clientPhone}</span>
-                                        <button onclick="window.openWhatsAppModal('${b.id}')" class="text-[#25D366] hover:text-[#128C7E] flex items-center justify-center transition-colors" title="Написать в WhatsApp">
-                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 0C5.385 0 0 5.385 0 12.032c0 2.13.551 4.2 1.597 6.03L.044 24l6.096-1.597c1.782.951 3.75 1.452 5.86 1.452h.005c6.641 0 12.023-5.384 12.023-12.031C24 5.21 18.636 0 12.031 0zm0 21.848h-.004c-1.802 0-3.565-.483-5.111-1.398l-.367-.217-3.8.995 1.01-3.7-.238-.378c-1.002-1.59-1.53-3.41-1.53-5.281 0-5.518 4.49-10.005 10.04-10.005 5.518 0 10.006 4.486 10.006 10.005 0 5.517-4.488 10.004-10.006 10.004zm5.519-7.514c-.302-.152-1.79-.884-2.066-.985-.276-.102-.477-.152-.678.151-.202.302-.78 1.01-.956 1.218-.176.208-.352.233-.654.081-1.314-.582-2.5-1.464-3.418-2.548-.286-.337-.123-.5.029-.652.138-.138.303-.353.454-.53.15-.175.2-.301.301-.502.101-.201.05-.378-.026-.53-.075-.151-.678-1.636-.928-2.241-.244-.59-.492-.51-.678-.52-.175-.008-.376-.011-.577-.011-.201 0-.528.075-.804.377-.276.302-1.054 1.03-1.054 2.511s1.079 2.913 1.23 3.115c.15.202 2.122 3.238 5.14 4.54 1.838.79 2.569.851 3.5.72 1.03-.146 3.167-1.294 3.619-2.541.452-1.246.452-2.316.317-2.54-.135-.224-.502-.352-.804-.504z"/></svg>
+                                        <button onclick="window.openContactModal('${b.id}')" class="text-blue-500 hover:text-blue-600 flex items-center justify-center transition-colors bg-blue-50 hover:bg-blue-100 px-3 py-1.5 ml-2 rounded-lg text-xs font-bold gap-1 mt-1" title="Написать">
+                                            <svg class="w-4 h-4 text-[#0088cc]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg> 
+                                            Написать
                                         </button>
                                     </div>
                                 </td>
@@ -664,7 +663,8 @@ export function renderSalonBookings(salonBookings) {
     ` : '<div class="text-center py-12 text-system-muted opacity-70 bg-system-surface rounded-2xl border border-system-border">Записей пока нет</div>');
     })()}
     ${state.editingBookingId ? renderBookingEditModal(state.editingBookingId, salonMasters) : ''}
-    ${state.whatsappBookingId ? renderWhatsAppModal() : ''}
+    
+    ${state.contactBookingId ? renderContactModal() : ''}
 </div>`; 
 }
 
@@ -703,7 +703,7 @@ export function renderSalonMasters(salonMasters, salon) {
                                     <p class="text-xs text-primary-500 truncate">${m.specialty}</p>
                                 </div>
                             </div>
-                            <div class="mt-3 flex items-center justify-between text-[10px] text-system-muted">
+                            <div class="flex items-center justify-between text-[10px] text-system-muted mt-1"><span class="px-2 py-0.5 rounded-md bg-system-main font-bold ${m.tariff_type === 'rent' ? 'text-green-600' : 'text-primary-600'} border border-system-border">${m.tariff_type === 'rent' ? 'Аренда' : 'Процент'}</span></div>\n                            <div class="mt-3 flex items-center justify-between text-[10px] text-system-muted">
                                 <span>Услуг: ${(m.services || []).length}</span>
                                 <span class="${m.available ? 'text-green-500' : 'text-system-muted opacity-70'}">${m.available ? '● Активна' : '○ Не в смене'}</span>
                             </div>
@@ -727,13 +727,51 @@ export function renderSalonMasters(salonMasters, salon) {
                 </div>
                 <div class="p-6 flex-1 overflow-y-auto">
                     <div class="mb-6 bg-primary-50 p-5 rounded-2xl border border-primary-100">
-                        <h3 class="text-sm font-bold text-system-text mb-2">Общая комиссия мастера</h3>
-                        <div class="flex items-center gap-3">
-                            <input type="number" min="0" max="100" class="w-20 px-3 py-2 rounded-xl border border-primary-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-center font-bold" value="${em.commissionRate || 40}" 
-                                   onchange="updateMasterCommission(${em.id}, this.value)">
-                            <span class="text-system-muted font-medium">%</span>
-                            <p class="text-xs text-system-muted ml-2">Применяется ко всем услугам по умолчанию</p>
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-bold text-system-text">Условия сотрудничества</h3>
                         </div>
+
+                        <div class="flex gap-4 mb-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="tariff_type" value="percentage" ${em.tariff_type === 'percentage' || !em.tariff_type ? 'checked' : ''} onchange="updateMasterTariff(${em.id}, 'percentage')" class="text-primary-500 focus:ring-primary-400">
+                                <span class="text-sm font-medium text-system-text">Работа за процент</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" name="tariff_type" value="rent" ${em.tariff_type === 'rent' ? 'checked' : ''} onchange="updateMasterTariff(${em.id}, 'rent')" class="text-primary-500 focus:ring-primary-400">
+                                <span class="text-sm font-medium text-system-text">Аренда места</span>
+                            </label>
+                        </div>
+                        
+                        ${em.tariff_type === 'rent' ? `
+                            <div class="flex items-center gap-3 animate-fade-in">
+                                <div>
+                                    <label class="block text-xs font-medium text-system-muted mb-1">Сумма аренды</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" min="0" class="w-24 px-3 py-2 rounded-xl border border-primary-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none font-bold" value="${em.tariff_details ? em.tariff_details.rent_amount : 0}" onchange="updateMasterRentAmount(${em.id}, this.value)">
+                                        <span class="text-system-muted font-medium">сом</span>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-xs font-medium text-system-muted mb-1">Период</label>
+                                    <select class="w-full px-3 py-2 rounded-xl border border-primary-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none font-medium" onchange="updateMasterRentPeriod(${em.id}, this.value)">
+                                        <option value="daily" ${em.tariff_details && em.tariff_details.rent_period === 'daily' ? 'selected' : ''}>В день</option>
+                                        <option value="weekly" ${em.tariff_details && em.tariff_details.rent_period === 'weekly' ? 'selected' : ''}>В неделю</option>
+                                        <option value="monthly" ${em.tariff_details && em.tariff_details.rent_period === 'monthly' ? 'selected' : ''}>В месяц</option>
+                                    </select>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="flex items-center gap-3 animate-fade-in mt-2 border-t border-primary-100 pt-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-system-muted mb-1">Доля мастера</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" min="0" max="100" class="w-20 px-3 py-2 rounded-xl border border-primary-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-center font-bold" value="${em.tariff_details ? (em.tariff_details.percentage_value !== undefined ? em.tariff_details.percentage_value : (em.commissionRate || 40)) : 40}" onchange="updateMasterCommission(${em.id}, this.value)">
+                                        <span class="text-system-muted font-medium">%</span>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-system-muted ml-2 mt-4">Применяется ко всем услугам по умолчанию</p>
+                            </div>
+                        `}
                     </div>
 
                     <h3 class="text-sm font-bold text-system-text mb-4 uppercase tracking-wider">Услуги и индивидуальная комиссия</h3>
@@ -755,12 +793,20 @@ export function renderSalonMasters(salonMasters, salon) {
                                                 <span class="text-sm font-medium text-system-text block">${svc.name}</span>
                                                 <span class="text-xs text-system-muted opacity-70">${getDurationText(getSalonDuration(salon.id, svc.id, services))} · Цена: ${formatPrice(getSalonPrice(salon.id, svc.id, services))}</span>
                                             </div>
+                                            ${em.tariff_type === 'rent' ? `
+                                            <div class="flex items-center gap-2">
+                                                <label class="text-[10px] text-system-muted w-14 text-right leading-tight">Стоимость:<br>(сом)</label>
+                                                <input type="text" class="w-16 px-2 py-1.5 rounded-lg border border-system-border text-sm outline-none text-center bg-gray-50 text-system-muted cursor-not-allowed" 
+                                                       value="${em.customPrices && em.customPrices[svc.id] !== undefined ? em.customPrices[svc.id] : getSalonPrice(salon.id, svc.id, services)}" disabled title="Мастер на аренде сам устанавливает цены">
+                                            </div>
+                                            ` : `
                                             <div class="flex items-center gap-2">
                                                 <label class="text-[10px] text-system-muted w-12 text-right leading-tight">Комиссия:<br>(%)</label>
                                                 <input type="number" min="0" max="100" class="w-16 px-2 py-1.5 rounded-lg border border-system-border text-sm focus:border-primary-400 outline-none text-center" 
                                                        value="${currentComm}" ${!checked ? 'disabled' : ''} 
                                                        onchange="updateMasterServiceCommission(${em.id}, ${svc.id}, this.value)">
                                             </div>
+                                            `}
                                         </div>`;
                                     }).join('')}
                                 </div>
@@ -788,12 +834,45 @@ export function toggleMasterService(masterId, serviceId) {
 
 window.toggleMasterService = toggleMasterService;
 
+
+window.updateMasterTariff = function(masterId, type) {
+    const m = masters.find(x => x.id === masterId);
+    if (!m) return;
+    m.tariff_type = type;
+    if (type === 'rent') {
+        if (!m.tariff_details || typeof m.tariff_details.rent_amount === 'undefined') {
+            m.tariff_details = { rent_amount: 1000, rent_period: 'daily' };
+        }
+    } else {
+        if (!m.tariff_details || typeof m.tariff_details.percentage_value === 'undefined') {
+            m.tariff_details = { percentage_value: m.commissionRate || 40 };
+        }
+    }
+    render();
+};
+
+window.updateMasterRentAmount = function(masterId, amount) {
+    const m = masters.find(x => x.id === masterId);
+    if (!m) return;
+    if (!m.tariff_details) m.tariff_details = {};
+    m.tariff_details.rent_amount = parseInt(amount, 10) || 0;
+    render();
+};
+
+window.updateMasterRentPeriod = function(masterId, period) {
+    const m = masters.find(x => x.id === masterId);
+    if (!m) return;
+    if (!m.tariff_details) m.tariff_details = {};
+    m.tariff_details.rent_period = period;
+    render();
+};
+
 export function updateMasterCommission(masterId, value) {
     const m = masters.find(x => x.id === masterId);
     if (!m) return;
     const rate = parseInt(value, 10);
     if (!isNaN(rate) && rate >= 0 && rate <= 100) {
-        m.commissionRate = rate;
+        m.commissionRate = rate; if(!m.tariff_details) m.tariff_details = {}; m.tariff_details.percentage_value = rate;
         render();
     }
 }
@@ -804,7 +883,7 @@ export function lookupMasterServiceCommission(master, serviceId) {
     if (master.serviceCommissions && master.serviceCommissions[serviceId] !== undefined) {
         return master.serviceCommissions[serviceId];
     }
-    return master.commissionRate || 40;
+    return (master.tariff_details && master.tariff_details.percentage_value !== undefined) ? master.tariff_details.percentage_value : (master.commissionRate || 40);
 }
 
 window.lookupMasterServiceCommission = lookupMasterServiceCommission;
@@ -982,17 +1061,32 @@ async function handleProcessApp(appId, decision) {
 }
 window.handleProcessApp = handleProcessApp;
 
-export function renderSalonStaffTab(salon) {
+export function renderSalonStaffTab(salon, salonMasters) {
+    const currentSubTab = state.staffSubTab || 'all';
+
+    const navHTML = `
+    <div class="flex items-center justify-between mb-4 sm:mb-6">
+        <div class="flex gap-2 border-b border-system-border pb-2 overflow-x-auto hide-scrollbar w-full">
+            <button onclick="state.staffSubTab='all'; render()" class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold transition-colors whitespace-nowrap ${currentSubTab === 'all' ? 'text-primary-600 border-b-2 border-primary-500' : 'text-system-muted hover:text-system-text'}">Все сотрудники</button>
+            <button onclick="state.staffSubTab='masters'; render()" class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold transition-colors whitespace-nowrap ${currentSubTab === 'masters' ? 'text-primary-600 border-b-2 border-primary-500' : 'text-system-muted hover:text-system-text'}">Настройки Мастеров</button>
+        </div>
+    </div>`;
+
+    if (currentSubTab === 'masters') {
+        const mastersHTML = renderSalonMasters(salonMasters, salon);
+        return `<div class="animate-fade-in">${navHTML}${mastersHTML.replace('<h1 class="text-2xl font-bold text-system-text mb-6 shrink-0">Мастера салона</h1>', '')}</div>`;
+    }
+
     const staffList = salonStaff.filter(s => s.salonId === salon.id);
     const modules = [
-        { id: 'dashboard', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 17V9"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 17V5"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 17v-3"/></svg> Дашборд' },
-        { id: 'bookings', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg> Записи' },
-        { id: 'masters', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="4" y2="15.88"/><line stroke-linecap="round" stroke-linejoin="round" x1="14.47" x2="14.48" y1="14.48" y2="14.48"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="20" y2="8.12"/></svg> Мастера' },
-        { id: 'applications', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M22 12V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h16"/><path stroke-linecap="round" stroke-linejoin="round" d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Заявки' },
-        { id: 'staff', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" stroke-linejoin="round" d="M22 21v-2a4 4 0 0 0-3-3.87"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Штат' },
-        { id: 'services', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 18V6"/></svg> Услуги' },
-        { id: 'subscription', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="2" x2="22" y1="10" y2="10"/></svg> Подписка' },
-        { id: 'profile', label: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 20v2"/><path stroke-linecap="round" stroke-linejoin="round" d="m4.93 4.93 1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="m17.66 17.66 1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M20 12h2"/><path stroke-linecap="round" stroke-linejoin="round" d="m6.34 17.66-1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="m19.07 4.93-1.41 1.41"/></svg> Профиль' }
+        { id: 'dashboard', label: 'Дашборд' },
+        { id: 'bookings', label: 'Записи' },
+        { id: 'masters', label: 'Мастера' },
+        { id: 'applications', label: 'Заявки' },
+        { id: 'staff', label: 'Штат' },
+        { id: 'services', label: 'Услуги' },
+        { id: 'subscription', label: 'Подписка' },
+        { id: 'profile', label: 'Профиль' }
     ];
     const actions = [
         { id: 'view', label: 'Просмотр' },
@@ -1000,78 +1094,98 @@ export function renderSalonStaffTab(salon) {
         { id: 'delete', label: 'Удал.' }
     ];
 
+    if (!state.activeStaffId && staffList.length > 0) {
+        state.activeStaffId = staffList[0].id;
+    }
+    const currentStaff = staffList.find(s => s.id === state.activeStaffId) || staffList[0];
+    const userForStaff = currentStaff ? users.find(u => u.id === currentStaff.userId) : null;
+    const isOwner = currentStaff ? currentStaff.baseRole === 'owner' : false;
+    const isMaster = currentStaff ? currentStaff.baseRole === 'master' : false;
+
     return `
-    <div class="animate-fade-in space-y-6">
-        <h1 class="text-2xl font-bold text-system-text">Управление персоналом и доступом</h1>
+    <div class="animate-fade-in flex flex-col h-[calc(100vh-140px)]">
+        <div class="flex items-center justify-between shrink-0">
+            <h1 class="text-2xl font-bold text-system-text mb-2">Штат и доступы</h1>
+            <button onclick="alert('Функция отправки приглашения по номеру в разработке')" class="btn-primary px-4 py-2 rounded-xl text-white font-semibold text-sm flex items-center gap-2"><svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14"></path></svg> Пригласить</button>
+        </div>
+        ${navHTML}
         
-        <div class="space-y-6">
-            ${staffList.map(item => {
-                const user = users.find(u => u.id === item.userId);
-                const isOwner = item.baseRole === 'owner';
-                const isMaster = item.baseRole === 'master';
-                
-                return `
-                <div class="bg-system-surface rounded-3xl border border-system-border shadow-xl overflow-hidden">
-                    <div class="p-6 border-b border-system-border bg-system-main flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <img src="${getAvatarPlaceholder(user?.name)}" class="w-12 h-12 rounded-2xl">
-                            <div>
-                                <div class="font-extrabold text-system-text flex items-center gap-2">
-                                    ${user?.name || '---'}
-                                    <span class="px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-wider ${isOwner ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}">
-                                        ${item.baseRole}
-                                    </span>
+        <div class="flex flex-col md:flex-row gap-6 flex-1 min-h-0">
+            <div class="w-full md:w-1/3 bg-system-surface rounded-2xl border border-system-border overflow-y-auto flex flex-col hide-scrollbar">
+                ${staffList.length > 0 ? `
+                    <div class="p-4 space-y-3">
+                        ${staffList.map(item => {
+                            const u = users.find(x => x.id === item.userId);
+                            const isActive = currentStaff && currentStaff.id === item.id;
+                            const roleColor = item.baseRole === 'owner' ? 'text-purple-600 bg-purple-100' : 'text-blue-600 bg-blue-100';
+                            return `<div class="rounded-xl border ${isActive ? 'border-primary-400 bg-primary-50 shadow-sm' : 'border-system-border hover:border-primary-400 opacity-70 hover:opacity-100'} p-4 cursor-pointer transition-all" onclick="state.activeStaffId='${item.id}'; window.render()">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-system-main flex items-center justify-center text-system-text font-bold uppercase">${(u?.name || '?')[0]}</div>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="font-bold text-system-text truncate">${u?.name || '---'}</h3>
+                                        <div class="flex items-center gap-2 mt-1 -ml-1">
+                                            <span class="px-2 py-0.5 rounded-md text-[10px] uppercase font-bold ${roleColor}">${item.baseRole}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="text-xs text-system-muted opacity-70 font-medium">${user?.phone}</div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                ` : '<div class="text-center py-12 text-system-muted opacity-70">Список пуст</div>'}
+            </div>
+
+            <div class="w-full md:w-2/3 bg-system-surface rounded-2xl border border-system-border overflow-y-auto flex flex-col relative hide-scrollbar">
+                ${currentStaff ? `
+                    <div class="p-6 border-b border-system-border shrink-0 bg-system-main flex items-center justify-between sticky top-0 z-10 hidden sm:flex">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-full bg-system-surface flex items-center justify-center text-xl text-system-text font-bold uppercase shadow-sm border border-system-border">${(userForStaff?.name || '?')[0]}</div>
+                            <div>
+                                <h2 class="text-lg font-bold text-system-text">${userForStaff?.name || '---'}</h2>
+                                <p class="text-xs text-system-muted font-medium">${userForStaff?.phone || 'Нет телефона'}</p>
                             </div>
                         </div>
-                        ${!isOwner ? `<button onclick="handleDeleteStaff('${item.id}')" class="p-2 text-red-400 hover:text-red-500 hover:bg-system-surface rounded-xl transition-all shadow-sm"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18"/><path stroke-linecap="round" stroke-linejoin="round" d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line stroke-linecap="round" stroke-linejoin="round" x1="10" x2="10" y1="11" y2="17"/><line stroke-linecap="round" stroke-linejoin="round" x1="14" x2="14" y1="11" y2="17"/></svg></button>` : ''}
+                        ${!isOwner ? `<button onclick="window.handleDeleteStaff('${currentStaff.id}')" class="px-4 py-2 border border-red-100 text-red-500 hover:bg-red-50 rounded-xl transition-all text-sm font-bold shadow-sm">Удалить сотрудника</button>` : ''}
                     </div>
-                    
-                    <div class="p-6">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs border-collapse">
+                    <div class="p-6 flex-1 overflow-y-auto hide-scrollbar">
+                        <h3 class="text-sm font-bold text-system-text mb-4 uppercase tracking-wider">Настройка доступов</h3>
+                        <div class="overflow-x-auto bg-system-surface rounded-2xl border border-system-border">
+                            <table class="w-full text-left text-sm border-collapse">
                                 <thead>
-                                    <tr class="text-system-muted opacity-70 uppercase tracking-widest font-bold">
-                                        <th class="pb-4 pl-2">Модуль</th>
-                                        ${actions.map(a => `<th class="pb-4 text-center">${a.label}</th>`).join('')}
+                                    <tr class="bg-system-main border-b border-system-border">
+                                        <th class="px-4 py-3 font-bold text-system-muted">Модуль</th>
+                                        ${actions.map(a => `<th class="px-4 py-3 text-center font-bold text-system-muted">${a.label}</th>`).join('')}
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-system-border">
                                     ${modules.map(mod => {
-                                        return `
-                                        <tr>
-                                            <td class="py-3 font-bold text-system-text pl-2">${mod.label}</td>
-                                            ${actions.map(action => {
-                                                const permKey = `${mod.id}:${action.id}`;
-                                                const has = isOwner || (item.permissions && item.permissions.includes(permKey));
-                                                const isDisabled = isOwner || isMaster;
-                                                return `
-                                                <td class="py-3 text-center">
-                                                    <label class="inline-flex items-center cursor-pointer ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}">
-                                                        <input type="checkbox" class="hidden" 
-                                                            ${has ? 'checked' : ''} 
-                                                            ${isDisabled ? 'disabled' : ''}
-                                                            onchange="handleTogglePermission('${item.id}', '${permKey}', this.checked)">
-                                                        <div class="w-10 h-6 bg-system-main rounded-full p-1 transition-all ${has ? 'bg-blue-500' : ''}">
-                                                            <div class="w-4 h-4 bg-system-surface rounded-full shadow-sm transform transition-transform ${has ? 'translate-x-4' : ''}"></div>
-                                                        </div>
-                                                    </label>
-                                                </td>
-                                                `;
-                                            }).join('')}
-                                        </tr>
-                                        `;
+                                        let trHtml = '<tr class="hover:bg-system-main transition-colors">';
+                                        trHtml += '<td class="px-4 py-4 font-bold text-system-text">' + mod.label + '</td>';
+                                        trHtml += actions.map(action => {
+                                            const permKey = mod.id + ':' + action.id;
+                                            const has = isOwner || (currentStaff.permissions && currentStaff.permissions.includes(permKey));
+                                            const isDisabled = isOwner || isMaster;
+                                            
+                                            let td = '<td class="px-4 py-4 text-center">';
+                                            td += '<label class="inline-flex items-center cursor-pointer ' + (isDisabled ? 'opacity-50 cursor-not-allowed' : '') + '">';
+                                            td += '<input type="checkbox" class="hidden" ';
+                                            td += (has ? 'checked ' : '') + (isDisabled ? 'disabled ' : '');
+                                            td += 'onchange="window.handleTogglePermission(\'' + currentStaff.id + '\', \'' + permKey + '\', this.checked)">';
+                                            td += '<div class="w-10 h-6 bg-system-border rounded-full p-1 transition-all ' + (has ? 'bg-primary-500' : '') + '">';
+                                            td += '<div class="w-4 h-4 bg-system-surface rounded-full shadow-md transform transition-transform ' + (has ? 'translate-x-4' : '') + '"></div>';
+                                            td += '</div></label></td>';
+                                            return td;
+                                        }).join('');
+                                        trHtml += '</tr>';
+                                        return trHtml;
                                     }).join('')}
                                 </tbody>
                             </table>
                         </div>
-                        ${isOwner ? `<p class="mt-4 text-[10px] text-purple-400 italic font-medium px-2">● Владелец имеет полный доступ ко всем функциям по умолчанию</p>` : ''}
-                        ${isMaster ? `<p class="mt-4 text-[10px] text-blue-400 italic font-medium px-2">● Права мастеров ограничены их функциональной ролью (расписание и услуги)</p>` : ''}
+                        ${isOwner ? '<div class="mt-4 p-3 bg-purple-50 text-purple-700 rounded-xl text-xs font-medium border border-purple-100">Владелец имеет полный доступ ко всем функциям по умолчанию.</div>' : ''}
+                        ${isMaster ? '<div class="mt-4 p-3 bg-blue-50 text-blue-700 rounded-xl text-xs font-medium border border-blue-100">Права мастеров ограничены их функциональной ролью. Если вы хотите дать больше доступов, смените роль или используйте гибкую настройку.</div>' : ''}
                     </div>
-                </div>
-                `;
-            }).join('')}
+                ` : '<div class="flex items-center justify-center h-full text-system-muted opacity-70">Выберите сотрудника</div>'}
+            </div>
         </div>
     </div>
     `;
@@ -1197,90 +1311,112 @@ window.handleBuySub = handleBuySub;
 
 
 
-export function renderWhatsAppModal() {
-    if (!state.whatsappBookingId) return '';
-    const b = state.bookings.find(x => x.id === state.whatsappBookingId);
+export function renderContactModal() {
+    if (!state.contactBookingId) return '';
+    const b = state.bookings.find(x => x.id === state.contactBookingId);
     if (!b) return '';
     const salon = salons.find(s => s.id === (state.currentUser && state.currentUser.salonId)) || salons.find(s => s.id === b.targetId) || salons[0];
-    
-    const phone = (b.clientPhone || '').replace(/\D/g, ''); 
-    if (phone.length < 9) {
-        return `<div class="fixed inset-0 z-[100] p-4 flex items-center justify-center modal-overlay" onclick="window.closeWhatsAppModal()">
-            <div class="bg-system-surface max-w-sm w-full rounded-2xl p-6 text-center shadow-xl" onclick="event.stopPropagation()">
-                <div class="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-xl mx-auto mb-4"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line stroke-linecap="round" stroke-linejoin="round" x1="12" x2="12" y1="9" y2="13"/><line stroke-linecap="round" stroke-linejoin="round" x1="12" x2="12.01" y1="17" y2="17"/></svg></div>
-                <h3 class="font-bold text-system-text mb-2">Некорректный номер телефона</h3>
-                <p class="text-system-muted text-sm mb-6">Отредактируйте номер клиента перед отправкой сообщения.</p>
-                <button onclick="window.closeWhatsAppModal()" class="w-full btn-primary py-3 rounded-xl font-bold">Закрыть</button>
+    const phone = b.clientPhone || '';
+
+    const templates = [
+        {
+            title: 'Подтверждение записи',
+            text: `Добрый день, ${b.clientName}! Пишем из ${salon.name}. Записали вас на ${b.date} в ${b.time}. Ожидаем вас!`
+        },
+        {
+             title: 'Напоминание и адрес',
+             text: `Добрый день, ${b.clientName}! Напоминаем о записи на ${b.date} в ${b.time} в ${salon.name}. Наш адрес: ${salon.address || ''}. Будем рады видеть вас!`
+        },
+        {
+             title: 'Уточнение (Опоздание)',
+             text: `Добрый день, ${b.clientName}! У вас запись на ${b.date} в ${b.time} в ${salon.name}. Подскажите, пожалуйста, задержитесь ли вы?`
+        }
+    ];
+
+    let templatesHtml = '';
+    templates.forEach(t => {
+        templatesHtml += `
+            <div class="mb-3 p-4 rounded-xl shadow-sm border border-system-border bg-system-surface transition-all">
+                <div class="text-sm font-bold text-system-text mb-2">${t.title}</div>
+                <div class="text-xs text-system-muted mb-4 line-clamp-2 leading-relaxed italic bg-system-main p-2 rounded-lg">«${t.text}»</div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="window.sendMessage('whatsapp', '${phone}', '${t.text.replace(/'/g, "\\'")}')" class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-[#25D366]/10 text-[#128C7E] hover:bg-[#25D366]/20 transition-all font-bold text-xs border border-[#25D366]/20">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 0C5.385 0 0 5.385 0 12.032c0 2.13.551 4.2 1.597 6.03L.044 24l6.096-1.597c1.782.951 3.75 1.452 5.86 1.452h.005c6.641 0 12.023-5.384 12.023-12.031C24 5.21 18.636 0 12.031 0zm0 21.848h-.004c-1.802 0-3.565-.483-5.111-1.398l-.367-.217-3.8.995 1.01-3.7-.238-.378c-1.002-1.59-1.53-3.41-1.53-5.281 0-5.518 4.49-10.005 10.04-10.005 5.518 0 10.006 4.486 10.006 10.005 0 5.517-4.488 10.004-10.006 10.004zm5.519-7.514c-.302-.152-1.79-.884-2.066-.985-.276-.102-.477-.152-.678.151-.202.302-.78 1.01-.956 1.218-.176.208-.352.233-.654.081-1.314-.582-2.5-1.464-3.418-2.548-.286-.337-.123-.5.029-.652.138-.138.303-.353.454-.53.15-.175.2-.301.301-.502.101-.201.05-.378-.026-.53-.075-.151-.678-1.636-.928-2.241-.244-.59-.492-.51-.678-.52-.175-.008-.376-.011-.577-.011-.201 0-.528.075-.804.377-.276.302-1.054 1.03-1.054 2.511s1.079 2.913 1.23 3.115c.15.202 2.122 3.238 5.14 4.54 1.838.79 2.569.851 3.5.72 1.03-.146 3.167-1.294 3.619-2.541.452-1.246.452-2.316.317-2.54-.135-.224-.502-.352-.804-.504z"/></svg> WhatsApp
+                    </button>
+                    <button onclick="window.sendMessage('telegram', '${phone}', '${t.text.replace(/'/g, "\\'")}')" class="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-[#0088cc]/10 text-[#0088cc] hover:bg-[#0088cc]/20 transition-all font-bold text-xs border border-[#0088cc]/20">
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.18-.08-.05-.18-.02-.27 0-.14.03-2.29 1.45-3.26 2.1-.14.09-.28.14-.42.14-.14 0-.41-.08-.6-.14-.24-.08-.55-.12-.52-.26.02-.07.13-.14.24-.22 2.62-1.63 4.39-2.39 5.28-2.75.42-.17.75-.19.91-.04.14.12.16.32.14.46z"/></svg> Telegram
+                    </button>
+                </div>
             </div>
-        </div>`;
-    }
+        `;
+    });
 
     return `
-    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick="window.closeWhatsAppModal()">
-        <div class="bg-system-surface w-full max-w-md rounded-2xl shadow-xl animate-scale-in" onclick="event.stopPropagation()">
-            <div class="p-6 border-b border-system-border bg-system-main flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-[#25D366]" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 0C5.385 0 0 5.385 0 12.032c0 2.13.551 4.2 1.597 6.03L.044 24l6.096-1.597c1.782.951 3.75 1.452 5.86 1.452h.005c6.641 0 12.023-5.384 12.023-12.031C24 5.21 18.636 0 12.031 0zm0 21.848h-.004c-1.802 0-3.565-.483-5.111-1.398l-.367-.217-3.8.995 1.01-3.7-.238-.378c-1.002-1.59-1.53-3.41-1.53-5.281 0-5.518 4.49-10.005 10.04-10.005 5.518 0 10.006 4.486 10.006 10.005 0 5.517-4.488 10.004-10.006 10.004zm5.519-7.514c-.302-.152-1.79-.884-2.066-.985-.276-.102-.477-.152-.678.151-.202.302-.78 1.01-.956 1.218-.176.208-.352.233-.654.081-1.314-.582-2.5-1.464-3.418-2.548-.286-.337-.123-.5.029-.652.138-.138.303-.353.454-.53.15-.175.2-.301.301-.502.101-.201.05-.378-.026-.53-.075-.151-.678-1.636-.928-2.241-.244-.59-.492-.51-.678-.52-.175-.008-.376-.011-.577-.011-.201 0-.528.075-.804.377-.276.302-1.054 1.03-1.054 2.511s1.079 2.913 1.23 3.115c.15.202 2.122 3.238 5.14 4.54 1.838.79 2.569.851 3.5.72 1.03-.146 3.167-1.294 3.619-2.541.452-1.246.452-2.316.317-2.54-.135-.224-.502-.352-.804-.504z"/></svg>
-                    <h3 class="text-lg font-bold text-system-text">Написать клиенту</h3>
-                </div>
-                <button onclick="window.closeWhatsAppModal()" class="w-8 h-8 rounded-full bg-system-surface flex items-center justify-center text-system-muted hover:text-system-text shadow-sm border border-system-border text-lg">&times;</button>
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onclick="window.closeContactModal()">
+        <div class="bg-system-surface w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl shadow-xl animate-scale-in" onclick="event.stopPropagation()">
+            <div class="sticky top-0 z-10 p-5 border-b border-system-border bg-system-main flex items-center justify-between">
+                <h3 class="text-lg font-bold text-system-text flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    Связаться с клиентом
+                </h3>
+                <button onclick="window.closeContactModal()" class="w-8 h-8 rounded-full bg-system-surface flex items-center justify-center text-system-muted hover:text-system-text shadow-sm border border-system-border text-lg">&times;</button>
             </div>
-            
-            <div class="p-6">
-                <div class="p-3 bg-system-main rounded-xl border border-system-border mb-5">
-                    <div class="text-sm font-semibold text-system-text">${b.clientName}</div>
-                    <div class="text-xs text-system-muted font-mono">${b.clientPhone}</div>
+            <div class="p-5 flex flex-col gap-6">
+                <div class="flex items-center gap-4 p-4 bg-system-main rounded-2xl border border-system-border shadow-sm">
+                    <div class="w-12 h-12 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center text-xl font-bold flex-shrink-0">${b.clientName[0].toUpperCase()}</div>
+                    <div class="overflow-hidden">
+                        <div class="font-bold text-system-text truncate text-lg">${b.clientName}</div>
+                        <div class="text-sm font-mono text-system-muted opacity-80 truncate mt-0.5">${b.clientPhone}</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-system-muted opacity-80 mb-3 ml-1 flex items-center gap-2">
+                        <span>Написать сообщение</span>
+                        <div class="h-px bg-system-border flex-1"></div>
+                    </h4>
+                    ${templatesHtml}
                 </div>
                 
-                <p class="text-xs font-bold uppercase tracking-wider text-system-muted opacity-70 mb-3 ml-1">Шаблоны сообщений</p>
-                <div class="space-y-3 mb-2">
-                    
-                    <button onclick="window.sendWhatsAppMessage('${phone}', 'Добрый день, ${b.clientName}! Пишем из ${salon.name}. Записали вас на ${b.date} в ${b.time}. Ожидаем вас!')" class="w-full text-left p-4 rounded-xl border border-system-border bg-system-surface hover:border-[#25D366] hover:bg-[#25D366] hover:bg-opacity-5 transition-all group">
-                        <div class="flex items-center justify-between mb-1">
-                            <div class="text-sm font-semibold text-system-text group-hover:text-[#128C7E]">Подтверждение записи</div>
-                            <svg class="w-4 h-4 text-[#25D366] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </div>
-                        <div class="text-xs text-system-muted mt-2 line-clamp-2 leading-relaxed tracking-wide">«Добрый день, ${b.clientName}! Пишем из ${salon.name}. Записали вас на ${b.date} в ${b.time}. Ожидаем вас!»</div>
-                    </button>
-                    
-                    
-                    <button onclick="window.sendWhatsAppMessage('${phone}', 'Добрый день, ${b.clientName}! Напоминаем о записи на ${b.date} в ${b.time} в ${salon.name}. Наш адрес: ${salon.address || ''}. Будем рады видеть вас!')" class="w-full text-left p-4 rounded-xl border border-system-border bg-system-surface hover:border-[#25D366] hover:bg-[#25D366] hover:bg-opacity-5 transition-all group">
-                        <div class="flex items-center justify-between mb-1">
-                            <div class="text-sm font-semibold text-system-text group-hover:text-[#128C7E]">Напоминание и адрес</div>
-                            <svg class="w-4 h-4 text-[#25D366] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </div>
-                        <div class="text-xs text-system-muted mt-2 line-clamp-2 leading-relaxed tracking-wide">«Добрый день, ${b.clientName}! Напоминаем о записи на ${b.date} в ${b.time}...»</div>
-                    </button>
-                    
-                    
-                    <button onclick="window.sendWhatsAppMessage('${phone}', 'Добрый день, ${b.clientName}! У вас запись на ${b.date} в ${b.time} в ${salon.name}. Подскажите, пожалуйста, задержитесь ли вы?')" class="w-full text-left p-4 rounded-xl border border-system-border bg-system-surface hover:border-[#25D366] hover:bg-[#25D366] hover:bg-opacity-5 transition-all group">
-                        <div class="flex items-center justify-between mb-1">
-                            <div class="text-sm font-semibold text-system-text group-hover:text-[#128C7E]">Уточнение (Опоздание)</div>
-                            <svg class="w-4 h-4 text-[#25D366] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </div>
-                        <div class="text-xs text-system-muted mt-2 line-clamp-2 leading-relaxed tracking-wide">«Добрый день, ${b.clientName}! У вас запись на ${b.date} в ${b.time}...»</div>
-                    </button>
+                <div class="pt-2 border-t border-system-border">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-system-muted opacity-80 mb-3 ml-1">Открыть чат без шаблона</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="window.sendMessage('whatsapp', '${phone}', '')" class="flex flex-col items-center justify-center p-4 rounded-2xl bg-[#25D366]/5 text-[#128C7E] hover:bg-[#25D366]/15 transition-all border border-[#25D366]/20">
+                            <svg class="w-7 h-7 mb-2" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 0C5.385 0 0 5.385 0 12.032c0 2.13.551 4.2 1.597 6.03L.044 24l6.096-1.597c1.782.951 3.75 1.452 5.86 1.452h.005c6.641 0 12.023-5.384 12.023-12.031C24 5.21 18.636 0 12.031 0zm0 21.848h-.004c-1.802 0-3.565-.483-5.111-1.398l-.367-.217-3.8.995 1.01-3.7-.238-.378c-1.002-1.59-1.53-3.41-1.53-5.281 0-5.518 4.49-10.005 10.04-10.005 5.518 0 10.006 4.486 10.006 10.005 0 5.517-4.488 10.004-10.006 10.004zm5.519-7.514c-.302-.152-1.79-.884-2.066-.985-.276-.102-.477-.152-.678.151-.202.302-.78 1.01-.956 1.218-.176.208-.352.233-.654.081-1.314-.582-2.5-1.464-3.418-2.548-.286-.337-.123-.5.029-.652.138-.138.303-.353.454-.53.15-.175.2-.301.301-.502.101-.201.05-.378-.026-.53-.075-.151-.678-1.636-.928-2.241-.244-.59-.492-.51-.678-.52-.175-.008-.376-.011-.577-.011-.201 0-.528.075-.804.377-.276.302-1.054 1.03-1.054 2.511s1.079 2.913 1.23 3.115c.15.202 2.122 3.238 5.14 4.54 1.838.79 2.569.851 3.5.72 1.03-.146 3.167-1.294 3.619-2.541.452-1.246.452-2.316.317-2.54-.135-.224-.502-.352-.804-.504z"/></svg>
+                            <span class="font-bold text-sm">WhatsApp</span>
+                        </button>
+                        <button onclick="window.sendMessage('telegram', '${phone}', '')" class="flex flex-col items-center justify-center p-4 rounded-2xl bg-[#0088cc]/5 text-[#0088cc] hover:bg-[#0088cc]/15 transition-all border border-[#0088cc]/20">
+                            <svg class="w-7 h-7 mb-2" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.18-.08-.05-.18-.02-.27 0-.14.03-2.29 1.45-3.26 2.1-.14.09-.28.14-.42.14-.14 0-.41-.08-.6-.14-.24-.08-.55-.12-.52-.26.02-.07.13-.14.24-.22 2.62-1.63 4.39-2.39 5.28-2.75.42-.17.75-.19.91-.04.14.12.16.32.14.46z"/></svg>
+                            <span class="font-bold text-sm">Telegram</span>
+                        </button>
+                    </div>
                 </div>
             </div>
-            
         </div>
     </div>`;
 }
 
-window.renderWhatsAppModal = renderWhatsAppModal;
 
-window.openWhatsAppModal = (id) => {
-    state.whatsappBookingId = id;
-    render();
-};
 
-window.closeWhatsAppModal = () => {
-    state.whatsappBookingId = null;
-    render();
-};
 
-window.sendWhatsAppMessage = (phone, text) => {
-    const encoded = encodeURIComponent(text);
-    window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
-    window.closeWhatsAppModal();
+
+window.openContactModal = (id) => { state.contactBookingId = id; render(); }; window.closeContactModal = () => { state.contactBookingId = null; render(); };
+
+window.sendMessage = (provider, phone, text) => {
+    const encoded = text ? encodeURIComponent(text) : '';
+    let p = phone.replace(/\D/g, '');
+    
+    if (provider === 'whatsapp') {
+        if (p.length < 9) {
+            alert('Некорректный номер телефона');
+            return;
+        }
+        window.open(`https://wa.me/${p}${encoded ? '?text='+encoded : ''}`, '_blank');
+    } else if (provider === 'telegram') {
+        if (!p.startsWith('996') && p.length === 9) p = '996' + p;
+        else if (!p.startsWith('+')) p = '+' + p;
+        window.open(`https://t.me/${p}${encoded ? '?text='+encoded : ''}`, '_blank');
+    }
+    
+    window.closeContactModal();
 };

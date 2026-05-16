@@ -30,33 +30,33 @@ export const DATABASE = {
         { id: 3, name: 'Silk Road Spa', address: 'Бишкек, ул. Токтогула, 90', phone: '+996 555 555 666', rating: 5.0, reviews: 42, image: 'https://images.unsplash.com/photo-1519415510236-85591199766e?auto=format&fit=crop&q=80&w=800', categories: [5, 6], openTime: '08:00', closeTime: '22:00', features: ['Бассейн', 'Сауна'], theme: 'eco' }
     ],
     masters: [
-        { id: 6, name: 'Камила Осмонова', specialty: 'Мастер ногтевого сервиса', rating: 4.8, reviews: 15, experience: 2, avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200', salonId: null, services: [4, 5], available: true, about: 'Принимаю на дому и на выезд.' },
-        { id: 7, name: 'Жанна Алиева', specialty: 'Парикмахер', rating: 4.9, reviews: 110, experience: 7, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200', salonId: null, services: [1, 2, 3], available: true, about: 'Делаю лучшие стрижки в городе. Выезд на дом.' },
-        { id: 1, name: 'Айпери Маратова', specialty: 'Топ-стилист', rating: 4.9, reviews: 56, experience: 8, avatar: 'https://images.unsplash.com/photo-1595959183082-7b570b7e08e2?auto=format&fit=crop&q=80&w=200', salonId: 1, services: [1, 2, 3], available: true, about: 'Специализируюсь на сложных окрашиваниях и вечерних прическах.' },
-        { id: 2, name: 'Елена Иванова', specialty: 'Мастер маникюра', rating: 4.8, reviews: 42, experience: 5, avatar: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&q=80&w=200', salonId: 1, services: [4, 5], available: true, about: 'Идеальный френч и укрепление ногтевой пластины.' },
-        { id: 3, name: 'Бегимай Сатыбекова', specialty: 'Косметолог', rating: 5.0, reviews: 28, experience: 10, avatar: 'https://images.unsplash.com/photo-1594744803329-e58b31de2177?auto=format&fit=crop&q=80&w=200', salonId: 1, services: [11, 12], available: true, about: 'Врач-косметолог с высшим медицинским образованием.' },
-        { id: 4, name: 'Арман Каримов', specialty: 'Барбер', rating: 4.7, reviews: 35, experience: 4, avatar: 'https://images.unsplash.com/photo-1534030347209-467a5b0ad3e6?auto=format&fit=crop&q=80&w=200', salonId: 2, services: [6, 7], available: true, about: 'Мужские стрижки и оформление бороды любой сложности.' },
-        { id: 5, name: 'Диана Волкова', specialty: 'Визажист', rating: 4.9, reviews: 19, experience: 3, avatar: 'https://images.unsplash.com/photo-1567532939604-b6c5b0adcc2c?auto=format&fit=crop&q=80&w=200', salonId: 2, services: [8, 9, 10], available: true, about: 'Создаю образы для фотосессий и свадеб.' },
-        { id: 6, name: 'Михаил Торопов', specialty: 'Массажист', rating: 4.9, reviews: 67, experience: 12, avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=200', salonId: 3, services: [13, 14, 15], available: true, about: 'Массаж спины и антистрессовые программы.' }
+        { id: 6, name: 'Камила Осмонова', specialty: 'Мастер ногтевого сервиса', rating: 4.8, reviews: 15, experience: 2, avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200', salonId: null, tariff_type: 'percentage', tariff_details: { percentage_value: 100 }, services: [4, 5], available: true, about: 'Принимаю на дому и на выезд.' },
+        { id: 7, name: 'Жанна Алиева', specialty: 'Парикмахер', rating: 4.9, reviews: 110, experience: 7, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200', salonId: null, tariff_type: 'percentage', tariff_details: { percentage_value: 100 }, services: [1, 2, 3], available: true, about: 'Делаю лучшие стрижки в городе. Выезд на дом.' },
+        { id: 1, name: 'Айпери Маратова', specialty: 'Топ-стилист', rating: 4.9, reviews: 56, experience: 8, avatar: 'https://images.unsplash.com/photo-1595959183082-7b570b7e08e2?auto=format&fit=crop&q=80&w=200', salonId: 1, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, services: [1, 2, 3], available: true, about: 'Специализируюсь на сложных окрашиваниях и вечерних прическах.' },
+        { id: 2, name: 'Елена Иванова', specialty: 'Мастер маникюра', rating: 4.8, reviews: 42, experience: 5, avatar: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&q=80&w=200', salonId: 1, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, services: [4, 5], available: true, about: 'Идеальный френч и укрепление ногтевой пластины.' },
+        { id: 3, name: 'Бегимай Сатыбекова', specialty: 'Косметолог', rating: 5.0, reviews: 28, experience: 10, avatar: 'https://images.unsplash.com/photo-1594744803329-e58b31de2177?auto=format&fit=crop&q=80&w=200', salonId: 1, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, services: [11, 12], available: true, about: 'Врач-косметолог с высшим медицинским образованием.' },
+        { id: 4, name: 'Арман Каримов', specialty: 'Барбер', rating: 4.7, reviews: 35, experience: 4, avatar: 'https://images.unsplash.com/photo-1534030347209-467a5b0ad3e6?auto=format&fit=crop&q=80&w=200', salonId: 2, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, services: [6, 7], available: true, about: 'Мужские стрижки и оформление бороды любой сложности.' },
+        { id: 5, name: 'Диана Волкова', specialty: 'Визажист', rating: 4.9, reviews: 19, experience: 3, avatar: 'https://images.unsplash.com/photo-1567532939604-b6c5b0adcc2c?auto=format&fit=crop&q=80&w=200', salonId: 2, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, services: [8, 9, 10], available: true, about: 'Создаю образы для фотосессий и свадеб.' },
+        { id: 6, name: 'Михаил Торопов', specialty: 'Массажист', rating: 4.9, reviews: 67, experience: 12, avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=200', salonId: 3, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, services: [13, 14, 15], available: true, about: 'Массаж спины и антистрессовые программы.' }
     ],
     // Шаг 1: RBAC — штатное расписание салонов
     salonStaff: [
-        { id: 'ST001', userId: 2, salonId: 1, baseRole: 'owner', permissions: ['*:*'], status: 'active' },
-        { id: 'ST002', userId: 3, salonId: 2, baseRole: 'owner', permissions: ['*:*'], status: 'active' },
-        { id: 'ST003', userId: 9, salonId: 3, baseRole: 'owner', permissions: ['*:*'], status: 'active' },
-        { id: 'ST004', userId: 13, salonId: 1, baseRole: 'manager', permissions: ['dashboard:view', 'bookings:view', 'bookings:edit', 'masters:view'], status: 'active' },
-        { id: 'ST005', userId: 14, salonId: 1, baseRole: 'receptionist', permissions: ['bookings:view', 'bookings:edit'], status: 'active' }
+        { id: 'ST001', userId: 2, salonId: 1, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, baseRole: 'owner', permissions: ['*:*'], status: 'active' },
+        { id: 'ST002', userId: 3, salonId: 2, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, baseRole: 'owner', permissions: ['*:*'], status: 'active' },
+        { id: 'ST003', userId: 9, salonId: 3, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, baseRole: 'owner', permissions: ['*:*'], status: 'active' },
+        { id: 'ST004', userId: 13, salonId: 1, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, baseRole: 'manager', permissions: ['dashboard:view', 'bookings:view', 'bookings:edit', 'masters:view'], status: 'active' },
+        { id: 'ST005', userId: 14, salonId: 1, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, baseRole: 'receptionist', permissions: ['bookings:view', 'bookings:edit'], status: 'active' }
     ],
     salonApplications: [
-        { id: 'APP001', salonId: 1, userId: 10, baseRole: 'master', status: 'pending', createdAt: '2026-05-10T10:00:00Z' }
+        { id: 'APP001', salonId: 1, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, userId: 10, baseRole: 'master', status: 'pending', createdAt: '2026-05-10T10:00:00Z' }
     ],
     salonSubscriptions: [
-        { salonId: 1, planId: 'pro', status: 'active', expiresAt: '2026-06-10T00:00:00Z' },
-        { salonId: 2, planId: 'basic', status: 'active', expiresAt: '2026-06-10T00:00:00Z' },
-        { salonId: 3, planId: 'enterprise', status: 'active', expiresAt: '2026-06-10T00:00:00Z' }
+        { salonId: 1, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, planId: 'pro', status: 'active', expiresAt: '2026-06-10T00:00:00Z' },
+        { salonId: 2, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, planId: 'basic', status: 'active', expiresAt: '2026-06-10T00:00:00Z' },
+        { salonId: 3, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, planId: 'enterprise', status: 'active', expiresAt: '2026-06-10T00:00:00Z' }
     ],
     salonTransactions: [
-        { id: 'TRX001', salonId: 1, amount: 2500, date: '2026-05-10T09:00:00Z', planId: 'pro' }
+        { id: 'TRX001', salonId: 1, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, amount: 2500, date: '2026-05-10T09:00:00Z', planId: 'pro' }
     ],
     subscriptionPlans: [
         { id: 'basic', name: 'Базовый', price: 1000, features: ['До 3 мастеров', 'Базовая аналитика'] },
@@ -66,11 +66,11 @@ export const DATABASE = {
     users: [
         { id: 1, phone: '+996 555 000 000', password: 'admin123', name: 'Супер Админ', role: 'superadmin' },
         { id: 8, phone: '+996 555 000 999', password: 'admin123', name: 'Админ 2', role: 'superadmin' },
-        { id: 2, phone: '+996 555 111 111', password: 'salon123', name: 'Салон Suluu Luxe', role: 'salon', salonId: 1 },
-        { id: 3, phone: '+996 555 111 222', password: 'salon123', name: 'Салон Aura Beauty', role: 'salon', salonId: 2 },
-        { id: 9, phone: '+996 555 111 333', password: 'salon123', name: 'Салон Silk Road Spa', role: 'salon', salonId: 3 },
-        { id: 13, phone: '+996 555 200 111', password: 'manager1', name: 'Менеджер (Suluu)', role: 'salon', salonId: 1 },
-        { id: 14, phone: '+996 555 200 222', password: 'recept1', name: 'Ресепшн (Suluu)', role: 'salon', salonId: 1 },
+        { id: 2, phone: '+996 555 111 111', password: 'salon123', name: 'Салон Suluu Luxe', role: 'salon', salonId: 1, tariff_type: 'percentage', tariff_details: { percentage_value: 40 } },
+        { id: 3, phone: '+996 555 111 222', password: 'salon123', name: 'Салон Aura Beauty', role: 'salon', salonId: 2, tariff_type: 'percentage', tariff_details: { percentage_value: 40 } },
+        { id: 9, phone: '+996 555 111 333', password: 'salon123', name: 'Салон Silk Road Spa', role: 'salon', salonId: 3, tariff_type: 'percentage', tariff_details: { percentage_value: 40 } },
+        { id: 13, phone: '+996 555 200 111', password: 'manager1', name: 'Менеджер (Suluu)', role: 'salon', salonId: 1, tariff_type: 'percentage', tariff_details: { percentage_value: 40 } },
+        { id: 14, phone: '+996 555 200 222', password: 'recept1', name: 'Ресепшн (Suluu)', role: 'salon', salonId: 1, tariff_type: 'percentage', tariff_details: { percentage_value: 40 } },
         { id: 4, phone: '+996 700 111 111', password: 'master123', name: 'Мастер Айпери (Волосы)', role: 'master', masterId: 1 },
         { id: 10, phone: '+996 700 333 333', password: 'master123', name: 'Мастер Елена (Маникюр)', role: 'master', masterId: 2 },
         { id: 5, phone: '+996 700 222 222', password: 'master123', name: 'Мастер Арман (Барбер)', role: 'master', masterId: 4 },
@@ -92,7 +92,7 @@ export const DATABASE = {
         { id: 'BK009', type: 'salon', targetId: 1, serviceId: 2, masterId: 1, date: '03.05.2026', time: '14:00', clientName: 'Мария', clientPhone: '+996 550 111 222', clientUserId: 7, status: 'confirmed', createdAt: '2026-04-25T10:00:00Z' },
         { id: 'BK010', type: 'salon', targetId: 2, serviceId: 8, masterId: 5, date: '10.05.2026', time: '10:00', clientName: 'Рахат', clientPhone: '+996 550 555 666', clientUserId: null, status: 'pending', createdAt: '2026-05-07T12:00:00Z' },
         { id: 'BK011', type: 'salon', targetId: 3, serviceId: 13, masterId: 6, date: '11.05.2026', time: '18:00', clientName: 'Азамат', clientPhone: '+996 550 777 888', clientUserId: null, status: 'confirmed', createdAt: '2026-05-08T10:00:00Z' },
-        { id: 'BK012', type: 'master', targetId: 4, salonId: 2, serviceId: 7, masterId: 4, date: '09.05.2026', time: '15:00', clientName: 'Айбек', clientPhone: '+996 550 123 456', clientUserId: 6, status: 'confirmed', createdAt: '2026-05-05T10:00:00Z' }
+        { id: 'BK012', type: 'master', targetId: 4, salonId: 2, tariff_type: 'percentage', tariff_details: { percentage_value: 40 }, serviceId: 7, masterId: 4, date: '09.05.2026', time: '15:00', clientName: 'Айбек', clientPhone: '+996 550 123 456', clientUserId: 6, status: 'confirmed', createdAt: '2026-05-05T10:00:00Z' }
     ],
     priceHistory: [],
     reviews: [

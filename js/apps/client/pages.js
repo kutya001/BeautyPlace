@@ -247,7 +247,7 @@ export function renderSalonDetailPage() {
         <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
             <div>
                 <div class="flex items-center gap-3 mb-2">
-                    <h1 class="text-3xl font-bold text-system-text">${salon.name}</h1>
+                    <h1 class="text-3xl font-bold text-system-text">${salon.name}${isPrivateMaster ? ` <span class="text-lg font-normal text-system-muted opacity-70 ml-2">Частный мастер</span>` : ``}</h1>
                     ${salon.verified ? '<span class="badge bg-blue-100 text-blue-600">✓ Проверен</span>' : ''}
                 </div>
                 <div class="flex items-center gap-2 mb-2">
@@ -256,7 +256,7 @@ export function renderSalonDetailPage() {
                     <span class="text-system-muted opacity-80 ml-2">${getPriceLevel(salon.priceLevel)}</span>
                 </div>
                 <p class="text-system-muted">📍 ${salon.address}, ${salon.city || 'Бишкек'}</p>
-                <p class="text-system-muted opacity-80 text-sm mt-1">🕐 ${salon.openTime}–${salon.closeTime} · ${salon.masters} мастеров</p>
+                <p class="text-system-muted opacity-80 text-sm mt-1">🕐 ${salon.openTime}–${salon.closeTime} · ${isPrivateMaster ? `Частный мастер` : salonMasters.length + ` мастерог`}</p>>
             </div>
             <button onclick="openBookingForSalon(${salon.id})" class="btn-primary px-8 py-3 rounded-2xl text-white font-semibold whitespace-nowrap">Записаться</button>
         </div>
@@ -266,7 +266,7 @@ export function renderSalonDetailPage() {
     </div>
 </div>
 <div class="mb-8">
-    <h2 class="text-xl font-bold text-system-text mb-4">Услуги салона</h2>
+    <h2 class="text-xl font-bold text-system-text mb-4">Услуги ${isPrivateMaster ? `мастер` : `салона`}</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         ${salonServices.map(svc => `
             <div class="bg-system-surface rounded-xl border border-system-border/50 p-4 flex items-center justify-between card-hover cursor-pointer" onclick="openBookingForServiceInSalon(${svc.id}, ${salon.id})">
@@ -277,7 +277,7 @@ export function renderSalonDetailPage() {
                     </h3>
                     <p class="text-sm text-system-muted opacity-80">${getDurationText(getSalonDuration(salon.id, svc.id, services))} · <span class="star text-xs">★</span> ${svc.rating}</p>
                 </div>
-                <div class="text-right"><p class="font-bold text-system-text">${formatPrice(getSalonPrice(salon.id, svc.id, services))}</p></div>
+                <div class="text-right"><p class="font-bold text-system-text">${formatPrice(getSalonPrice(salon.id, svc.id, services, typeof master !== 'undefined' ? master.id : undefined))}</p></div>
             </div>
         `).join('')}
     </div>
@@ -340,7 +340,7 @@ export function renderMasterDetailPage() {
                     </h3>
                     <p class="text-sm text-system-muted opacity-70">${getDurationText(salon ? getSalonDuration(salon.id, svc.id, services) : svc.duration)} · <span class="star text-xs">★</span> ${svc.rating}</p>
                 </div>
-                <div class="text-right"><p class="font-bold text-system-text">${formatPrice(salon ? getSalonPrice(salon.id, svc.id, services) : svc.price)}</p></div>
+                <div class="text-right"><p class="font-bold text-system-text">${formatPrice(salon ? getSalonPrice(salon.id, svc.id, services, typeof master !== 'undefined' ? master.id : undefined) : svc.price)}</p></div>
             </div>
         `).join('')}
     </div>
@@ -400,7 +400,7 @@ export function renderServiceDetailPage() {
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         ${offeringSalons.length > 0 || independentMasters.length > 0 ? `
             ${offeringSalons.map(salon => {
-                const salonPrice = getSalonPrice(salon.id, svc.id, services);
+                const salonPrice = getSalonPrice(salon.id, svc.id, services, typeof master !== 'undefined' ? master.id : undefined);
                 return `
                 <div class="island-card border-none p-5 cart-hover cursor-pointer" onclick="openSalonDetail(${salon.id})">
                     <div class="flex justify-between items-start mb-3">
@@ -478,7 +478,7 @@ export function renderBookingsPage() {
                 <div class="mt-4 pt-4 border-t border-gray-50 text-sm">
                     <div class="flex justify-between mb-2">
                         <span class="text-system-muted">Стоимость:</span>
-                        <span class="font-bold text-system-text">${svc ? formatPrice(getSalonPrice(b.targetId, svc.id, services)) : ''}</span>
+                        <span class="font-bold text-system-text">${svc ? formatPrice(getSalonPrice(b.targetId, svc.id, services, b.masterId)) : ''}</span>
                     </div>
                     ${b.clientComment ? `
                         <div class="bg-system-main rounded-xl p-3 my-3 border border-system-border/50">
