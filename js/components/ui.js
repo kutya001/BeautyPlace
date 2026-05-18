@@ -14,7 +14,8 @@ export function renderThemeSwitcher() {
         barber: '<svg class="w-5 h-5 inline-block text-blue-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M12 14v7"/></svg>',
         hair: '<svg class="w-5 h-5 inline-block text-purple-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 12v.01"/></svg>',
         eco: '<svg class="w-5 h-5 inline-block text-green-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>',
-        medical: '<svg class="w-5 h-5 inline-block text-cyan-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7Z"/></svg>'
+        medical: '<svg class="w-5 h-5 inline-block text-cyan-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7Z"/></svg>',
+        graphite: '<svg class="w-5 h-5 inline-block text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" /></svg>'
     };
 
     const themeNames = {
@@ -22,21 +23,18 @@ export function renderThemeSwitcher() {
         barber: 'Барбер',
         hair: 'Волосы',
         eco: 'Эко',
-        medical: 'Мед'
+        medical: 'Мед',
+        graphite: 'Графит'
     };
 
     const dropdown = state.showThemeDropdown ? `
         <div class="fixed inset-0 z-[90]" onclick="event.stopPropagation(); state.showThemeDropdown = false; window.render()"></div>
-        <div class="absolute top-full mt-2 right-0 bg-system-surface border border-system-border rounded-xl shadow-xl p-2 z-[100] flex flex-col gap-1 min-w-[140px] animate-fade-in"
+        <div class="absolute top-full mt-2 right-0 bg-system-surface border border-system-border rounded-xl shadow-xl p-2 z-[100] flex flex-row gap-1 animate-fade-in"
              onclick="event.stopPropagation()">
             ${Object.keys(themeIcons).map(theme => `
-                <button class="flex items-center justify-between w-full text-left px-3 py-2 rounded-lg hover:bg-system-main transition-colors ${currentTheme === theme ? 'bg-system-main text-primary-600 font-medium' : 'text-system-text'}"
+                <button class="flex items-center justify-center p-2 rounded-lg hover:bg-system-main transition-colors ${currentTheme === theme ? 'bg-system-main text-primary-600' : 'text-system-text'}"
                         onclick="ThemeManager.setTheme('${theme}'); state.showThemeDropdown = false; window.render()">
-                    <div class="flex items-center gap-2">
-                        <span>${themeIcons[theme]}</span>
-                        <span class="text-sm">${themeNames[theme]}</span>
-                    </div>
-                    ${currentTheme === theme ? '<span class="text-primary-600 text-xs">✓</span>' : ''}
+                    <span>${themeIcons[theme]}</span>
                 </button>
             `).join('')}
         </div>

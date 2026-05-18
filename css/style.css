@@ -64,6 +64,19 @@ html[data-theme="medical"] {
   --border-color: #dbe6eb;
 }
 
+/* Графит (Dark mode, Not too dark) */
+html[data-theme="graphite"] {
+  --theme-50: #2a2d33;
+  --theme-100: #383c44;
+  --theme-500: #7d8899;
+  --theme-600: #626d7f;
+  --bg-main: #14161a;
+  --bg-surface: #1e2126;
+  --text-main: #ffffff;
+  --text-muted: #9aa2ae;
+  --border-color: #31363e;
+}
+
 /* Глобальные применения */
 body {
   background-color: var(--bg-main);
@@ -133,7 +146,7 @@ body { font-family: 'Inter', system-ui, sans-serif; }
 .role-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,.12); }
 .role-card.selected { border-color: var(--theme-500); background: var(--theme-50); }
 
-.auth-input { transition: all .2s ease; }
+.auth-input { transition: all .2s ease; background-color: var(--bg-surface); color: var(--text-main); }
 .auth-input:focus { border-color: var(--theme-500); box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-500) 15%, transparent); }
 
 .tab-btn { position: relative; transition: all .3s ease; }

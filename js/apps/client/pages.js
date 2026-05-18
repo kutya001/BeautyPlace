@@ -92,7 +92,7 @@ ${!state.currentUser ? `
 <section class="island max-w-3xl mx-auto px-4 text-center bg-gradient-to-r from-primary-500 to-primary-600 !border-none mx-4 mb-8">
         <h2 class="text-3xl font-bold text-white mb-4">Вы beauty-мастер или владелец салона?</h2>
         <p class="text-primary-100 mb-8 text-lg">Присоединяйтесь к Suluu и получайте новых клиентов каждый день</p>
-        <button onclick="handleLogout()" class="bg-system-surface text-primary-600 px-8 py-3.5 rounded-2xl font-semibold text-sm hover:bg-primary-50 transition-colors shadow-lg">
+        <button onclick="state.showAuthPage=true; state.authMode='roleSelect'; window.render()" class="bg-system-surface text-primary-600 px-8 py-3.5 rounded-2xl font-semibold text-sm hover:bg-primary-50 transition-colors shadow-lg">
             Зарегистрироваться
         </button>
     </section>
@@ -234,6 +234,7 @@ export function renderSalonDetailPage() {
     if (!salon) return '<div class="text-center py-20"><p>Салон не найден</p></div>';
     const salonMasters = masters.filter(m => m.salonId === salon.id);
     const salonServices = getSalonServices(salon, services);
+    const isPrivateMaster = salonMasters.length === 1;
 
     return `
     <main class="island max-w-7xl mx-auto px-4 sm:px-6 mt-6 mx-4">
@@ -590,9 +591,6 @@ window.performSearch = performSearch;
 
 export function openSalonDetail(salonId) { 
     const salon = salons.find(s => s.id === salonId);
-    if (salon && salon.theme) {
-        ThemeManager.setTheme(salon.theme);
-    }
     state.selectedSalon = salonId; 
     state.currentPage = 'salon-detail'; 
     window.scrollTo(0, 0); 
