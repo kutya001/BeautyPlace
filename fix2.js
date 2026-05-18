@@ -1,5 +1,0 @@
-const fs = require('fs');
-let code = fs.readFileSync('js/features/auth/render.js', 'utf8');
-code = code.replace(/\\\$\{/g, '${');
-fs.writeFileSync('js/features/auth/render.js', code);
-console.log('Fixed ${ in render.js');
