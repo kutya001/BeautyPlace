@@ -405,13 +405,23 @@ export function renderSalonFinanceTab(salon) {
                         <div class="text-xl font-black text-primary-600 mt-2 text-left">${formatPrice(bal)}</div>
                         
                         <!-- Редактирование и детализация -->
-                        <div class="mt-4 flex items-center gap-2 select-none">
-                            <button onclick="state.editingWalletId = '${w.id}'; state.showEditWalletModal = true; render();" class="flex-1 py-1.5 rounded-lg border border-system-border hover:bg-system-main font-bold text-[10px] text-system-muted hover:text-system-text transition-all" title="Редактировать">
-                                ✏️ Изменить
-                            </button>
-                            <button onclick="state.financeSubTab = 'transactions'; state.txSearch = '${w.name}'; render();" class="flex-1 py-1.5 rounded-lg bg-primary-50 hover:bg-primary-100 font-bold text-[10px] text-primary-600 transition-all" title="Посмотреть операции">
-                                📋 История
-                            </button>
+                        <div class="mt-4 flex flex-col gap-1 select-none font-sans">
+                            <div class="flex gap-1 w-full">
+                                <button onclick="state.viewingWalletId = '${w.id}'; state.showViewWalletModal = true; render();" class="flex-grow py-1 rounded-lg border border-system-border hover:bg-system-main font-bold text-[9px] text-system-muted hover:text-system-text transition-all">
+                                    👁️ Детали
+                                </button>
+                                <button onclick="state.editingWalletId = '${w.id}'; state.showEditWalletModal = true; render();" class="flex-grow py-1 rounded-lg border border-system-border hover:bg-system-main font-bold text-[9px] text-system-muted hover:text-system-text transition-all">
+                                    ✏️ Изменить
+                                </button>
+                            </div>
+                            <div class="flex gap-1 w-full">
+                                <button onclick="state.financeSubTab = 'transactions'; state.txSearch = '${w.name}'; render();" class="flex-1 py-1 rounded-lg bg-primary-50 hover:bg-primary-100 font-bold text-[9px] text-primary-600 transition-all">
+                                    📋 История
+                                </button>
+                                <button onclick="window.deleteWallet('${salon.id}', '${w.id}');" class="px-2 py-1 rounded-lg bg-red-50 hover:bg-red-100 font-bold text-[9px] text-red-500 transition-all" title="Удалить кошелек">
+                                    🗑️
+                                </button>
+                            </div>
                         </div>
                     </div>
                     `;
@@ -537,7 +547,7 @@ export function renderSalonFinanceTab(salon) {
         return `
         <div class="space-y-6">
             <div class="flex items-center justify-between mb-4">
-                <div>
+                <div class="text-left">
                     <h3 class="text-base font-bold text-system-text">Статьи Доходов и Расходов (ДР)</h3>
                     <p class="text-xs text-system-muted">Классификация финансовых потоков для отчетов прибыли</p>
                 </div>
@@ -556,13 +566,14 @@ export function renderSalonFinanceTab(salon) {
                             <th class="p-3.5 text-center">ДДС (Движение денег)</th>
                             <th class="p-3.5 text-center">ОПУ (Прибыль/Убытки)</th>
                             <th class="p-3.5 text-center">Форм. задолженности (ДЗ/КЗ)</th>
+                            <th class="p-3.5 text-center">Опции</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-system-border/60">
                         ${articles.map(a => `
                         <tr class="hover:bg-system-main/20 text-system-text">
-                            <td class="p-3.5 font-semibold">${a.name}</td>
-                            <td class="p-3.5">
+                            <td class="p-3.5 font-semibold text-xs text-left">${a.name}</td>
+                            <td class="p-3.5 text-left">
                                 <span class="badge ${a.type === 'income' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-600 border border-red-200'}">
                                     ${a.type === 'income' ? 'Приход (Доход)' : 'Расход (Затрата)'}
                                 </span>
@@ -570,6 +581,11 @@ export function renderSalonFinanceTab(salon) {
                             <td class="p-3.5 text-center text-sm">${a.dds ? '✅' : '❌'}</td>
                             <td class="p-3.5 text-center text-sm">${a.opu ? '✅' : '❌'}</td>
                             <td class="p-3.5 text-center text-sm">${a.dzkz ? '✅' : '❌'}</td>
+                            <td class="p-3.5 text-center flex items-center justify-center gap-1.5 font-sans">
+                               <button onclick="state.viewingArticleId = '${a.id}'; state.showViewArticleModal = true; render();" class="p-1 px-2.5 bg-system-main hover:bg-system-border text-system-muted hover:text-system-text rounded font-bold text-[10px] transition-colors" title="Открыть детали">👁️</button>
+                               <button onclick="state.editingArticleId = '${a.id}'; state.showEditArticleModal = true; render();" class="p-1 px-2.5 bg-primary-50 hover:bg-primary-100 text-primary-600 rounded font-bold text-[10px] transition-colors" title="Редактировать">✏️</button>
+                               <button onclick="window.deleteArticle('${salon.id}', '${a.id}');" class="p-1 px-2.5 bg-red-50 hover:bg-red-100 text-red-500 rounded font-bold text-[10px] transition-colors" title="Удалить">🗑️</button>
+                            </td>
                         </tr>
                         `).join('')}
                     </tbody>
@@ -696,8 +712,10 @@ export function renderSalonFinanceTab(salon) {
                                     </td>
                                     <td class="p-3 text-xs whitespace-nowrap">${cp ? cp.name : '<span class="text-system-muted opacity-60">—</span>'}</td>
                                     <td class="p-3 text-xs max-w-[200px] truncate message-wrap" title="${t.description}">${t.description || '<span class="italic opacity-50 text-[10px]">без описания</span>'}</td>
-                                    <td class="p-3 text-center">
-                                        <button onclick="window.deleteTransaction('${salon.id}', '${t.id}');" class="p-1 px-2.5 bg-red-50 hover:bg-red-100 rounded-lg text-red-500 font-bold text-[10px] transition-colors" title="Удалить запись">Удалить</button>
+                                    <td class="p-3 text-center flex items-center justify-center gap-1.5 font-sans">
+                                        <button onclick="state.viewingTransactionId = '${t.id}'; state.showViewTransactionModal = true; render();" class="p-1 px-2.5 bg-system-main hover:bg-system-border text-system-muted hover:text-system-text rounded font-bold text-[10px] transition-colors" title="Просмотр">👁️</button>
+                                        <button onclick="state.editingTransactionId = '${t.id}'; state.showEditTransactionModal = true; render();" class="p-1 px-2.5 bg-primary-50 hover:bg-primary-100 text-primary-600 rounded font-bold text-[10px] transition-colors" title="Редактировать">✏️</button>
+                                        <button onclick="window.deleteTransaction('${salon.id}', '${t.id}');" class="p-1 px-2.5 bg-red-50 hover:bg-red-100 text-red-500 rounded font-bold text-[10px] transition-colors" title="Удалить запись">🗑️</button>
                                     </td>
                                 </tr>
                                 `;
@@ -816,10 +834,12 @@ export function renderSalonFinanceTab(salon) {
                                     ${c.role === 'supplier' ? 'Поставщик материалов' : 'Партнер/Сотрудник'}
                                 </span>
                             </td>
-                            <td class="p-3.5 text-center">
-                                ${c.id.startsWith('master-') ? `<span class="text-[10px] text-system-muted italic font-medium">Синхронизирован с мастерами</span>` : `
-                                    <button onclick="window.deleteCounterparty('${salon.id}', '${c.id}');" class="p-1 px-2 text-red-500 hover:bg-red-50 rounded font-bold text-[10px]">Удалить</button>
-                                `}
+                            <td class="p-3.5 text-center flex items-center justify-center gap-1.5 font-sans">
+                               <button onclick="state.viewingCounterpartyId = '${c.id}'; state.showViewCpModal = true; render();" class="p-1 px-2.5 bg-system-main hover:bg-system-border text-system-muted hover:text-system-text rounded font-bold text-[10px] transition-colors" title="Просмотр">👁️</button>
+                               ${c.id.startsWith('master-') ? `<span class="text-[10px] text-system-muted italic font-medium select-none text-center">Синхронизирован с мастерами</span>` : `
+                                   <button onclick="state.editingCounterpartyId = '${c.id}'; state.showEditCpModal = true; render();" class="p-1 px-2.5 bg-primary-50 hover:bg-primary-100 text-primary-600 rounded font-bold text-[10px] transition-colors" title="Редактировать">✏️</button>
+                                   <button onclick="window.deleteCounterparty('${salon.id}', '${c.id}');" class="p-1 px-2.5 text-red-500 hover:bg-red-50 rounded font-bold text-[10px] transition-colors" title="Удалить">🗑️</button>
+                               `}
                             </td>
                         </tr>
                         `).join('')}
@@ -1107,6 +1127,412 @@ export function renderSalonFinanceTab(salon) {
             ${subTab === 'debts' ? renderDebts() : ''}
             ${subTab === 'cashflow' ? renderCashFlow() : ''}
         </div>
+
+        <!-- View & Edit overlays for various finance directories & transactions (CRUD requirement) -->
+        ${state.showViewWalletModal && state.viewingWalletId ? (() => {
+            const w = wallets.find(x => x.id === state.viewingWalletId);
+            if (!w) return '';
+            const bal = getWalletBalance(salon.id, w.id);
+            return `
+            <div class="fixed inset-0 z-[200] background-blur bg-black/40 flex items-center justify-center p-4 animate-fade-in" onclick="state.showViewWalletModal = false; render();">
+                <div class="bg-system-surface rounded-3xl border border-system-border w-full max-w-sm p-6 shadow-2xl relative animate-scale-up" onclick="event.stopPropagation()">
+                    <h4 class="text-lg font-extrabold text-system-text mb-4 text-left font-sans flex items-center gap-2">
+                        <span>${w.type === 'cash' ? '💵' : '💳'}</span> Просмотр кошелька
+                    </h4>
+                    <div class="space-y-4 text-left font-sans">
+                        <div class="bg-system-main p-3.5 rounded-2xl border border-system-border">
+                            <p class="text-[10px] text-system-muted font-bold uppercase tracking-wider mb-0.5">Баланс кошелька</p>
+                            <p class="text-xl font-black text-primary-600">${formatPrice(bal)}</p>
+                        </div>
+                        <div class="space-y-2.5">
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-xs text-system-muted font-bold">Название:</span>
+                                <span class="text-xs font-black text-system-text">${w.name}</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-xs text-system-muted font-bold">Тип оплаты:</span>
+                                <span class="text-xs font-black text-system-text">${w.type === 'cash' ? 'Наличный кошелек' : 'Безналичный счет'}</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-xs text-system-muted font-bold">Валюта хранения:</span>
+                                <span class="text-xs font-black text-system-text font-mono">${w.currency}</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="state.showViewWalletModal = false; state.editingWalletId = '${w.id}'; state.showEditWalletModal = true; render();" class="flex-grow py-2 rounded-xl text-xs font-bold bg-primary-500 text-white hover:bg-primary-600 shadow-sm transition-all">✏️ Изменить</button>
+                            <button onclick="state.showViewWalletModal = false; render();" class="px-4 py-2 text-xs font-bold border border-system-border rounded-xl text-system-muted hover:bg-system-main transition-all">Закрыть</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        })() : ''}
+
+        ${state.showViewArticleModal && state.viewingArticleId ? (() => {
+            const a = articles.find(x => x.id === state.viewingArticleId);
+            if (!a) return '';
+            return `
+            <div class="fixed inset-0 z-[200] background-blur bg-black/40 flex items-center justify-center p-4 animate-fade-in" onclick="state.showViewArticleModal = false; render();">
+                <div class="bg-system-surface rounded-3xl border border-system-border w-full max-w-sm p-6 shadow-2xl relative animate-scale-up" onclick="event.stopPropagation()">
+                    <h4 class="text-lg font-extrabold text-system-text mb-4 text-left font-sans flex items-center gap-2">
+                        <span>📂</span> Просмотр статьи ДР
+                    </h4>
+                    <div class="space-y-4 text-left font-sans">
+                        <div class="p-3.5 rounded-xl bg-system-main border border-system-border">
+                            <p class="text-[10px] text-system-muted font-bold uppercase mb-0.5">Название финансовой статьи</p>
+                            <p class="font-extrabold text-system-text text-sm">${a.name}</p>
+                        </div>
+                        <div class="space-y-2.5 text-xs">
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Направление:</span>
+                                <span class="font-black text-system-text">${a.type === 'income' ? '📈 Приход (Доход)' : '📉 Расход (Затрата)'}</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Участие в ДДС (Поток денег):</span>
+                                <span class="font-black text-system-text">${a.dds ? '✅ Да' : '❌ Нет'}</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Расчет прибыли (ОПУ):</span>
+                                <span class="font-black text-system-text">${a.opu ? '✅ Да' : '❌ Нет'}</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Форм. задолженности ДЗ/КЗ:</span>
+                                <span class="font-black text-system-text">${a.dzkz ? '✅ Да' : '❌ Нет'}</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="state.showViewArticleModal = false; state.editingArticleId = '${a.id}'; state.showEditArticleModal = true; render();" class="flex-grow py-2 text-xs font-bold bg-primary-500 text-white hover:bg-primary-600 shadow-sm transition-all">✏️ Изменить</button>
+                            <button onclick="state.showViewArticleModal = false; render();" class="px-4 py-2 text-xs font-bold border border-system-border rounded-xl text-system-muted hover:bg-system-main transition-all">Закрыть</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        })() : ''}
+
+        ${state.showEditArticleModal && state.editingArticleId ? (() => {
+            const a = articles.find(x => x.id === state.editingArticleId);
+            if (!a) return '';
+            return `
+            <div class="fixed inset-0 z-[200] background-blur bg-black/40 flex items-center justify-center p-4" onclick="state.showEditArticleModal = false; render();">
+                <div class="bg-system-surface rounded-3xl border border-system-border w-full max-w-md p-6 shadow-2xl relative animate-scale-up" onclick="event.stopPropagation()">
+                    <h4 class="text-lg font-extrabold text-system-text mb-4 text-left font-sans">Редактирование статьи ДР</h4>
+                    <div class="space-y-4 font-sans">
+                        <div>
+                            <label class="text-xs text-system-muted font-bold block mb-1 text-left">Название статьи</label>
+                            <input type="text" id="edit_art_name" value="${a.name}" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text focus:ring-2 focus:ring-primary-100 outline-none">
+                        </div>
+                        <div>
+                            <label class="text-xs text-system-muted font-bold block mb-1 text-left">Направление операции</label>
+                            <select id="edit_art_type" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text outline-none">
+                                <option value="income" ${a.type === 'income' ? 'selected' : ''}>Приход (Доход)</option>
+                                <option value="expense" ${a.type === 'expense' ? 'selected' : ''}>Расход (Затрата)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2 pt-2 border-t border-system-border/60 text-left">
+                            <label class="text-xs text-system-muted font-bold block mb-1.5">Параметры аналитики статьи:</label>
+                            <label class="flex items-center gap-3 cursor-pointer p-1.5 hover:bg-system-main/40 rounded-lg select-none text-xs text-system-text">
+                                <input type="checkbox" id="edit_art_dds" ${a.dds ? 'checked' : ''} class="w-4 h-4 rounded border-system-border text-primary-500 focus:ring-primary-400">
+                                <div>
+                                    <span class="font-extrabold block text-xs">Движение денег (ДДС)</span>
+                                    <span class="text-[10px] text-system-muted mt-0.5 block line-clamp-1">Отображается в отчетах фактического притока средств</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer p-1.5 hover:bg-system-main/40 rounded-lg select-none text-xs text-system-text">
+                                <input type="checkbox" id="edit_art_opu" ${a.opu ? 'checked' : ''} class="w-4 h-4 rounded border-system-border text-primary-500 focus:ring-primary-400">
+                                <div>
+                                    <span class="font-extrabold block text-xs">Расчет прибыли/убытков (ОПУ)</span>
+                                    <span class="text-[10px] text-system-muted mt-0.5 block line-clamp-1">Влияет на чистую рентабельность операционного бизнеса</span>
+                                </div>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer p-1.5 hover:bg-system-main/40 rounded-lg select-none text-xs text-system-text">
+                                <input type="checkbox" id="edit_art_dzkz" ${a.dzkz ? 'checked' : ''} class="w-4 h-4 rounded border-system-border text-primary-500 focus:ring-primary-400">
+                                <div>
+                                    <span class="font-extrabold block text-xs">Формирование задолженности (ДЗ/КЗ)</span>
+                                    <span class="text-[10px] text-system-muted mt-0.5 block line-clamp-1">Создает обязательства контрагента</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="flex gap-3 pt-2">
+                            <button onclick="state.showEditArticleModal = false; render();" class="flex-1 py-3 text-sm font-bold border border-system-border rounded-xl text-system-muted hover:bg-system-main transition-colors">Отмена</button>
+                            <button onclick="window.submitEditArticle('${salon.id}', '${a.id}');" class="flex-1 py-3 text-sm font-bold bg-primary-500 text-white rounded-xl shadow-md hover:bg-primary-600 transition-colors">Сохранить изменения</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        })() : ''}
+
+        ${state.showViewCpModal && state.viewingCounterpartyId ? (() => {
+            const c = counterparties.find(x => x.id === state.viewingCounterpartyId);
+            if (!c) return '';
+            return `
+            <div class="fixed inset-0 z-[200] background-blur bg-black/40 flex items-center justify-center p-4 animate-fade-in" onclick="state.showViewCpModal = false; render();">
+                <div class="bg-system-surface rounded-3xl border border-system-border w-full max-w-sm p-6 shadow-2xl relative animate-scale-up" onclick="event.stopPropagation()">
+                    <h4 class="text-lg font-extrabold text-system-text mb-4 text-left font-sans flex items-center gap-2">
+                        <span>👤</span> Просмотр контрагента
+                    </h4>
+                    <div class="space-y-4 text-left font-sans">
+                        <div class="p-4 rounded-xl bg-system-main border border-system-border text-center">
+                            <div class="w-12 h-12 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center mx-auto text-xl font-bold mb-2">
+                                ${c.name.charAt(0)}
+                            </div>
+                            <p class="font-extrabold text-system-text text-sm">${c.name}</p>
+                            <p class="text-xs text-system-muted font-mono mt-1">${c.phone}</p>
+                        </div>
+                        <div class="space-y-2.5 text-xs">
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Роль в реестре:</span>
+                                <span class="font-black text-system-text">${c.role === 'supplier' ? 'Поставщик материалов / арендодатель' : 'Инвестор / Партнер / Другое'}</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Код ID:</span>
+                                <span class="font-mono text-xs text-system-muted">${c.id}</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            ${!c.id.startsWith('master-') ? `
+                                <button onclick="state.showViewCpModal = false; state.editingCounterpartyId = '${c.id}'; state.showEditCpModal = true; render();" class="flex-grow py-2 text-xs font-bold bg-primary-500 text-white rounded-xl hover:bg-primary-600 shadow-sm transition-all">✏️ Изменить</button>
+                            ` : ''}
+                            <button onclick="state.showViewCpModal = false; render();" class="px-4 py-2 text-xs font-bold border border-system-border rounded-xl text-system-muted hover:bg-system-main transition-all">Закрыть</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        })() : ''}
+
+        ${state.showEditCpModal && state.editingCounterpartyId ? (() => {
+            const c = counterparties.find(x => x.id === state.editingCounterpartyId);
+            if (!c) return '';
+            return `
+            <div class="fixed inset-0 z-[200] background-blur bg-black/40 flex items-center justify-center p-4 font-sans" onclick="state.showEditCpModal = false; render();">
+                <div class="bg-system-surface rounded-3xl border border-system-border w-full max-w-md p-6 shadow-2xl relative animate-scale-up" onclick="event.stopPropagation()">
+                    <h4 class="text-lg font-extrabold text-system-text mb-4 text-left">Редактирование контрагента</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs text-system-muted font-bold block mb-1 text-left">ФИО или Название контрагента</label>
+                            <input type="text" id="edit_cp_name" value="${c.name}" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text focus:ring-2 focus:ring-primary-100 outline-none">
+                        </div>
+                        <div>
+                            <label class="text-xs text-system-muted font-bold block mb-1 text-left">Номер телефона</label>
+                            <input type="text" id="edit_cp_phone" value="${c.phone}" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text focus:ring-2 focus:ring-primary-100 outline-none">
+                        </div>
+                        <div>
+                            <label class="text-xs text-system-muted font-bold block mb-1 text-left">Категория контрагента</label>
+                            <select id="edit_cp_role" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text outline-none">
+                                <option value="supplier" ${c.role === 'supplier' ? 'selected' : ''}>Поставщик услуг/материалов/аренды</option>
+                                <option value="partner" ${c.role === 'partner' ? 'selected' : ''}>Партнер / Прочее</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-3 pt-2">
+                            <button onclick="state.showEditCpModal = false; render();" class="flex-1 py-3 text-sm font-bold border border-system-border rounded-xl text-system-muted hover:bg-system-main transition-colors">Отмена</button>
+                            <button onclick="window.submitEditCounterparty('${salon.id}', '${c.id}');" class="flex-grow py-3 text-sm font-bold bg-primary-500 text-white rounded-xl shadow-md hover:bg-primary-600 transition-colors">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        })() : ''}
+
+        ${state.showViewDebtModal && state.viewingDebtId ? (() => {
+            const d = debts.find(x => x.id === state.viewingDebtId);
+            if (!d) return '';
+            const cp = counterparties.find(x => x.id === d.counterpartyId);
+            return `
+            <div class="fixed inset-0 z-[200] background-blur bg-black/40 flex items-center justify-center p-4 animate-fade-in" onclick="state.showViewDebtModal = false; render();">
+                <div class="bg-system-surface rounded-3xl border border-system-border w-full max-w-sm p-6 shadow-2xl relative animate-scale-up" onclick="event.stopPropagation()">
+                    <h4 class="text-lg font-extrabold text-system-text mb-4 text-left font-sans flex items-center gap-2">
+                        <span>🤝</span> Детали обязательства
+                    </h4>
+                    <div class="space-y-4 text-left font-sans">
+                        <div class="p-3.5 rounded-xl bg-system-main border border-system-border">
+                            <p class="text-[10px] text-system-muted font-bold uppercase mb-0.5">Взаиморасчет (Сумма долга)</p>
+                            <p class="text-xl font-black ${d.type === 'receivable' ? 'text-green-600' : 'text-rose-600'}">${formatPrice(d.amount)}</p>
+                        </div>
+                        <div class="space-y-2.5 text-xs">
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Контрагент:</span>
+                                <span class="font-black text-system-text">👤 ${cp ? cp.name : 'Неизвестно'}</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Классификация долга:</span>
+                                <span class="font-black ${d.type === 'receivable' ? 'text-indigo-600' : 'text-rose-600'}">
+                                    ${d.type === 'receivable' ? 'Дебиторская задолженность (Нам должны)' : 'Кредиторская задолженность (Мы должны)'}
+                                </span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Комментарий / Накладная:</span>
+                                <span class="font-black text-system-text text-right max-w-[200px] truncate" title="${d.description || ''}">${d.description || '—'}</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Дата регистрации:</span>
+                                <span class="font-mono text-system-text font-bold">${new Date(d.createdAt).toLocaleDateString('ru-RU')}</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="state.showViewDebtModal = false; state.editingDebtId = '${d.id}'; state.showEditDebtModal = true; render();" class="flex-grow py-2 text-xs font-bold bg-primary-500 text-white rounded-xl hover:bg-primary-600 shadow-sm transition-all">✏️ Изменить</button>
+                            <button onclick="state.showViewDebtModal = false; render();" class="px-4 py-2 text-xs font-bold border border-system-border rounded-xl text-system-muted hover:bg-system-main transition-all">Закрыть</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        })() : ''}
+
+        ${state.showEditDebtModal && state.editingDebtId ? (() => {
+            const d = debts.find(x => x.id === state.editingDebtId);
+            if (!d) return '';
+            return `
+            <div class="fixed inset-0 z-[200] background-blur bg-black/40 flex items-center justify-center p-4 font-sans" onclick="state.showEditDebtModal = false; render();">
+                <div class="bg-system-surface rounded-3xl border border-system-border w-full max-w-md p-6 shadow-2xl relative animate-scale-up" onclick="event.stopPropagation()">
+                    <h4 class="text-lg font-extrabold text-system-text mb-4 text-left">Редактирование задолженности</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs text-system-muted font-bold block mb-1 text-left">Выберите контрагента</label>
+                            <select id="edit_debt_counterparty" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text outline-none">
+                                ${counterparties.map(c => `<option value="${c.id}" ${d.counterpartyId === c.id ? 'selected' : ''}>${c.name} (${c.role === 'supplier' ? 'Поставщик' : 'Партнер'})</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-system-muted font-bold block mb-1 text-left">Вид обязательства</label>
+                            <select id="edit_debt_type" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text outline-none">
+                                <option value="payable" ${d.type === 'payable' ? 'selected' : ''}>КЗ (Салон должен контрагенту)</option>
+                                <option value="receivable" ${d.type === 'receivable' ? 'selected' : ''}>ДЗ (Контрагент должен салону)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-system-muted font-bold block mb-1 text-left">Сумма обязательства (KGS)</label>
+                            <input type="number" id="edit_debt_amount" value="${d.amount}" min="1" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text focus:ring-2 focus:ring-primary-100 outline-none">
+                        </div>
+                        <div>
+                            <label class="text-xs text-system-muted font-bold block mb-1 text-left">Основание долга</label>
+                            <textarea id="edit_debt_description" rows="2" class="w-full text-xs border border-system-border rounded-xl p-3 bg-system-main font-medium text-system-text outline-none focus:ring-2 focus:ring-primary-100">${d.description || ''}</textarea>
+                        </div>
+                        <div class="flex gap-3 pt-2">
+                            <button onclick="state.showEditDebtModal = false; render();" class="flex-1 py-3 text-sm font-bold border border-system-border rounded-xl text-system-muted hover:bg-system-main transition-colors">Отмена</button>
+                            <button onclick="window.submitEditDebt('${salon.id}', '${d.id}');" class="flex-grow py-3 text-sm font-bold bg-primary-500 text-white rounded-xl shadow-md hover:bg-primary-600 transition-colors">Сохранить</button>
+                        </div>
+                     </div>
+                </div>
+            </div>`;
+        })() : ''}
+
+        ${state.showViewTransactionModal && state.viewingTransactionId ? (() => {
+            const t = txs.find(x => x.id === state.viewingTransactionId);
+            if (!t) return '';
+            const wallet = t.walletId ? wallets.find(w => w.id === t.walletId) : null;
+            const fromW = t.fromWalletId ? wallets.find(w => w.id === t.fromWalletId) : null;
+            const toW = t.toWalletId ? wallets.find(w => w.id === t.toWalletId) : null;
+            const article = t.itemId ? articles.find(a => a.id === t.itemId) : null;
+            const cp = t.counterpartyId ? counterparties.find(c => c.id === t.counterpartyId) : null;
+            return `
+            <div class="fixed inset-0 z-[200] background-blur bg-black/40 flex items-center justify-center p-4 animate-fade-in font-sans" onclick="state.showViewTransactionModal = false; render();">
+                <div class="bg-system-surface rounded-3xl border border-system-border w-full max-w-sm p-6 shadow-2xl relative animate-scale-up" onclick="event.stopPropagation()">
+                    <h4 class="text-lg font-extrabold text-system-text mb-4 text-left flex items-center gap-2">
+                        <span>📝</span> Детали операции
+                    </h4>
+                    <div class="space-y-4 text-left">
+                        <div class="p-4 rounded-xl bg-system-main border border-system-border">
+                            <p class="text-[10px] text-system-muted font-bold uppercase tracking-wider mb-0.5">Сумма проводки</p>
+                            <p class="text-2xl font-black ${t.type === 'income' ? 'text-green-600' : t.type === 'expense' ? 'text-red-600' : 'text-indigo-600'}">
+                                ${t.type === 'income' ? '+' : t.type === 'expense' ? '-' : ''}${formatPrice(t.amount)}
+                            </p>
+                        </div>
+                        <div class="space-y-2.5 text-xs">
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Тип операции:</span>
+                                <span class="font-black text-system-text">${t.type === 'income' ? '📈 Приход' : t.type === 'expense' ? '📉 Расход' : '⇄ Внутренний перевод'}</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Касса/Счет:</span>
+                                <span class="font-black text-system-text">${t.type === 'transfer' ? `${fromW?.name || 'н/д'} → ${toW?.name || 'н/д'}` : `${wallet?.name || 'н/д'}`}</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Статья ДДС:</span>
+                                <span class="font-black text-system-text">${article ? article.name : (t.type === 'transfer' ? 'Внутренний перевод касс' : '—')}</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Контрагент:</span>
+                                <span class="font-black text-system-text">👤 ${cp ? cp.name : '—'}</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Комментарий:</span>
+                                <span class="font-black text-system-text">${t.description || '—'}</span>
+                            </div>
+                            <div class="flex justify-between py-1.5 border-b border-system-border/60">
+                                <span class="text-system-muted font-bold">Время внесения:</span>
+                                <span class="font-mono text-system-text font-bold">${new Date(t.date).toLocaleString('ru-RU')}</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="state.showViewTransactionModal = false; state.editingTransactionId = '${t.id}'; state.showEditTransactionModal = true; render();" class="flex-grow py-2 text-xs font-bold bg-primary-500 text-white rounded-xl hover:bg-primary-600 shadow-sm transition-all">✏️ Изменить</button>
+                            <button onclick="state.showViewTransactionModal = false; render();" class="px-4 py-2 text-xs font-bold border border-system-border rounded-xl text-system-muted hover:bg-system-main transition-all">Закрыть</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        })() : ''}
+
+        ${state.showEditTransactionModal && state.editingTransactionId ? (() => {
+            const t = txs.find(x => x.id === state.editingTransactionId);
+            if (!t) return '';
+            return `
+            <div class="fixed inset-0 z-[200] background-blur bg-black/40 flex items-center justify-center p-4 font-sans" onclick="state.showEditTransactionModal = false; render();">
+                <div class="bg-system-surface rounded-3xl border border-system-border w-full max-w-md p-6 shadow-2xl relative animate-scale-up" onclick="event.stopPropagation()">
+                    <h4 class="text-lg font-extrabold text-system-text mb-4 text-left">Редактирование кассовой операции</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs text-system-muted font-bold block mb-1 text-left">Сумма операции (KGS)</label>
+                            <input type="number" id="edit_tx_amount" value="${t.amount}" min="1" class="w-full text-base border-2 border-primary-100 hover:border-primary-200 block text-primary-600 font-extrabold rounded-xl p-3 bg-system-main outline-none">
+                        </div>
+                        
+                        ${t.type === 'transfer' ? `
+                            <div class="grid grid-cols-1 gap-4 text-left">
+                                <div>
+                                    <label class="text-xs text-system-muted font-bold block mb-1">Из кошелька (Откуда)</label>
+                                    <select id="edit_tx_from_wallet" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text outline-none">
+                                        ${wallets.map(w => `<option value="${w.id}" ${t.fromWalletId === w.id ? 'selected' : ''}>${w.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-system-muted font-bold block mb-1">В кошелек (Куда)</label>
+                                    <select id="edit_tx_to_wallet" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text outline-none">
+                                        ${wallets.map(w => `<option value="${w.id}" ${t.toWalletId === w.id ? 'selected' : ''}>${w.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="grid grid-cols-2 gap-4 text-left">
+                                <div>
+                                    <label class="text-xs text-system-muted font-bold block mb-1">Касса/Кошелек</label>
+                                    <select id="edit_tx_wallet" class="w-full text-xs border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text outline-none">
+                                        ${wallets.map(w => `<option value="${w.id}" ${t.walletId === w.id ? 'selected' : ''}>${w.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-system-muted font-bold block mb-1">Статья ДР</label>
+                                    <select id="edit_tx_item" class="w-full text-xs border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text outline-none">
+                                        ${articles.filter(a => a.type === t.type).map(a => `<option value="${a.id}" ${t.itemId === a.id ? 'selected' : ''}>${a.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="text-left">
+                                <label class="text-xs text-system-muted font-bold block mb-1">Контрагент (Необязательно)</label>
+                                <select id="edit_tx_counterparty" class="w-full text-xs border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text outline-none">
+                                    <option value="">— Выберите получателя/плательщика —</option>
+                                    ${counterparties.map(c => `<option value="${c.id}" ${t.counterpartyId === c.id ? 'selected' : ''}>${c.name} (${c.role === 'supplier' ? 'Поставщик' : 'Партнер'})</option>`).join('')}
+                                </select>
+                            </div>
+                        `}
+                        
+                        <div class="text-left">
+                            <label class="text-xs text-system-muted font-bold block mb-1">Описание/Комментарий</label>
+                            <textarea id="edit_tx_description" rows="2" class="w-full text-xs border border-system-border rounded-xl p-3 bg-system-main font-medium text-system-text outline-none focus:ring-2 focus:ring-primary-100 placeholder:text-system-muted">${t.description || ''}</textarea>
+                        </div>
+                        
+                        <div class="flex gap-3 pt-2">
+                            <button onclick="state.showEditTransactionModal = false; render();" class="flex-1 py-3 text-sm font-bold border border-system-border rounded-xl text-system-muted hover:bg-system-main transition-colors">Отмена</button>
+                            <button onclick="window.submitEditTransaction('${salon.id}', '${t.id}');" class="flex-grow py-3 text-sm font-bold bg-primary-500 text-white rounded-xl shadow-md hover:bg-primary-600 transition-colors">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        })() : ''}
     </div>`;
 }
 
@@ -1842,6 +2268,143 @@ window.submitEditWallet = function(salonId, walletId) {
         saveWallets(salonId, wallets);
         state.showEditWalletModal = false;
         showToast('Кошелек успешно обновлен!');
+        render();
+    }
+};
+
+window.deleteWallet = function(salonId, walletId) {
+    if (!confirm('Вы действительно хотите удалить этот кошелек/кассу?')) return;
+    const list = getWallets(salonId);
+    if (list.length <= 1) {
+        showToast('В салоне должен быть как минимум один активный кошелек!');
+        return;
+    }
+    const filtered = list.filter(w => w.id !== walletId);
+    saveWallets(salonId, filtered);
+    showToast('Кошелек успешно удален');
+    render();
+};
+
+window.submitEditArticle = function(salonId, articleId) {
+    const nameInput = document.getElementById('edit_art_name');
+    const typeSelect = document.getElementById('edit_art_type');
+    const ddsCheck = document.getElementById('edit_art_dds');
+    const opuCheck = document.getElementById('edit_art_opu');
+    const dzkzCheck = document.getElementById('edit_art_dzkz');
+
+    if (!nameInput || !nameInput.value.trim()) {
+        showToast('Пожалуйста, введите название статьи!');
+        return;
+    }
+
+    const list = getArticles(salonId);
+    const item = list.find(a => a.id === articleId);
+    if (item) {
+        item.name = nameInput.value.trim();
+        item.type = typeSelect.value;
+        item.dds = ddsCheck ? ddsCheck.checked : false;
+        item.opu = opuCheck ? opuCheck.checked : false;
+        item.dzkz = dzkzCheck ? dzkzCheck.checked : false;
+        saveArticles(salonId, list);
+        state.showEditArticleModal = false;
+        showToast('Статья ДР успешно обновлена!');
+        render();
+    }
+};
+
+window.deleteArticle = function(salonId, articleId) {
+    if (!confirm('Вы действительно хотите удалить эту статью ДР?')) return;
+    const list = getArticles(salonId);
+    if (list.length <= 1) {
+        showToast('Нельзя удалить последнюю статью ДР!');
+        return;
+    }
+    const filtered = list.filter(a => a.id !== articleId);
+    saveArticles(salonId, filtered);
+    showToast('Статья ДР была каскадно удалена');
+    render();
+};
+
+window.submitEditCounterparty = function(salonId, cpId) {
+    const nameInput = document.getElementById('edit_cp_name');
+    const phoneInput = document.getElementById('edit_cp_phone');
+    const roleSelect = document.getElementById('edit_cp_role');
+
+    if (!nameInput || !nameInput.value.trim()) {
+        showToast('Пожалуйста, введите наименование контрагента!');
+        return;
+    }
+
+    const list = getCounterparties(salonId);
+    const item = list.find(c => c.id === cpId);
+    if (item) {
+        item.name = nameInput.value.trim();
+        item.phone = phoneInput ? phoneInput.value.trim() : '+996 XXX XXX XXX';
+        item.role = roleSelect.value;
+        saveCounterparties(salonId, list);
+        state.showEditCpModal = false;
+        showToast('Контрагент успешно обновлен!');
+        render();
+    }
+};
+
+window.submitEditDebt = function(salonId, debtId) {
+    const cpSelect = document.getElementById('edit_debt_counterparty');
+    const typeSelect = document.getElementById('edit_debt_type');
+    const amountInput = document.getElementById('edit_debt_amount');
+    const descInput = document.getElementById('edit_debt_description');
+
+    if (!amountInput || Number(amountInput.value) <= 0) {
+        showToast('Введите корректную сумму обязательства!');
+        return;
+    }
+
+    const list = getDebts(salonId);
+    const item = list.find(d => d.id === debtId);
+    if (item) {
+        item.counterpartyId = cpSelect.value;
+        item.type = typeSelect.value;
+        item.amount = Number(amountInput.value);
+        item.description = descInput ? descInput.value.trim() : '';
+        saveDebts(salonId, list);
+        state.showEditDebtModal = false;
+        showToast('Оригинал долга успешно изменен!');
+        render();
+    }
+};
+
+window.submitEditTransaction = function(salonId, txId) {
+    const amountInput = document.getElementById('edit_tx_amount');
+    const descInput = document.getElementById('edit_tx_description');
+
+    if (!amountInput || Number(amountInput.value) <= 0) {
+        showToast('Пожалуйста, введите корректную сумму операции!');
+        return;
+    }
+
+    const list = getTransactions(salonId);
+    const t = list.find(x => x.id === txId);
+    if (t) {
+        t.amount = Number(amountInput.value);
+        t.description = descInput ? descInput.value.trim() : '';
+
+        if (t.type === 'transfer') {
+            const fromW = document.getElementById('edit_tx_from_wallet');
+            const toW = document.getElementById('edit_tx_to_wallet');
+            if (fromW) t.fromWalletId = fromW.value;
+            if (toW) t.toWalletId = toW.value;
+        } else {
+            const wSelect = document.getElementById('edit_tx_wallet');
+            const iSelect = document.getElementById('edit_tx_item');
+            const cSelect = document.getElementById('edit_tx_counterparty');
+            if (wSelect) t.walletId = wSelect.value;
+            if (iSelect) t.itemId = iSelect.value;
+            if (cSelect) t.counterpartyId = cSelect.value || null;
+        }
+
+        saveTransactions(salonId, list);
+        state.showEditTransactionModal = false;
+        showToast('Кассовая операция была успешно обновлена!');
         render();
     }
 };

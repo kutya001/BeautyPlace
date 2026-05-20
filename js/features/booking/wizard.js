@@ -351,6 +351,21 @@ export function renderBookingStep5() {
     </div>
     
     <div class="space-y-4">
+        ${bd.type === 'salon' ? (() => {
+            const actualSalonId = bd.targetId;
+            const sMasters = actualSalonId ? masters.filter(m => m.salonId === actualSalonId) : [];
+            if (sMasters.length === 0) return '';
+            return `
+            <div class="mb-4">
+                <label class="text-[10px] text-system-muted uppercase tracking-wider mb-1 block ml-1 font-bold">Выбор мастера</label>
+                <select onchange="state.bookingData.masterId = this.value ? parseInt(this.value) : null; window.render();" class="w-full px-5 py-4 rounded-2xl border-2 border-system-border focus:border-primary-400 outline-none transition-all font-medium text-base sm:text-sm bg-system-surface text-system-text cursor-pointer">
+                    <option value="" ${!bd.masterId ? 'selected' : ''}>— Любой свободный мастер —</option>
+                    ${sMasters.map(m => `
+                        <option value="${m.id}" ${bd.masterId === m.id ? 'selected' : ''}>${m.name} (${m.specialty})</option>
+                    `).join('')}
+                </select>
+            </div>`;
+        })() : ''}
         ${!state.currentUser ? `
         <div class="bg-primary-50 border border-primary-100 rounded-2xl p-4 flex items-start gap-3">
             <span class="text-xl mt-0.5">🎁</span>

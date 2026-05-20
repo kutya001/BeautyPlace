@@ -52,6 +52,16 @@ export function formatDate(date) {
     return d + ' ' + months[m];
 }
 
+export function formatDateToDDMMYYYY(date) {
+    if (!date) return '';
+    const d = date.getDate();
+    const m = date.getMonth();
+    const y = date.getFullYear();
+    const dd = String(d).padStart(2, '0');
+    const mm = String(m + 1).padStart(2, '0');
+    return `${dd}.${mm}.${y}`;
+}
+
 export function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
@@ -193,6 +203,7 @@ window.getCategoryName = getCategoryName;
 window.getDaysOfMonth = getDaysOfMonth;
 window.getMonthName = getMonthName;
 window.formatDate = formatDate;
+window.formatDateToDDMMYYYY = formatDateToDDMMYYYY;
 window.generateId = generateId;
 window.formatPhoneInput = formatPhoneInput;
 window.validatePhone = validatePhone;

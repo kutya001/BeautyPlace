@@ -2,7 +2,7 @@
 
 import { render } from '../../core/engine.js';
 import { state, salons, masters, services, timeSlots, users } from '../../state.js';
-import { showToast, getSalonPrice, formatDate, validatePhone } from '../../utils.js';
+import { showToast, getSalonPrice, formatDate, formatDateToDDMMYYYY, validatePhone } from '../../utils.js';
 import { getActiveShift } from '../../apps/salon/finance.js';
 
 export function checkActiveShiftForBooking(booking) {
@@ -116,7 +116,7 @@ export function submitBooking() {
                 ...state.bookings[bIndex],
                 serviceId: bd.serviceId,
                 masterId: bd.masterId,
-                date: formatDate(bd.date),
+                date: formatDateToDDMMYYYY(bd.date),
                 time: bd.time,
                 clientName: bd.clientName,
                 clientPhone: bd.clientPhone,
@@ -133,7 +133,7 @@ export function submitBooking() {
             targetId: bd.targetId,
             serviceId: bd.serviceId,
             masterId: bd.masterId,
-            date: formatDate(bd.date),
+            date: formatDateToDDMMYYYY(bd.date),
             time: bd.time,
             clientName: bd.clientName,
             clientPhone: bd.clientPhone,
@@ -363,6 +363,27 @@ export function openBookingForSalon(salonId) {
 
 window.openBookingForSalon = openBookingForSalon;
 
+export function openBookingForSalonWithPrefills(salonId, masterId, timeVal) {
+    state.bookingModal = true;
+    state.bookingStep = 1;
+    state.bookingData = { 
+        type: 'salon', 
+        targetId: salonId, 
+        serviceId: null, 
+        masterId: masterId,
+        date: new Date(), 
+        time: timeVal, 
+        clientName: state.currentUser ? state.currentUser.name : (localStorage.getItem('guestClientName') || ''), 
+        clientPhone: state.currentUser ? state.currentUser.phone : (localStorage.getItem('guestClientPhone') || '')
+    };
+    state._calYear = new Date().getFullYear();
+    state._calMonth = new Date().getMonth();
+    document.body.style.overflow = 'hidden';
+    render();
+}
+
+window.openBookingForSalonWithPrefills = openBookingForSalonWithPrefills;
+
 export function openBookingForMaster(masterId) {
     const master = masters.find(m => m.id === masterId);
     state.bookingModal = true;
@@ -457,4 +478,15 @@ export function getDaysOfMonth(y, m) {
 }
 
 window.getDaysOfMonth = getDaysOfMonth;
+
+export function deleteBooking(bookingId) {
+    if (!confirm('Вы действительно хотите удалить эту запись?')) return;
+    const idx = state.bookings.findIndex(b => b.id === bookingId);
+    if (idx !== -1) {
+        state.bookings.splice(idx, 1);
+        showToast('Запись успешно удалена');
+        render();
+    }
+}
+window.deleteBooking = deleteBooking;
 

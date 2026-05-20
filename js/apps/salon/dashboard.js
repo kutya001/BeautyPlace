@@ -410,7 +410,7 @@ export function renderServiceEditModal() {
 
 window.renderServiceEditModal = renderServiceEditModal;
 
-export function renderBookingEditModal(bookingId, salonMasters) {
+export function renderBookingEditModal_OLD(bookingId, salonMasters) {
     const b = state.bookings.find(x => x.id === bookingId);
     if (!b) return '';
     const svc = services.find(s => s.id === b.serviceId);
@@ -641,10 +641,11 @@ export function renderSalonBookings(salonBookings) {
                             <!-- Timeline Grid Background Tracks -->
                             <div class="flex flex-1 relative bg-repeat">
                                 ${slots.map(t => `
-                                    <div class="border-l border-system-border/50 shrink-0 hover:bg-primary-50/30 transition-colors" 
+                                    <div class="border-l border-system-border/50 shrink-0 hover:bg-primary-50/30 transition-colors cursor-pointer" 
                                          style="width: ${slotWidth}px;" 
                                          ondragover="event.preventDefault()" 
-                                         ondrop="handleTimelineDrop(event, ${m.id}, '${t}')">
+                                         ondrop="handleTimelineDrop(event, ${m.id}, '${t}')"
+                                         onclick="window.openBookingForSalonWithPrefills(${salon.id}, ${m.id}, '${t}')">
                                     </div>`).join('')}
                                 
                                 <!-- Absolute position bookings -->
@@ -676,7 +677,7 @@ export function renderSalonBookings(salonBookings) {
                                          style="left: ${leftPx + 4}px; width: ${finalWidthPx - 8}px;">
                                         <div>
                                             <div class="font-bold text-[10px] truncate leading-tight opacity-95 flex items-center gap-1">
-                                                 ${booking.paid ? '<span class="text-green-500 font-extrabold text-[11px] leading-none" title="Оплачено">🟢</span>' : '<span class="text-red-500 font-extrabold text-[11px] leading-none" title="Не оплачено">🔴</span>'}
+                                                 ${booking.paid ? `<span onclick="event.stopPropagation(); window.triggerPaymentFlow('${booking.id}');" class="text-green-500 font-extrabold text-[11px] leading-none cursor-pointer hover:scale-110 active:translate-y-0.5 transition-all inline-block" title="Оплачено. Нажмите для просмотра">🟢</span>` : `<span onclick="event.stopPropagation(); window.triggerPaymentFlow('${booking.id}');" class="text-red-500 font-extrabold text-[11px] leading-none cursor-pointer hover:scale-115 active:translate-y-0.5 transition-all inline-block animate-pulse" title="Не оплачено! Нажмите для оплаты">🔴</span>`}
                                                  <span class="truncate">${svc ? svc.name : 'Без услуги'}</span>
                                              </div>
                                             <div class="text-[9px] font-medium truncate opacity-70 mt-0.5">${booking.clientName}</div>
@@ -958,11 +959,11 @@ export function renderSalonBookings(salonBookings) {
                                     <div class="flex flex-col md:items-start items-end gap-1">
                                         <span class="badge ${statusColors[b.status]}">${statusLabels[b.status]}</span>
                                         ${b.paid ? `
-                                            <span class="inline-flex items-center gap-0.5 text-[10px] font-extrabold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-md border border-green-100" title="Оплачено">
+                                            <span onclick="event.stopPropagation(); window.triggerPaymentFlow('${b.id}');" class="inline-flex items-center gap-0.5 text-[10px] font-extrabold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-md border border-green-100 cursor-pointer hover:bg-green-100 transition-all font-sans" title="Оплачено. Кликните для просмотра">
                                                 🟢 Оплачено
                                             </span>
                                         ` : `
-                                            <span class="inline-flex items-center gap-0.5 text-[10px] font-extrabold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-md border border-red-100" title="Не оплачено">
+                                            <span onclick="event.stopPropagation(); window.triggerPaymentFlow('${b.id}');" class="inline-flex items-center gap-0.5 text-[10px] font-extrabold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-md border border-red-100 cursor-pointer animate-pulse hover:bg-red-100 transition-all font-sans" title="Не оплачено! Нажмите для проведения оплаты">
                                                 🔴 Не оплачено
                                             </span>
                                         `}
@@ -2540,3 +2541,190 @@ window.sendMessage = (provider, phone, text) => {
     
     window.closeContactModal();
 };
+
+export function renderBookingEditModal(bookingId, salonMasters) {
+    const b = state.bookings.find(x => x.id === bookingId);
+    if (!b) return '';
+    const svc = services.find(s => s.id === b.serviceId);
+    const slots = window.timeSlots || [];
+
+    const activeMode = state.bookingModalMode || 'view';
+    const salon = salons.find(s => s.id === state.currentUser?.salonId);
+    const salonRole = salon ? (window.getSalonRole(state.currentUser.id, salon.id) || 'owner') : 'owner';
+    const isAdmin = salonRole === 'owner' || state.currentUser?.role === 'admin' || state.currentUser?.role === 'owner';
+
+    // Handler to save the custom editing changes
+    if (!window.submitEditBooking) {
+        window.submitEditBooking = function(bookingId) {
+            const nameVal = document.getElementById('edit_b_client_name')?.value?.trim();
+            const phoneVal = document.getElementById('edit_b_client_phone')?.value?.trim();
+            const masterVal = document.getElementById('edit_b_master_id')?.value;
+            const timeVal = document.getElementById('edit_b_time')?.value;
+
+            if (!nameVal || !phoneVal) {
+                showToast('Пожалуйста, укажите имя и телефон клиента!');
+                return;
+            }
+
+            const bObj = state.bookings.find(x => x.id === bookingId);
+            if (bObj) {
+                bObj.clientName = nameVal;
+                bObj.clientPhone = phoneVal;
+                bObj.masterId = masterVal ? parseInt(masterVal) : null;
+                bObj.time = timeVal;
+                showToast('Запись салона успешно обновлена!');
+                state.bookingModalMode = 'view';
+                render();
+            }
+        };
+    }
+
+    if (activeMode === 'view') {
+        const assignedMaster = salonMasters.find(m => m.id === b.masterId);
+        return `
+        <div class="fixed inset-0 z-50 p-4 flex items-center justify-center modal-overlay" onclick="state.editingBookingId=null; render()">
+            <div class="bg-system-surface w-full max-w-sm rounded-3xl shadow-2xl animate-scale-in overflow-hidden flex flex-col" onclick="event.stopPropagation()">
+                <div class="px-5 py-3.5 border-b border-system-border flex items-center justify-between bg-system-main bg-opacity-70">
+                    <div>
+                        <h2 class="font-bold text-system-text text-sm">Просмотр записи</h2>
+                        <p class="text-[9px] text-system-muted uppercase tracking-widest mt-0.5">ID: ${b.id}</p>
+                    </div>
+                    <button onclick="state.editingBookingId=null; render()" class="w-7 h-7 rounded-full bg-system-surface flex items-center justify-center hover:bg-system-main shadow-xs border border-system-border transition-colors group">
+                        <svg class="w-3.5 h-3.5 text-system-muted opacity-70 group-hover:text-system-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="p-5 space-y-3.5">
+                    <div class="flex items-start gap-3 p-3.5 rounded-xl bg-system-main border border-system-border">
+                        <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-950 flex items-center justify-center shrink-0">
+                            <span class="text-sm text-primary-600"><svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-system-muted font-medium uppercase tracking-wider">Клиент</p>
+                            <p class="font-bold text-xs text-system-text">${b.clientName}</p>
+                            <p class="text-[10px] text-system-muted font-medium mt-0.5">${b.clientPhone}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="p-3 bg-system-main border border-system-border rounded-xl">
+                            <p class="text-[9px] text-system-muted uppercase tracking-wider mb-0.5">Услуга</p>
+                            <p class="font-bold text-[11px] text-system-text truncate">${svc ? svc.name : 'Неизвестно'}</p>
+                        </div>
+                        <div class="p-3 bg-system-main border border-system-border rounded-xl">
+                            <p class="text-[9px] text-system-muted uppercase tracking-wider mb-0.5">Мастер</p>
+                            <p class="font-bold text-[11px] text-system-text truncate">${assignedMaster ? assignedMaster.name : '— Не назначен —'}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="p-3 bg-system-main border border-system-border rounded-xl">
+                            <p class="text-[9px] text-system-muted uppercase tracking-wider mb-0.5">Дата и время</p>
+                            <p class="font-bold text-[11px] text-system-text">${b.date} в ${b.time}</p>
+                        </div>
+                        <div class="p-3 bg-system-main border border-system-border rounded-xl">
+                            <p class="text-[9px] text-system-muted uppercase tracking-wider mb-0.5">Оплата</p>
+                            <p class="font-bold text-[11px]">
+                                ${b.paid ? '<span class="text-green-600">🟢 Оплачено</span>' : '<span class="text-red-500">🔴 Не оплачено</span>'}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-system-main border border-system-border rounded-xl">
+                        <p class="text-[9px] text-system-muted uppercase tracking-wider mb-0.5">Статус выполнения</p>
+                        <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[9px] font-bold ${b.status === 'confirmed' ? 'bg-green-100 text-green-700' : b.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : b.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}">
+                            ${b.status === 'confirmed' ? 'Подтвержден' : b.status === 'pending' ? 'Ожидает' : b.status === 'completed' ? 'Завершен' : 'Отменен'}
+                        </span>
+                    </div>
+
+                    ${b.clientComment ? `
+                    <div class="p-3 bg-system-main border border-system-border rounded-xl">
+                        <p class="text-[9px] text-system-muted uppercase tracking-wider mb-0.5">Комментарий</p>
+                        <p class="text-[11px] text-system-text">${b.clientComment}</p>
+                    </div>` : ''}
+
+                    <div class="pt-4 mt-1 border-t border-system-border flex flex-wrap gap-2">
+                        ${b.status === 'pending' ? `
+                            <button onclick="window.salonConfirmBooking('${b.id}'); state.editingBookingId=null;" class="flex-1 bg-green-500 hover:bg-green-600 text-white rounded-xl py-2.5 text-xs font-bold shadow-xs transition-colors">Подтвердить</button>
+                            <button onclick="window.salonCancelBooking('${b.id}'); state.editingBookingId=null;" class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-100 rounded-xl py-2.5 text-xs font-bold transition-colors">Отклонить</button>
+                        ` : b.status === 'confirmed' ? `
+                            <button onclick="window.salonCompleteBooking('${b.id}'); state.editingBookingId=null;" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white rounded-xl py-2.5 text-xs font-bold shadow-xs transition-all">Завершить</button>
+                            ${!b.paid ? `<button onclick="window.triggerPaymentFlow('${b.id}'); state.editingBookingId=null;" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white rounded-xl py-2.5 text-xs font-bold shadow-xs transition-colors">Принять оплату</button>` : ''}
+                            <button onclick="window.salonCancelBooking('${b.id}'); state.editingBookingId=null;" class="flex-1 bg-system-main hover:bg-system-border text-system-muted rounded-xl py-2.5 text-xs font-bold transition-colors">Отменить</button>
+                        ` : `
+                            ${b.status === 'completed' && !b.paid ? `
+                                <button onclick="window.triggerPaymentFlow('${b.id}'); state.editingBookingId=null;" class="w-full bg-amber-500 hover:bg-amber-600 text-white rounded-xl py-2.5 text-xs font-bold shadow-xs transition-all">💰 Принять оплату</button>
+                            ` : ''}
+                        `}
+                        
+                        ${isAdmin ? `
+                            <div class="w-full h-[1px] bg-system-border my-1.5"></div>
+                            <div class="w-full flex gap-2">
+                                <button onclick="state.bookingModalMode = 'edit'; render();" class="flex-1 bg-primary-600 hover:bg-primary-700 text-white rounded-xl py-2 text-[10px] font-bold transition-colors">✏️ Редактировать (Админ)</button>
+                                <button onclick="window.deleteBooking('${b.id}'); state.editingBookingId=null; render();" class="flex-1 bg-red-100 border border-red-200 text-red-700 hover:bg-red-200 rounded-xl py-2 text-[10px] font-bold transition-colors">🗑️ Удалить (Админ)</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    } else {
+        return `
+        <div class="fixed inset-0 z-50 p-4 flex items-center justify-center modal-overlay" onclick="state.editingBookingId=null; render()">
+            <div class="bg-system-surface w-full max-w-sm rounded-3xl shadow-2xl animate-scale-in overflow-hidden flex flex-col" onclick="event.stopPropagation()">
+                <div class="px-5 py-3.5 border-b border-system-border flex items-center justify-between bg-system-main bg-opacity-70">
+                    <div>
+                        <h2 class="font-bold text-system-text text-sm">Редактирование записи</h2>
+                        <p class="text-[9px] text-system-muted uppercase tracking-widest mt-0.5">ID: ${b.id}</p>
+                    </div>
+                    <button onclick="state.bookingModalMode='view'; render()" class="w-7 h-7 rounded-full bg-system-surface flex items-center justify-center hover:bg-system-main shadow-xs border border-system-border transition-colors group">
+                        <svg class="w-3.5 h-3.5 text-system-muted opacity-70 group-hover:text-system-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="p-5 space-y-3.5">
+                    ${!isAdmin ? `
+                        <div class="p-3.5 rounded-xl bg-red-50 text-red-800 border border-red-100 text-[10px] font-bold">
+                            ⚠️ Редактирование записей доступно только для Администратора!
+                        </div>
+                    ` : ''}
+
+                    <div>
+                        <label class="text-[10px] text-system-muted uppercase tracking-wider mb-1 block ml-1 font-bold">Имя Клиента</label>
+                        <input id="edit_b_client_name" type="text" value="${b.clientName}" ${!isAdmin ? 'disabled' : ''} class="w-full text-xs border border-system-border rounded-xl p-2.5 bg-system-surface font-semibold text-system-text outline-none focus:border-primary-400" />
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] text-system-muted uppercase tracking-wider mb-1 block ml-1 font-bold">Телефон Клиента</label>
+                        <input id="edit_b_client_phone" type="text" value="${b.clientPhone}" ${!isAdmin ? 'disabled' : ''} class="w-full text-xs border border-system-border rounded-xl p-2.5 bg-system-surface font-semibold text-system-text outline-none focus:border-primary-400" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] text-system-muted uppercase tracking-wider mb-1 block ml-1 font-bold">Мастер</label>
+                            <select id="edit_b_master_id" ${!isAdmin ? 'disabled' : ''} class="w-full text-xs border border-system-border rounded-xl p-2.5 outline-none focus:border-primary-400 bg-system-surface font-semibold text-system-text cursor-pointer">
+                                <option value="" ${!b.masterId ? 'selected' : ''}>— Не назначен —</option>
+                                ${salonMasters.map(m => `
+                                    <option value="${m.id}" ${b.masterId === m.id ? 'selected' : ''}>${m.name}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] text-system-muted uppercase tracking-wider mb-1 block ml-1 font-bold">Время</label>
+                            <select id="edit_b_time" ${!isAdmin ? 'disabled' : ''} class="w-full text-xs border border-system-border rounded-xl p-2.5 outline-none focus:border-primary-400 bg-system-surface font-semibold text-system-text cursor-pointer">
+                                ${slots.map(t => `<option value="${t}" ${b.time === t ? 'selected' : ''}>${t}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 mt-1 border-t border-system-border flex gap-2">
+                        ${isAdmin ? `
+                            <button onclick="window.submitEditBooking('${b.id}');" class="flex-1 bg-green-500 hover:bg-green-600 text-white rounded-xl py-2.5 text-xs font-bold transition-colors">Сохранить</button>
+                        ` : ''}
+                        <button onclick="state.bookingModalMode = 'view'; render();" class="flex-1 bg-system-main hover:bg-system-border text-system-muted rounded-xl py-2.5 text-xs font-bold transition-all">Назад к просмотру</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }
+}
+
+window.renderBookingEditModal = renderBookingEditModal;
