@@ -38,6 +38,7 @@ async function applyToSalon(salonId, userId, baseRole = 'master') {
         userId,
         baseRole,
         status: 'pending',
+        initiatedBy: 'master',
         createdAt: new Date().toISOString()
     };
     salonApplications.push(newApp);
@@ -49,12 +50,35 @@ async function processSalonApplication(appId, decision) {
     if (!app) return { success: false, error: 'Заявка не найдена' };
 
     app.status = decision === 'approve' ? 'approved' : 'rejected';
+    return { success: true };
+}
 
-    if (decision === 'approve') {
-        // Создаем запись в штате
-        const defaultPermissions = app.baseRole === 'manager' 
-            ? ['dashboard:view', 'bookings:view', 'bookings:edit', 'masters:view'] 
-            : ['bookings:view', 'bookings:edit'];
+async function acceptSalonEmployment(appId) {
+    const app = salonApplications.find(a => a.id === appId);
+    if (!app) return { success: false, error: 'Заявка не найдена' };
+
+    const user = users.find(u => u.id === app.userId);
+    if (!user) return { success: false, error: 'Пользователь не найден' };
+
+    if (user.role === 'master') {
+        const master = masters.find(m => m.id === user.masterId);
+        if (master) {
+            if (master.salonId) {
+                return { success: false, error: 'Вы уже работаете в другом салоне! Сначала выйдите из текущего.' };
+            }
+            master.salonId = app.salonId;
+        }
+    }
+    user.salonId = app.salonId;
+
+    app.status = 'hired';
+
+    const defaultPermissions = app.baseRole === 'manager' 
+        ? ['dashboard:view', 'bookings:view', 'bookings:edit', 'masters:view'] 
+        : ['bookings:view', 'bookings:edit'];
+    
+    const exists = salonStaff.some(s => s.salonId === app.salonId && s.userId === app.userId);
+    if (!exists) {
         const newStaff = {
             id: 'ST' + Date.now(),
             salonId: app.salonId,
@@ -64,13 +88,29 @@ async function processSalonApplication(appId, decision) {
             status: 'active'
         };
         salonStaff.push(newStaff);
-        
-        // Обновляем пользователя, если он мастер
-        const user = users.find(u => u.id === app.userId);
-        if (user && user.role === 'master') {
-            const master = masters.find(m => m.id === user.masterId);
-            if (master) master.salonId = app.salonId;
+    }
+
+    return { success: true };
+}
+
+async function leaveCurrentSalon(userId) {
+    const user = users.find(u => u.id === userId);
+    if (!user) return { success: false, error: 'Пользователь не найден' };
+
+    const previousSalonId = user.salonId;
+    if (!previousSalonId) return { success: false, error: 'Вы не работаете в салоне' };
+
+    if (user.role === 'master') {
+        const master = masters.find(m => m.id === user.masterId);
+        if (master) {
+            master.salonId = '';
         }
+    }
+    user.salonId = '';
+
+    const staffIdx = salonStaff.findIndex(s => s.salonId === previousSalonId && s.userId === userId);
+    if (staffIdx >= 0) {
+        salonStaff.splice(staffIdx, 1);
     }
 
     return { success: true };
@@ -138,6 +178,8 @@ window.getAvatarPlaceholder = getAvatarPlaceholder;
 window.getPlaceholderImage = getPlaceholderImage;
 window.applyToSalon = applyToSalon;
 window.processSalonApplication = processSalonApplication;
+window.acceptSalonEmployment = acceptSalonEmployment;
+window.leaveCurrentSalon = leaveCurrentSalon;
 window.updateStaffPermissions = updateStaffPermissions;
 window.deleteStaff = deleteStaff;
 window.buySubscription = buySubscription;
@@ -147,6 +189,8 @@ export {
     getPlaceholderImage,
     applyToSalon,
     processSalonApplication,
+    acceptSalonEmployment,
+    leaveCurrentSalon,
     updateStaffPermissions,
     deleteStaff,
     buySubscription

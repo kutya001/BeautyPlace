@@ -3,6 +3,28 @@
 import { render } from '../../core/engine.js';
 import { state, salons, masters, services, timeSlots, users } from '../../state.js';
 import { showToast, getSalonPrice, formatDate, validatePhone } from '../../utils.js';
+import { getActiveShift } from '../../apps/salon/finance.js';
+
+export function checkActiveShiftForBooking(booking) {
+    if (!booking) return true;
+    let salonId = null;
+    if (booking.type === 'salon') {
+        salonId = booking.targetId;
+    } else if (booking.type === 'master' || booking.masterId) {
+        const mId = booking.masterId || booking.targetId;
+        const master = masters.find(m => String(m.id) === String(mId));
+        if (master) salonId = master.salonId;
+    }
+    
+    if (salonId) {
+        const activeShift = getActiveShift(salonId);
+        if (!activeShift) {
+            showToast('Действие запрещено! Кассовая смена в салоне закрыта.');
+            return false;
+        }
+    }
+    return true;
+}
 
 export function goToBookingStep(step) {
     const bd = state.bookingData;
@@ -72,6 +94,7 @@ window.nextStepDefault = nextStepDefault;
 
 export function submitBooking() {
     const bd = state.bookingData;
+    if (!checkActiveShiftForBooking(bd)) return;
     const nameInput = document.getElementById('clientNameInput');
     if (nameInput) bd.clientName = nameInput.value;
     const phoneInput = document.getElementById('clientPhoneInput') || document.getElementById('bookingPhoneInput');
@@ -158,6 +181,7 @@ window.closeBookingModal = closeBookingModal;
 
 export function cancelBooking(bookingId) {
     const booking = state.bookings.find(b => b.id === bookingId);
+    if (booking && !checkActiveShiftForBooking(booking)) return;
     if (booking) { 
         booking.status = 'cancelled'; 
         showToast('Запись отменена'); 
@@ -191,6 +215,7 @@ window.trackBooking = trackBooking;
 
 export function assignMasterToBooking(bookingId, masterId) {
     const booking = state.bookings.find(b => b.id === bookingId);
+    if (booking && !checkActiveShiftForBooking(booking)) return;
     if (booking) {
         booking.masterId = masterId ? parseInt(masterId) : null;
         showToast('Мастер назначен');
@@ -202,6 +227,7 @@ window.assignMasterToBooking = assignMasterToBooking;
 
 export function updateBookingTime(bookingId, newTime) {
     const booking = state.bookings.find(b => b.id === bookingId);
+    if (booking && !checkActiveShiftForBooking(booking)) return;
     if (booking) {
         booking.time = newTime;
         showToast('Время записи изменено');
@@ -215,6 +241,7 @@ export function handleTimelineDrop(event, newMasterId, newTime) {
     event.preventDefault();
     const bookingId = event.dataTransfer.getData('bookingId');
     const booking = state.bookings.find(b => b.id === bookingId);
+    if (booking && !checkActiveShiftForBooking(booking)) return;
     if (!booking) return;
 
     const newMaster = masters.find(m => m.id === newMasterId);
@@ -244,6 +271,7 @@ window.handleTimelineDrop = handleTimelineDrop;
 
 export function editBooking(bookingId) {
     const booking = state.bookings.find(b => b.id === bookingId);
+    if (booking && !checkActiveShiftForBooking(booking)) return;
     if (!booking) return;
 
     state.bookingModal = true;
@@ -271,33 +299,41 @@ window.editBooking = editBooking;
 
 export function confirmBooking(bookingId) {
     const booking = state.bookings.find(b => b.id === bookingId);
+    if (booking && !checkActiveShiftForBooking(booking)) return;
     if (booking) { booking.status = 'confirmed'; showToast('Запись подтверждена!'); render(); }
 }
 
 window.confirmBooking = confirmBooking;
 
-export function adminConfirmBooking(id) { const b = state.bookings.find(x => x.id === id); if (b) { b.status = 'confirmed'; showToast('Запись подтверждена'); render(); } }
+export function adminConfirmBooking(id) { const b = state.bookings.find(x => x.id === id); if (b && !checkActiveShiftForBooking(b)) return; if (b) { b.status = 'confirmed'; showToast('Запись подтверждена'); render(); } }
 
 window.adminConfirmBooking = adminConfirmBooking;
 
-export function adminCancelBooking(id) { const b = state.bookings.find(x => x.id === id); if (b) { b.status = 'cancelled'; showToast('Запись отменена'); render(); } }
+export function adminCancelBooking(id) { const b = state.bookings.find(x => x.id === id); if (b && !checkActiveShiftForBooking(b)) return; if (b) { b.status = 'cancelled'; showToast('Запись отменена'); render(); } }
 
 window.adminCancelBooking = adminCancelBooking;
 
-export function salonConfirmBooking(id) { const b = state.bookings.find(x => x.id === id); if (b) { b.status = 'confirmed'; showToast('Запись подтверждена!'); render(); } }
+export function salonConfirmBooking(id) { const b = state.bookings.find(x => x.id === id); if (b && !checkActiveShiftForBooking(b)) return; if (b) { b.status = 'confirmed'; showToast('Запись подтверждена!'); render(); } }
 
 window.salonConfirmBooking = salonConfirmBooking;
 
-export function salonCancelBooking(id) { const b = state.bookings.find(x => x.id === id); if (b) { b.status = 'cancelled'; showToast('Запись отклонена'); render(); } }
+export function salonCancelBooking(id) { const b = state.bookings.find(x => x.id === id); if (b && !checkActiveShiftForBooking(b)) return; if (b) { b.status = 'cancelled'; showToast('Запись отклонена'); render(); } }
 
 window.salonCancelBooking = salonCancelBooking;
 
 export function salonCompleteBooking(id) {
     const b = state.bookings.find(x => x.id === id);
-    if (b && b.status === 'confirmed') {
-        b.status = 'completed';
-        showToast('Услуга успешно завершена');
-        render();
+    if (b && !checkActiveShiftForBooking(b)) return;
+    if (b) {
+        if (!b.paid) {
+            showToast('Ошибка: Запись должна быть сначала оплачена!');
+            return;
+        }
+        if (b.status === 'confirmed') {
+            b.status = 'completed';
+            showToast('Услуга успешно завершена');
+            render();
+        }
     }
 };
 

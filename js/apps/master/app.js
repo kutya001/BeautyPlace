@@ -2,9 +2,10 @@
 
 import { render } from '../../core/engine.js';
 import { handleLogout } from '../../features/auth/actions.js';
+import { acceptSalonEmployment, leaveCurrentSalon } from '../../api.js';
 import { renderThemeSwitcher, renderMasterMobileNav, renderToast } from '../../components/ui.js';
 import { state, masters, salons, services, timeSlots, salonApplications, users, categories } from '../../state.js';
-import { formatPrice, getSalonPrice, showToast, getSalonPriceHistory, getDurationText } from '../../utils.js';
+import { formatPrice, getSalonPrice, showToast, getSalonPriceHistory, getDurationText, getUserBookings } from '../../utils.js';
 
 export function renderMasterApp() {
     return `
@@ -54,11 +55,10 @@ window.renderMasterHeader = renderMasterHeader;
 
 export function renderMasterSidebar() {
     const tabs = [
-        { id: 'schedule', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg>', label: 'Расписание' },
         { id: 'bookings', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 3"/></svg>', label: 'Записи' },
-        { id: 'my_salons', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 6h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 10h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 14h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 18h4"/></svg>', label: 'Мои салоны' },
-        { id: 'services', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7h-3a2 2 0 0 1-2-2V2"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 15h6"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 18h6"/></svg>', label: 'Мои услуги' },
-        { id: 'profile', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v2"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 20v2"/><path stroke-linecap="round" stroke-linejoin="round" d="m4.93 4.93 1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="m17.66 17.66 1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M20 12h2"/><path stroke-linecap="round" stroke-linejoin="round" d="m6.34 17.66-1.41 1.41"/><path stroke-linecap="round" stroke-linejoin="round" d="m19.07 4.93-1.41 1.41"/></svg>', label: 'Профиль' },
+        { id: 'my_salons', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12H4a2 2 0 0 0-2-2V6a2 2 0 0 0 2 2h2"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 6h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 10h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 14h4"/><path stroke-linecap="round" stroke-linejoin="round" d="M10 18h4"/></svg>', label: 'Мои салоны' },
+        { id: 'services', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7h-3a2 2 0 0 1-2-2V2"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2-2Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 15h6"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 18h6"/></svg>', label: 'Мои услуги' },
+        { id: 'profile', icon: '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>', label: 'Профиль' },
     ];
     return `
     <aside class="w-64 bg-system-surface border-r border-system-border min-h-screen p-4 hidden md:block">
@@ -89,109 +89,280 @@ export function renderMasterContent() {
         return sum + (svc ? svc.price : 0);
     }, 0);
 
-    const tab = state.masterTab;
-
+    let tab = state.masterTab;
     if (tab === 'schedule') {
+        state.masterTab = 'bookings';
+        state.masterSubTab = 'dashboard';
+        tab = 'bookings';
+    }
+
+    if (tab === 'my_salons') {
+        return renderMasterSalonsTab(master);
+    } else if (tab === 'bookings') {
+        state.masterSubTab = state.masterSubTab || 'dashboard';
         const now = new Date();
         const today = String(now.getDate()).padStart(2, '0') + '.' + String(now.getMonth() + 1).padStart(2, '0') + '.' + now.getFullYear();
         
         const todayBookings = masterBookings.filter(b => b.date === today && b.status !== 'cancelled').sort((a, b) => a.time.localeCompare(b.time));
-        const statusColors = { pending: 'bg-yellow-100 text-yellow-700', confirmed: 'bg-green-100 text-green-700', completed: 'bg-blue-100 text-blue-700', cancelled: 'bg-red-100 text-red-700' };
+        const statusColors = { 
+            pending: 'bg-yellow-50 text-yellow-700 border border-yellow-200/50', 
+            confirmed: 'bg-green-50 text-green-700 border border-green-200/50', 
+            completed: 'bg-blue-50 text-blue-700 border border-blue-200/50', 
+            cancelled: 'bg-red-50 text-red-700 border border-red-200/50' 
+        };
         const statusLabels = { pending: 'Ожидает', confirmed: 'Подтверждена', completed: 'Завершена', cancelled: 'Отменена' };
 
-        return `
-<div class="animate-fade-in">
-    <h1 class="text-2xl font-bold text-system-text mb-6">Операционный дашборд — ${master.name}</h1>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="stat-card"><div class="text-2xl font-bold text-system-text">${masterBookings.length}</div><div class="text-xs text-system-muted">Всего записей</div></div>
-        <div class="stat-card"><div class="text-2xl font-bold text-yellow-600">${masterBookings.filter(b => b.status === 'pending').length}</div><div class="text-xs text-system-muted">Ожидают</div></div>
-        <div class="stat-card"><div class="text-2xl font-bold text-green-600">${formatPrice(projectedRevenue)}</div><div class="text-xs text-system-muted">Прогнозируемый доход</div></div>
-        <div class="stat-card"><div class="text-2xl font-bold text-blue-600">${formatPrice(actualRevenue)}</div><div class="text-xs text-system-muted">Фактический заработок</div></div>
-    </div>
-    ${masterBookings.filter(b => b.status === 'pending').length > 0 ? `
-        <div class="bg-system-surface rounded-2xl border border-2 border-yellow-400 overflow-hidden mb-6">
-            <h3 class="font-semibold text-system-text p-4 border-b border-system-border bg-transparent text-yellow-500"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 22h14"/><path stroke-linecap="round" stroke-linejoin="round" d="M5 2h14"/><path stroke-linecap="round" stroke-linejoin="round" d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path stroke-linecap="round" stroke-linejoin="round" d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg> Записи для подтверждения</h3>
-            <div class="divide-y divide-system-border">
-                ${masterBookings.filter(b => b.status === 'pending').map(b => {
-            const svc = services.find(s => s.id === b.serviceId);
-            return `<div class="p-4 flex items-center justify-between">
+        const subTabsHeader = `
+        <div class="bg-system-surface p-1 rounded-2xl border border-system-border flex items-center gap-1 mb-5 overflow-x-auto hide-scrollbar select-none">
+            <button onclick="state.masterSubTab='dashboard'; render()" class="flex-1 text-center py-2.5 px-3 rounded-xl font-bold text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${state.masterSubTab === 'dashboard' ? 'bg-primary-500 text-white shadow-sm font-extrabold' : 'text-system-muted hover:text-system-text hover:bg-system-main'}">Дашборд</button>
+            <button onclick="state.masterSubTab='upcoming'; render()" class="flex-1 text-center py-2.5 px-3 rounded-xl font-bold text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap flex items-center justify-center gap-1.5 ${state.masterSubTab === 'upcoming' ? 'bg-primary-500 text-white shadow-sm font-extrabold' : 'text-system-muted hover:text-system-text hover:bg-system-main'}">
+                Предстоящие
+                ${masterBookings.filter(b => b.status === 'pending' || b.status === 'confirmed').length > 0 ? `
+                    <span class="px-1.5 py-0.5 text-[8px] sm:text-[9px] ${state.masterSubTab === 'upcoming' ? 'bg-white text-primary-600 font-extrabold' : 'bg-primary-500 text-white font-black animate-pulse'} rounded-full leading-none">${masterBookings.filter(b => b.status === 'pending' || b.status === 'confirmed').length}</span>
+                ` : ''}
+            </button>
+            <button onclick="state.masterSubTab='history'; render()" class="flex-1 text-center py-2.5 px-3 rounded-xl font-bold text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${state.masterSubTab === 'history' ? 'bg-primary-500 text-white shadow-sm font-extrabold' : 'text-system-muted hover:text-system-text hover:bg-system-main'}">История</button>
+        </div>
+        `;
+
+        if (state.masterSubTab === 'dashboard') {
+            const pendingList = masterBookings.filter(b => b.status === 'pending');
+            return `
+            <div class="animate-fade-in space-y-5">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black text-system-text tracking-tight">Рабочие записи</h1>
+                    <p class="text-[11px] text-system-muted mt-0.5 font-medium">Ваш мобильный пульт управления заказами</p>
+                </div>
+                ${subTabsHeader}
+                
+                <!-- Bento Stats Grid Optimized for Mobile -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="p-4 bg-system-surface rounded-3xl border border-system-border hover:border-primary-400/50 shadow-sm transition-all duration-200 flex flex-col justify-between min-h-[95px] relative overflow-hidden group">
+                        <div class="absolute right-2 -bottom-2 text-4xl opacity-[0.06] select-none translate-y-1 group-hover:scale-110 transition-transform">📅</div>
                         <div>
-                            <p class="font-medium text-system-text">${svc ? svc.name : 'Услуга'}</p>
-                            <p class="text-sm text-system-muted">${b.clientName} · ${b.clientPhone}</p>
-                            <p class="text-xs text-system-muted opacity-70">${b.date} в ${b.time} · ${svc ? formatPrice(svc.price) : ''}</p>
+                            <span class="text-[9px] text-system-muted font-black uppercase tracking-widest block font-mono">Заказы</span>
+                            <span class="text-xs text-system-muted font-bold mt-0.5 block">Всего сеансов</span>
                         </div>
-                    </div>`;
-        }).join('')}
-            </div>
-        </div>
-    ` : ''}
-    <div class="bg-system-surface rounded-2xl border border-system-border overflow-hidden mb-6">
-        <h3 class="font-semibold text-system-text p-4 border-b border-system-border bg-system-main"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg> Записи на сегодня (${today})</h3>
-        ${todayBookings.length > 0 ? `
-            <div class="divide-y divide-system-border">
-                ${todayBookings.map(b => {
-                    const svc = services.find(s => s.id === b.serviceId);
-                    return `<div class="p-4 flex items-center justify-between hover:bg-system-main transition-colors">
-                                <div>
-                                    <p class="font-medium text-system-text">${svc ? svc.name : 'Услуга'}</p>
-                                    <p class="text-sm text-system-muted">${b.clientName} · ${b.clientPhone}</p>
-                                    <p class="text-xs font-bold text-system-text mt-1">${b.time} · ${svc ? formatPrice(svc.price) : ''}</p>
-                                </div>
-                                <div class="text-right flex flex-col items-end gap-2">
-                                    <span class="badge ${statusColors[b.status]}">${statusLabels[b.status]}</span>
-                                </div>
-                            </div>`;
-                }).join('')}
-            </div>
-        ` : '<div class="p-8 text-center text-system-muted opacity-70">На сегодня записей нет</div>'}
-    </div>
-</div>`;
-    } else if (tab === 'my_salons') {
-        return renderMasterSalonsTab(master);
-    } else if (tab === 'bookings') {
-        state.masterBookingFilter = state.masterBookingFilter || 'upcoming';
-        const statusColors = { pending: 'bg-yellow-100 text-yellow-700', confirmed: 'bg-green-100 text-green-700', completed: 'bg-blue-100 text-blue-700', cancelled: 'bg-red-100 text-red-700' };
-        const statusLabels = { pending: 'Ожидает', confirmed: 'Подтверждена', completed: 'Завершена', cancelled: 'Отменена' };
-        
-        const filteredBookings = masterBookings.filter(b => {
-            if (state.masterBookingFilter === 'upcoming') return b.status === 'pending' || b.status === 'confirmed';
-            return b.status === 'completed' || b.status === 'cancelled';
-        }).sort((a, b) => {
-            if (state.masterBookingFilter === 'history') return -1;
-            return 1;
-        });
+                        <span class="text-2xl font-black text-system-text font-mono mt-2">${masterBookings.length}</span>
+                    </div>
+                    <div class="p-4 bg-system-surface rounded-3xl border border-system-border hover:border-yellow-400/50 shadow-sm transition-all duration-200 flex flex-col justify-between min-h-[95px] relative overflow-hidden group">
+                        <div class="absolute right-2 -bottom-2 text-4xl opacity-[0.06] select-none translate-y-1 group-hover:scale-110 transition-transform">⏳</div>
+                        <div>
+                            <span class="text-[9px] text-yellow-600 font-black uppercase tracking-widest block font-mono">Запросы</span>
+                            <span class="text-xs text-system-muted font-bold mt-0.5 block">В очереди</span>
+                        </div>
+                        <span class="text-2xl font-black text-yellow-600 font-mono mt-2">${pendingList.length}</span>
+                    </div>
+                    <div class="p-4 bg-system-surface rounded-3xl border border-system-border hover:border-green-400/50 shadow-sm transition-all duration-200 flex flex-col justify-between min-h-[95px] relative overflow-hidden group">
+                        <div class="absolute right-2 -bottom-2 text-4xl opacity-[0.06] select-none translate-y-1 group-hover:scale-110 transition-transform">📈</div>
+                        <div>
+                            <span class="text-[9px] text-green-600 font-black uppercase tracking-widest block font-mono">Прогноз</span>
+                            <span class="text-xs text-system-muted font-bold mt-0.5 block">Будет получено</span>
+                        </div>
+                        <span class="text-2xl font-black text-green-600 font-mono mt-2 whitespace-nowrap">${formatPrice(projectedRevenue)}</span>
+                    </div>
+                    <div class="p-4 bg-system-surface rounded-3xl border border-system-border hover:border-blue-400/50 shadow-sm transition-all duration-200 flex flex-col justify-between min-h-[95px] relative overflow-hidden group">
+                        <div class="absolute right-2 -bottom-2 text-4xl opacity-[0.06] select-none translate-y-1 group-hover:scale-110 transition-transform">💰</div>
+                        <div>
+                            <span class="text-[9px] text-blue-600 font-black uppercase tracking-widest block font-mono">Касса</span>
+                            <span class="text-xs text-system-muted font-bold mt-0.5 block">Выручено</span>
+                        </div>
+                        <span class="text-2xl font-black text-blue-600 font-mono mt-2 whitespace-nowrap">${formatPrice(actualRevenue)}</span>
+                    </div>
+                </div>
 
-        return `
-<div class="animate-fade-in">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <h1 class="text-2xl font-bold text-system-text">Записи</h1>
-        <div class="flex bg-system-main rounded-xl p-1">
-            <button onclick="state.masterBookingFilter='upcoming'; render()" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-colors ${state.masterBookingFilter === 'upcoming' ? 'bg-system-surface shadow-sm text-system-text' : 'text-system-muted hover:text-system-text'}">Предстоящие</button>
-            <button onclick="state.masterBookingFilter='history'; render()" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-bold transition-colors ${state.masterBookingFilter === 'history' ? 'bg-system-surface shadow-sm text-system-text' : 'text-system-muted hover:text-system-text'}">История</button>
-        </div>
-    </div>
-    ${filteredBookings.length > 0 ? `
-        <div class="space-y-3">
-            ${filteredBookings.map(b => {
-            const svc = services.find(s => s.id === b.serviceId);
-            return `<div class="bg-system-surface rounded-2xl border border-system-border p-5">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="font-bold text-system-text">${svc ? svc.name : 'Услуга'}</h3>
-                        <span class="badge ${statusColors[b.status]}">${statusLabels[b.status]}</span>
+                <!-- 1. PENDING REQUESTS -->
+                ${pendingList.length > 0 ? `
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-2 px-1">
+                            <span class="flex h-2 w-2 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
+                            </span>
+                            <h3 class="font-black text-[10px] uppercase tracking-widest text-yellow-650">Требуют подтверждения</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                            ${pendingList.map(b => {
+                                const svc = services.find(s => s.id === b.serviceId);
+                                return `
+                                <div class="bg-system-surface p-4 rounded-3xl border border-yellow-250/60 shadow-sm flex flex-col justify-between gap-3.5 animate-fade-in relative whitespace-normal">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div class="space-y-1.5 min-w-0 flex-1">
+                                            <p class="font-bold text-sm text-system-text leading-snug truncate">${svc ? svc.name : 'Услуга'}</p>
+                                            <div class="flex flex-col gap-1">
+                                                <p class="text-xs text-system-muted font-semibold flex items-center gap-1.5">
+                                                    <span>👤</span>
+                                                    <span class="font-bold text-system-text/90">${b.clientName}</span>
+                                                </p>
+                                                <p class="text-xs text-system-muted font-bold flex items-center gap-1.5 font-mono">
+                                                    <span>📅</span>
+                                                    <span>${b.date} в ${b.time}</span>
+                                                </p>
+                                            </div>
+                                            <div class="pt-0.5">
+                                                <span class="inline-block text-[11px] text-primary-600 bg-primary-50 dark:bg-primary-950/20 px-2.5 py-1 rounded-xl font-black font-mono">${svc ? formatPrice(svc.price) : ''}</span>
+                                            </div>
+                                        </div>
+                                        <a href="tel:${b.clientPhone}" class="w-11 h-11 rounded-2xl bg-primary-50 hover:bg-primary-100 flex items-center justify-center text-primary-600 text-lg shadow-xs transition-all shrink-0 active:scale-95" title="Позвонить клиенту">
+                                            📞
+                                        </a>
+                                    </div>
+                                    <div class="flex gap-2 border-t border-system-border/60 pt-3">
+                                        <button onclick="handleMasterConfirmBooking('${b.id}')" class="flex-1 py-3 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-extrabold text-[11px] uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                                            ✓ Одобрить
+                                        </button>
+                                        <button onclick="handleMasterCancelBooking('${b.id}')" class="px-5 py-3 rounded-2xl border border-red-100 hover:bg-red-50 text-red-500 font-black text-[11px] uppercase tracking-wider transition-all flex items-center justify-center active:scale-95">
+                                            Отклонить
+                                        </button>
+                                    </div>
+                                </div>`;
+                            }).join('')}
+                        </div>
                     </div>
-                    <div class="flex flex-wrap gap-4 text-sm text-system-muted">
-                        <span>👤 ${b.clientName}</span><span>📞 ${b.clientPhone}</span>
-                        <span><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg> ${b.date}</span><span>🕐 ${b.time}</span>
-                        <span><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 18V6"/></svg> ${svc ? formatPrice(svc.price) : ''}</span>
+                ` : ''}
+
+                <!-- 2. TODAY'S BOOKINGS -->
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2 px-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse"></span>
+                        <h3 class="font-black text-[10px] uppercase tracking-widest text-system-muted font-mono">Записи на сегодня (${today})</h3>
                     </div>
-                </div>`;
-        }).join('')}
-        </div>
-    ` : `<div class="text-center py-12 text-system-muted opacity-70 bg-system-surface rounded-2xl border border-system-border">${state.masterBookingFilter === 'upcoming' ? 'Нет предстоящих записей' : 'История пуста'}</div>`}
-</div>`;
+                    ${todayBookings.length > 0 ? `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                            ${todayBookings.map(b => {
+                                const svc = services.find(s => s.id === b.serviceId);
+                                const isPending = b.status === 'pending';
+                                const isConfirmed = b.status === 'confirmed';
+                                return `
+                                <div class="bg-system-surface p-4 rounded-3xl border border-system-border shadow-sm hover:border-primary-100 transition-all duration-200 flex flex-col justify-between gap-3.5 relative whitespace-normal">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div class="space-y-1.5 min-w-0 flex-1">
+                                            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary-50 dark:bg-primary-950/20 text-primary-600 rounded-xl text-[10px] font-black uppercase tracking-wider font-mono">
+                                                🕐 ${b.time}
+                                            </div>
+                                            <p class="font-extrabold text-sm text-system-text leading-snug truncate mt-1">${svc ? svc.name : 'Услуга'}</p>
+                                            <p class="text-xs text-system-muted font-bold flex items-center gap-1.5">
+                                                <span>👤</span>
+                                                <span class="text-system-text/90">${b.clientName}</span>
+                                            </p>
+                                            <div class="flex flex-wrap items-center gap-2 mt-2 leading-none">
+                                                <span class="inline-block px-2 py-0.5 rounded-md text-[9px] font-black ${statusColors[b.status]} uppercase tracking-widest">${statusLabels[b.status]}</span>
+                                                <span class="text-xs font-bold text-primary-600 font-mono">${svc ? formatPrice(svc.price) : ''}</span>
+                                            </div>
+                                        </div>
+                                        <a href="tel:${b.clientPhone}" class="w-11 h-11 rounded-2xl bg-primary-50 hover:bg-primary-100 flex items-center justify-center text-primary-600 text-lg shadow-xs transition-all shrink-0 active:scale-95" title="Позвонить клиенту">
+                                            📞
+                                        </a>
+                                    </div>
+                                    
+                                    ${isConfirmed ? `
+                                        <div class="flex gap-2 border-t border-system-border/60 pt-3">
+                                            <button onclick="handleMasterCompleteBooking('${b.id}')" class="flex-1 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[11px] uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                                                🏁 Завершить сеанс
+                                            </button>
+                                            <button onclick="handleMasterCancelBooking('${b.id}')" class="px-4 py-3 rounded-2xl border border-red-100 hover:bg-red-50 text-red-500 font-bold text-[11px] uppercase tracking-wider transition-all active:scale-95">
+                                                Отменить
+                                            </button>
+                                        </div>
+                                    ` : ''}
+                                    
+                                    ${isPending ? `
+                                        <div class="flex gap-2 border-t border-system-border/60 pt-3">
+                                            <button onclick="handleMasterConfirmBooking('${b.id}')" class="flex-1 py-3 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-extrabold text-[11px] uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                                                ✓ Одобрить
+                                            </button>
+                                            <button onclick="handleMasterCancelBooking('${b.id}')" class="px-4 py-3 rounded-2xl border border-system-border text-system-muted font-black text-[11px] uppercase tracking-wider hover:bg-system-main transition-all active:scale-95">
+                                                Отклонить
+                                            </button>
+                                        </div>
+                                    ` : ''}
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    ` : '<div class="p-8 text-center bg-system-main/40 rounded-3xl border border-dashed border-system-border/80 text-xs text-system-muted opacity-70 font-semibold whitespace-normal">На сегодня записей нет. Отличный повод передохнуть или заглянуть во вкладку «Предстоящие»!</div>'}
+                </div>
+            </div>`;
+        } else {
+            const isHistory = state.masterSubTab === 'history';
+            const filteredBookings = masterBookings.filter(b => {
+                if (!isHistory) return b.status === 'pending' || b.status === 'confirmed';
+                return b.status === 'completed' || b.status === 'cancelled';
+            }).sort((a, b) => {
+                if (isHistory) return b.date.split('.').reverse().join('-').localeCompare(a.date.split('.').reverse().join('-')) || b.time.localeCompare(a.time);
+                return a.date.split('.').reverse().join('-').localeCompare(b.date.split('.').reverse().join('-')) || a.time.localeCompare(b.time);
+            });
+
+            return `
+            <div class="animate-fade-in space-y-5">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black text-system-text tracking-tight">Рабочие записи</h1>
+                    <p class="text-[11px] text-system-muted mt-0.5 font-medium">Ваш мобильный пульт управления заказами</p>
+                </div>
+                ${subTabsHeader}
+                
+                ${filteredBookings.length > 0 ? `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        ${filteredBookings.map(b => {
+                            const svc = services.find(s => s.id === b.serviceId);
+                            const isPending = b.status === 'pending';
+                            const isConfirmed = b.status === 'confirmed';
+                            return `
+                            <div class="bg-system-surface rounded-3xl border border-system-border p-4 hover:border-primary-100 shadow-sm transition-all duration-200 flex flex-col justify-between gap-4 relative whitespace-normal">
+                                <div>
+                                    <div class="flex items-center justify-between gap-2 border-b border-system-border/60 pb-3 mb-3">
+                                        <div class="flex flex-col">
+                                            <span class="text-[10px] text-primary-500 font-black uppercase font-mono tracking-widest leading-none">📅 ${b.date} · 🕐 ${b.time}</span>
+                                        </div>
+                                        <span class="px-2.5 py-1 rounded-md text-[9px] font-black ${statusColors[b.status]} uppercase tracking-widest leading-none">${statusLabels[b.status]}</span>
+                                    </div>
+                                    
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div class="space-y-1.5 min-w-0 flex-1">
+                                            <h3 class="font-extrabold text-system-text text-sm leading-snug truncate">${svc ? svc.name : 'Услуга'}</h3>
+                                            <p class="text-xs text-system-muted font-bold flex items-center gap-1.5 mt-1">
+                                                <span>👤</span>
+                                                <span class="text-system-text/90">${b.clientName}</span>
+                                            </p>
+                                            <div class="pt-1">
+                                                <span class="inline-block text-[11px] text-primary-600 bg-primary-50 dark:bg-primary-950/20 px-2.5 py-1 rounded-xl font-black font-mono leading-none">${svc ? formatPrice(svc.price) : ''}</span>
+                                            </div>
+                                        </div>
+                                        <a href="tel:${b.clientPhone}" class="w-11 h-11 rounded-2xl bg-primary-50 hover:bg-primary-100 flex items-center justify-center text-primary-600 text-lg shadow-xs transition-all shrink-0 active:scale-95" title="Позвонить клиенту">
+                                            📞
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                ${isPending ? `
+                                    <div class="flex gap-2 border-t border-system-border/60 pt-3">
+                                        <button onclick="handleMasterConfirmBooking('${b.id}')" class="flex-1 py-3 rounded-2xl bg-green-600 hover:bg-green-700 text-white font-extrabold text-[11px] uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                                            ✓ Одобрить
+                                        </button>
+                                        <button onclick="handleMasterCancelBooking('${b.id}')" class="px-5 py-3 rounded-2xl border border-red-100 hover:bg-red-50 text-red-500 font-black text-[11px] uppercase tracking-wider transition-all flex items-center justify-center active:scale-95">
+                                            Отклонить
+                                        </button>
+                                    </div>
+                                ` : ''}
+
+                                ${isConfirmed ? `
+                                    <div class="flex gap-2 border-t border-system-border/60 pt-3">
+                                        <button onclick="handleMasterCompleteBooking('${b.id}')" class="flex-1 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[11px] uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-1.5 active:scale-95">
+                                            🏁 Завершить сеанс
+                                        </button>
+                                        <button onclick="handleMasterCancelBooking('${b.id}')" class="px-4 py-3 rounded-2xl border border-red-100 hover:bg-red-50 text-red-500 font-bold text-[11px] uppercase tracking-wider transition-all active:scale-95">
+                                            Отменить
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>`;
+                        }).join('')}
+                    </div>
+                ` : `<div class="text-center py-12 text-system-muted opacity-70 bg-system-surface rounded-3xl border border-dashed border-system-border/85 italic whitespace-normal text-xs font-semibold px-4">${!isHistory ? 'Предстоящие записи отсутствуют. Все текущие заказы выполнены.' : 'История пуста. Здесь будут отражаться выполненные и отмененные визиты.'}</div>`}
+            </div>`;
+        }
     }
 
-        if (tab === 'services') {
+    if (tab === 'services') {
         const grouped = services.reduce((acc, svc) => {
             const catId = svc.category;
             if (!acc[catId]) { acc[catId] = { cat: categories.find(c => c.id === catId), services: [] }; }
@@ -200,53 +371,67 @@ export function renderMasterContent() {
         }, {});
 
         return `
-<div class="animate-fade-in max-w-2xl mx-auto">
-    <h1 class="text-2xl font-bold text-system-text mb-6">Услуги и стоимость</h1>
-    <div class="space-y-4">
-        ${Object.values(grouped).map(g => {
-            const isExpanded = state.expandedMasterCat !== undefined ? state.expandedMasterCat[g.cat?.id || 0] : false;
-            const selectedCount = g.services.filter(s => (master.services || []).includes(s.id)).length;
-            return `
-            <div class="bg-system-surface rounded-2xl border border-system-border overflow-hidden">
-                <div class="p-4 flex items-center justify-between cursor-pointer hover:bg-system-main transition-colors"
-                     onclick="if(!state.expandedMasterCat) state.expandedMasterCat={}; state.expandedMasterCat[${g.cat?.id || 0}] = !${isExpanded}; render()">
-                    <div class="flex items-center gap-3">
-                        <span class="text-xl">${g.cat ? g.cat.icon : '✨'}</span>
-                        <h3 class="font-bold text-system-text">${g.cat ? g.cat.name : 'Другое'}</h3>
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-system-main text-system-muted">${selectedCount}/${g.services.length}</span>
-                    </div>
-                    <span class="text-system-muted transition-transform ${isExpanded ? 'rotate-180' : ''}">▾</span>
-                </div>
-                ${isExpanded ? `
-                <div class="border-t border-system-border divide-y divide-system-border">
-                    ${g.services.map(svc => {
-                        const isChecked = (master.services || []).includes(svc.id);
-                        const customVal = (master.customPrices && master.customPrices[svc.id] !== undefined) ? master.customPrices[svc.id] : svc.price;
-                        return `
-                        <div class="p-4 flex flex-col sm:flex-row gap-3 sm:items-center justify-between hover:bg-system-main/50 transition-colors ${!isChecked ? 'opacity-60' : ''}">
-                            <div class="flex items-start sm:items-center gap-3">
-                                <input type="checkbox" ${isChecked ? 'checked' : ''} class="mt-1 sm:mt-0 w-5 h-5 rounded border-system-border text-primary-500 focus:ring-primary-400 cursor-pointer"
-                                       onchange="toggleMasterSelfService(${master.id}, ${svc.id})">
-                                <div>
-                                    <h4 class="text-sm font-medium text-system-text">${svc.name}</h4>
-                                    <p class="text-xs text-system-muted">${Math.floor(svc.duration / 60) > 0 ? Math.floor(svc.duration / 60) + ' ч ' : ''}${svc.duration % 60 > 0 ? (svc.duration % 60) + ' мин' : ''} · Базовая цена: ${svc.price} сом</p>
+        <div class="animate-fade-in max-w-2xl mx-auto space-y-5">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-black text-system-text tracking-tight">Услуги и стоимость</h1>
+                <p class="text-[11px] text-system-muted mt-0.5 font-medium">Регулируйте оказываемые услуги и персональные ценники</p>
+            </div>
+            
+            <div class="space-y-3.5">
+                ${Object.values(grouped).map(g => {
+                    const isExpanded = state.expandedMasterCat !== undefined ? state.expandedMasterCat[g.cat?.id || 0] : false;
+                    const selectedCount = g.services.filter(s => (master.services || []).includes(s.id)).length;
+                    return `
+                    <div class="bg-system-surface rounded-3xl border border-system-border overflow-hidden shadow-xs hover:shadow-md transition-all">
+                        <div class="p-4 flex items-center justify-between cursor-pointer hover:bg-system-main/40 transition-colors select-none"
+                             onclick="if(!state.expandedMasterCat) state.expandedMasterCat={}; state.expandedMasterCat[${g.cat?.id || 0}] = !${isExpanded}; render()">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xl w-8 h-8 rounded-full bg-system-main flex items-center justify-center shrink-0 shadow-xs">${g.cat ? g.cat.icon : '✨'}</span>
+                                <div class="text-left">
+                                    <h3 class="font-bold text-sm text-system-text leading-tight">${g.cat ? g.cat.name : 'Другое'}</h3>
+                                    <span class="text-[10px] font-extrabold text-primary-500 uppercase tracking-widest">Активно: ${selectedCount} из ${g.services.length}</span>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-2 self-end sm:self-auto">
-                                <label class="text-[10px] text-system-muted font-medium w-16 text-right leading-tight">Ваша цена<br>(сом)</label>
-                                <input type="number" min="0" ${!isChecked ? 'disabled' : ''} class="w-20 px-3 py-1.5 rounded-xl border border-system-border text-sm font-bold focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-center"
-                                       value="${customVal}" onchange="updateMasterSelfPrice(${master.id}, ${svc.id}, this.value)">
-                            </div>
+                            <span class="text-system-muted hover:text-system-text transition-transform duration-200 shrink-0 ${isExpanded ? 'rotate-180 text-primary-500' : ''}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                            </span>
                         </div>
-                        `;
-                    }).join('')}
-                </div>
-                ` : ''}
+                        ${isExpanded ? `
+                        <div class="border-t border-system-border divide-y divide-system-border/60 bg-system-main/20">
+                            ${g.services.map(svc => {
+                                const isChecked = (master.services || []).includes(svc.id);
+                                const customVal = (master.customPrices && master.customPrices[svc.id] !== undefined) ? master.customPrices[svc.id] : svc.price;
+                                return `
+                                <div class="p-4 flex flex-col gap-3 min-h-[96px] hover:bg-system-surface/60 transition-colors relative whitespace-normal ${!isChecked ? 'opacity-55' : ''}">
+                                    <label class="flex items-start gap-3 cursor-pointer select-none">
+                                        <input type="checkbox" ${isChecked ? 'checked' : ''} 
+                                               class="w-5 h-5 rounded-lg border-system-border text-primary-500 accent-primary-500 checked:bg-primary-500 focus:ring-primary-400 mt-0.5 cursor-pointer"
+                                               onchange="toggleMasterSelfService(${master.id}, ${svc.id})">
+                                        <div class="space-y-0.5 flex-1 min-w-0">
+                                            <h4 class="text-sm font-bold text-system-text leading-snug">${svc.name}</h4>
+                                            <p class="text-xs text-system-muted font-medium">${Math.floor(svc.duration / 60) > 0 ? Math.floor(svc.duration / 60) + ' ч ' : ''}${svc.duration % 60 > 0 ? (svc.duration % 60) + ' мин' : ''} · Базовая: ${svc.price} сом</p>
+                                        </div>
+                                    </label>
+                                    
+                                    <div class="flex items-center justify-between gap-3 pt-2.5 border-t border-dashed border-system-border">
+                                        <span class="text-xs text-system-muted font-bold">Ваша цена:</span>
+                                        <div class="flex items-center gap-1.5 self-end shrink-0">
+                                            <input type="number" min="0" ${!isChecked ? 'disabled' : ''} 
+                                                   class="w-24 px-3 py-1.5 rounded-xl border border-system-border text-xs font-mono font-bold focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none text-right bg-system-surface text-system-text disabled:opacity-50 transition-all ${isChecked ? 'ring-1 ring-primary-500/10' : ''}"
+                                                   value="${customVal}" onchange="updateMasterSelfPrice(${master.id}, ${svc.id}, this.value)">
+                                            <span class="text-xs text-system-text/80 font-bold font-mono">сом</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        ` : ''}
+                    </div>
+                    `;
+                }).join('')}
             </div>
-            `;
-        }).join('')}
-    </div>
-</div>`;
+        </div>`;
     }
 
     if (tab === 'profile') {
@@ -258,143 +443,535 @@ export function renderMasterContent() {
         }
 
         return `
-<div class="animate-fade-in max-w-lg">
-    <h1 class="text-2xl font-bold text-system-text mb-6">Мой профиль</h1>
-    <div class="bg-system-surface rounded-2xl border border-system-border p-6 space-y-4">
-        
-        <div class="p-4 rounded-xl bg-primary-50 border border-primary-100 flex items-start gap-3 mb-2">
-            <span class="text-primary-500 mt-0.5"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></span>
+        <div class="animate-fade-in max-w-lg mx-auto space-y-5">
             <div>
-                <p class="text-xs font-bold text-primary-600 uppercase tracking-wide mb-1">Мой тариф</p>
-                <p class="text-sm font-medium text-system-text">${tariffText}</p>
-                <p class="text-[10px] text-system-muted mt-1 leading-tight">Установлено вашим салоном. Для изменения свяжитесь с руководителем.</p>
+                <h1 class="text-xl sm:text-2xl font-black text-system-text tracking-tight">Личные настройки</h1>
+                <p class="text-[11px] text-system-muted mt-0.5 font-medium font-sans">Редактируйте анкету и оперативную доступность для записей</p>
             </div>
-        </div>
+            
+            <div class="bg-system-surface rounded-3xl border border-system-border p-5 space-y-4 shadow-xs relative">
+                
+                <div class="p-3.5 rounded-2xl bg-primary-50 border border-primary-100 flex items-start gap-3 relative whitespace-normal">
+                    <span class="text-primary-500 mt-0.5 text-lg shrink-0">💵</span>
+                     <div>
+                        <p class="text-[10px] font-black text-primary-600 uppercase tracking-widest leading-none">Финансовый тариф</p>
+                        <p class="text-xs font-bold text-system-text mt-1.5 leading-normal">${tariffText}</p>
+                        <p class="text-[9px] text-system-muted mt-1 leading-normal font-medium">Установлено вашим салоном. Для изменения условий свяжитесь с менеджером.</p>
+                    </div>
+                </div>
 
-        <div class="flex items-center gap-4 mb-4">
-            <img src="${master.avatar}" class="w-20 h-20 rounded-full border-4 border-primary-100">
-            <div>
-                <h2 class="font-bold text-system-text text-lg">${master.name}</h2>
-                <p class="text-primary-500">${master.specialty}</p>
+                <div class="flex items-center gap-4 relative whitespace-normal">
+                    <img src="${master.avatar}" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-primary-100 shrink-0 object-cover shadow-sm">
+                    <div class="min-w-0">
+                        <h2 class="font-black text-system-text text-base sm:text-lg truncate leading-tight">${master.name}</h2>
+                        <p class="text-primary-500 text-xs sm:text-sm font-semibold truncate mt-0.5">${master.specialty || 'Специальность не указана'}</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-3 pt-2">
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-system-muted uppercase tracking-wider px-1">Специальность (коротко)</label>
+                        <input type="text" 
+                               class="w-full px-4 py-3 rounded-2xl border border-system-border outline-none text-sm font-medium bg-system-main focus:border-primary-400 focus:bg-system-surface focus:ring-2 focus:ring-primary-100 transition-all text-system-text" 
+                               value="${master.specialty || ''}" 
+                               oninput="masters.find(m=>m.id===${master.id}).specialty=this.value">
+                    </div>
+                    
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-system-muted uppercase tracking-wider px-1">Анкета «О себе»</label>
+                        <textarea class="w-full px-4 py-3 rounded-2xl border border-system-border outline-none text-sm font-medium bg-system-main focus:border-primary-400 focus:bg-system-surface focus:ring-2 focus:ring-primary-100 outline-none transition-all resize-none text-system-text font-medium" 
+                                  rows="3" 
+                                  oninput="masters.find(m=>m.id===${master.id}).about=this.value">${master.about || ''}</textarea>
+                    </div>
+                    
+                    <div class="space-y-1.5 flex flex-col">
+                        <label class="block text-xs font-bold text-system-muted uppercase tracking-wider px-1">Статус бронирования</label>
+                        <div class="flex gap-2.5">
+                            <button onclick="masters.find(m=>m.id===${master.id}).available=true;showToast('Статус: На связи');render()" 
+                                    class="flex-1 py-3 px-4 rounded-2xl border-2 transition-all flex items-center justify-center gap-1.5 text-xs font-bold ${master.available ? 'border-green-500 bg-green-50/50 text-green-700 shadow-sm' : 'border-system-border hover:border-system-border/80 text-system-muted bg-transparent'}">
+                                <span class="text-green-500 text-sm">●</span> Доступна
+                            </button>
+                            <button onclick="masters.find(m=>m.id===${master.id}).available=false;showToast('Статус: Занята');render()" 
+                                    class="flex-1 py-3 px-4 rounded-2xl border-2 transition-all flex items-center justify-center gap-1.5 text-xs font-bold ${!master.available ? 'border-red-400 bg-red-50/50 text-red-700 shadow-sm' : 'border-system-border hover:border-system-border/80 text-system-muted bg-transparent'}">
+                                <span class="text-red-400 text-sm">○</span> Занята
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-3">
+                    <button onclick="showToast('Профиль сохранён')" class="w-full py-3.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white font-extrabold text-sm shadow-xl shadow-primary-200/50 transition-all">
+                        Сохранить анкету
+                    </button>
+                </div>
             </div>
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-system-text mb-1.5">Специальность</label>
-            <input type="text" class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm" value="${master.specialty}" oninput="masters.find(m=>m.id===${master.id}).specialty=this.value">
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-system-text mb-1.5">О себе</label>
-            <textarea class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm resize-none" rows="3" oninput="masters.find(m=>m.id===${master.id}).about=this.value">${master.about}</textarea>
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-system-text mb-1.5">Статус</label>
-            <div class="flex gap-3">
-                <button onclick="masters.find(m=>m.id===${master.id}).available=true;showToast('Статус: Доступна');render()" class="flex-1 py-2.5 rounded-xl border-2 ${master.available ? 'border-green-400 bg-green-50 text-green-700' : 'border-system-border text-system-muted'} text-sm font-medium">● Доступна</button>
-                <button onclick="masters.find(m=>m.id===${master.id}).available=false;showToast('Статус: Недоступна');render()" class="flex-1 py-2.5 rounded-xl border-2 ${!master.available ? 'border-red-400 bg-red-50 text-red-700' : 'border-system-border text-system-muted'} text-sm font-medium">○ Недоступна</button>
-            </div>
-        </div>
-        <button onclick="showToast('Профиль сохранён')" class="w-full btn-primary py-3.5 rounded-2xl text-white font-semibold text-sm shadow-xl shadow-primary-200">Сохранить</button>
-    </div>
-</div>`;
+        </div>`;
     }
 }
-
-
-window.toggleMasterSelfService = function(masterId, serviceId) {
-    const m = masters.find(x => x.id === masterId);
-    if (!m) return;
-    if (!m.services) m.services = [];
-    const idx = m.services.indexOf(serviceId);
-    if (idx >= 0) { m.services.splice(idx, 1); }
-    else { m.services.push(serviceId); }
-    render();
-};
-
-window.updateMasterSelfPrice = function(masterId, serviceId, val) {
-    const m = masters.find(x => x.id === masterId);
-    if (!m) return;
-    if (!m.customPrices) m.customPrices = {};
-    m.customPrices[serviceId] = parseInt(val, 10) || 0;
-    render();
-};
 
 window.renderMasterContent = renderMasterContent;
 
 export function renderMasterSalonsTab(master) {
     const currentSalon = salons.find(s => s.id === master.salonId);
     const availableSalons = salons.filter(s => s.id !== master.salonId);
-    const myApps = salonApplications.filter(a => a.userId === state.currentUser.id);
+    
+    state.masterSalonsSubTab = state.masterSalonsSubTab || 'current_salon';
+    const subTab = state.masterSalonsSubTab;
 
-    return `
-    <div class="animate-fade-in space-y-8">
-        <h1 class="text-2xl font-bold text-system-text">Мои салоны</h1>
+    state.salonsCatalogSort = state.salonsCatalogSort || 'name';
+    state.salonsCatalogView = state.salonsCatalogView || 'cards';
+    state.salonsCatalogSearchQuery = state.salonsCatalogSearchQuery || '';
+    state.salonsCatalogTypeFilter = state.salonsCatalogTypeFilter || 'all';
+    state.salonsCatalogAmenityFilter = state.salonsCatalogAmenityFilter || 'all';
 
-        <div class="space-y-4">
-            <h3 class="text-sm font-bold text-system-muted opacity-70 uppercase tracking-wider">Текущее место работы</h3>
-            ${currentSalon ? `
-                <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-3xl p-6 text-white shadow-xl shadow-green-100 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-xl font-bold">${currentSalon.name}</h2>
-                        <p class="text-green-100 text-sm">${currentSalon.address}</p>
-                        <div class="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-system-surface/20 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                            Вы в штате
+    const statusLabels = {
+        beauty_salon: 'Салон красоты',
+        barbershop: 'Барбершоп',
+        spa: 'СПА-центр',
+        private: 'Частный кабинет'
+    };
+
+    const amenityLabels = {
+        wifi: 'Wi-Fi',
+        parking: 'Парковка',
+        coffee: 'Кофе/Чай',
+        conditioner: 'Кондиционер',
+        music: 'Музыка',
+        lounge: 'Зона отдыха'
+    };
+
+    const subTabsHTML = `
+    <div class="bg-system-surface/100 p-1 rounded-2xl border border-system-border flex items-center gap-1 mb-5 overflow-x-auto hide-scrollbar select-none">
+        <button onclick="state.masterSalonsSubTab='current_salon'; render()" class="flex-1 text-center py-2.5 px-3 rounded-xl font-bold text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${subTab === 'current_salon' ? 'bg-primary-500 text-white shadow-sm font-extrabold' : 'text-system-muted hover:text-system-text hover:bg-system-main' }">Текущий салон</button>
+        <button onclick="state.masterSalonsSubTab='all_salons'; render()" class="flex-1 text-center py-2.5 px-3 rounded-xl font-bold text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap ${subTab === 'all_salons' ? 'bg-primary-500 text-white shadow-sm font-extrabold' : 'text-system-muted hover:text-system-text hover:bg-system-main' }">Все салоны</button>
+        <button onclick="state.masterSalonsSubTab='salon_invites'; render()" class="flex-1 text-center py-2.5 px-3 rounded-xl font-bold text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap flex items-center justify-center gap-1.5 ${subTab === 'salon_invites' ? 'bg-primary-500 text-white shadow-sm font-extrabold' : 'text-system-muted hover:text-system-text hover:bg-system-main' }">
+            Приглашения
+            ${salonApplications.filter(a => a.userId === state.currentUser.id && a.initiatedBy === 'salon' && a.status === 'pending').length > 0 ? `
+                <span class="px-1.5 py-0.5 text-[8px] bg-red-500 text-white rounded-full leading-none font-black animate-pulse">${salonApplications.filter(a => a.userId === state.currentUser.id && a.initiatedBy === 'salon' && a.status === 'pending').length}</span>
+            ` : ''}
+        </button>
+    </div>
+    `;
+
+    if (subTab === 'current_salon') {
+        const mySentApps = salonApplications.filter(a => a.userId === state.currentUser.id && (a.initiatedBy === 'master' || !a.initiatedBy));
+        
+        return `
+        <div class="animate-fade-in space-y-5">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-black text-system-text tracking-tight">Рабочее Место</h1>
+                <p class="text-[11px] text-system-muted mt-0.5 font-medium">Управление привязкой к салонам красоты и поданными заявками</p>
+            </div>
+            
+            ${subTabsHTML}
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div class="lg:col-span-2">
+                    <div class="bg-system-surface rounded-3xl border border-system-border p-5 sm:p-6 shadow-sm relative overflow-hidden">
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <h3 class="text-[10px] font-black text-system-muted uppercase tracking-widest flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+                                Текущий Работодатель
+                            </h3>
+                            ${currentSalon ? `<span class="px-2 py-0.5 text-[9px] bg-green-500 text-white rounded-md font-black uppercase tracking-wider">В штате</span>` : ''}
                         </div>
-                    </div>
-                    <div class="w-16 h-16 bg-system-surface/10 rounded-2xl flex items-center justify-center text-3xl">🏦</div>
-                </div>
-            ` : `
-                <div class="p-8 bg-system-surface rounded-3xl border border-dashed border-system-border text-center text-system-muted opacity-70 italic">
-                    Вы пока не привязаны ни к одному салону
-                </div>
-            `}
-        </div>
-
-        ${myApps.length > 0 ? `
-            <div class="space-y-4">
-                <h3 class="text-sm font-bold text-system-muted opacity-70 uppercase tracking-wider">Мои заявки</h3>
-                <div class="grid grid-cols-1 gap-3">
-                    ${myApps.map(app => {
-                        const salon = salons.find(s => s.id === app.salonId);
-                        const statusColor = app.status === 'approved' ? 'text-green-600 bg-green-50' : (app.status === 'pending' ? 'text-yellow-600 bg-transparent text-yellow-500' : 'text-red-600 bg-red-50');
-                        return `
-                        <div class="bg-system-surface p-4 rounded-2xl border border-system-border flex items-center justify-between">
-                            <div>
-                                <h4 class="font-bold text-system-text">${salon?.name || '---'}</h4>
-                                <p class="text-xs text-system-muted opacity-70">${new Date(app.createdAt).toLocaleDateString()}</p>
+                        
+                        ${currentSalon ? `
+                            <div class="space-y-4">
+                                <div class="relative bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl p-5 sm:p-6 text-white overflow-hidden shadow-lg shadow-primary-500/10">
+                                    <div class="absolute -right-10 -bottom-10 w-44 h-44 bg-white/10 rounded-full blur-2xl"></div>
+                                    <div class="absolute -left-6 -top-6 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
+                                    
+                                    <div class="relative flex items-center justify-between gap-4">
+                                        <div class="space-y-1.5 min-w-0">
+                                            <span class="text-[9px] text-white/75 font-bold uppercase tracking-widest font-mono">Выданный пропуск</span>
+                                            <h2 class="text-lg sm:text-xl font-black tracking-tight leading-tight truncate text-white">${currentSalon.name}</h2>
+                                            <p class="text-white/80 text-xs font-semibold flex items-center gap-1 truncate">
+                                                📍 ${currentSalon.address || 'Адрес не указан'}
+                                            </p>
+                                        </div>
+                                        <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shrink-0 shadow-sm border border-white/10">🏦</div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2.5 mt-2.5">
+                                    <div class="p-3 bg-system-main/60 rounded-2xl border border-system-border/60">
+                                        <div class="text-[9px] text-system-muted font-bold uppercase tracking-wider">Тип филиала</div>
+                                        <div class="text-xs font-black text-system-text mt-1 truncate">${statusLabels[currentSalon.organizationType || 'beauty_salon']}</div>
+                                    </div>
+                                    <div class="p-3 bg-system-main/60 rounded-2xl border border-system-border/60">
+                                        <div class="text-[9px] text-system-muted font-bold uppercase tracking-wider">Для связи</div>
+                                        <a href="tel:${currentSalon.phone || ''}" class="text-xs font-black text-primary-500 hover:underline mt-1 block truncate">${currentSalon.phone || 'Не указан'}</a>
+                                    </div>
+                                </div>
+                                
+                                ${state.showLeaveSalonConfirm ? `
+                                    <div class="mt-4 p-4 bg-red-50 text-red-700 border border-red-200/50 rounded-2xl animate-fade-in text-left">
+                                        <p class="text-xs font-bold text-red-800">Вы действительно хотите выйти из салона "${currentSalon.name}"?</p>
+                                        <p class="text-[10px] text-red-650 mt-1.5 leading-relaxed font-semibold">Внимание! Вы покинете штат сотрудников и перестанете получать записи от клиентов данного филиала.</p>
+                                        <div class="flex gap-2.5 mt-3 pt-1">
+                                            <button onclick="handleMasterLeaveSalon()" class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-[11px] uppercase tracking-wider shadow-sm transition-all">Да, выйти</button>
+                                            <button onclick="state.showLeaveSalonConfirm = false; render()" class="flex-1 py-2.5 rounded-xl bg-system-surface border border-system-border text-system-text font-bold text-xs transition-all">Отмена</button>
+                                        </div>
+                                    </div>
+                                ` : `
+                                    <div class="pt-2">
+                                        <button onclick="state.showLeaveSalonConfirm = true; render()" class="w-full sm:w-auto px-5 py-3 rounded-2xl border border-red-100 hover:bg-red-50 text-red-500 font-extrabold text-[10px] uppercase tracking-widest transition-all">
+                                            Выйти из салона
+                                        </button>
+                                    </div>
+                                `}
                             </div>
-                            <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${statusColor}">
-                                ${app.status}
-                            </span>
+                        ` : `
+                            <div class="p-8 sm:p-12 text-center bg-system-main/40 rounded-3xl border border-dashed border-system-border/80 flex flex-col items-center justify-center">
+                                <span class="text-4xl">🏢</span>
+                                <h4 class="text-xs font-black text-system-text uppercase tracking-wider mt-3">Вы свободный мастер</h4>
+                                <p class="text-[11px] text-system-muted max-w-sm mt-1.5 leading-relaxed font-semibold">
+                                    Начните принимать заказы уже сегодня! Выберите один из салонов во вкладе «Все салоны» и отправьте им заявку на вступление.
+                                </p>
+                            </div>
+                        `}
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-system-surface rounded-3xl border border-system-border p-5 shadow-sm">
+                        <h3 class="text-[10px] font-black text-system-muted uppercase tracking-widest mb-4 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+                            Ваши заявки в салоны
+                        </h3>
+                        ${mySentApps.length > 0 ? `
+                            <div class="space-y-3">
+                                ${mySentApps.map(app => {
+                                    const appSalon = salons.find(s => s.id === app.salonId);
+                                    let statusText = 'Рассматривается';
+                                    let statusStyle = 'text-yellow-600 bg-yellow-50 border-yellow-200/50';
+                                    
+                                    if (app.status === 'approved') {
+                                        statusText = 'Одобрена';
+                                        statusStyle = 'text-green-650 bg-green-50 border-green-200/50';
+                                    } else if (app.status === 'rejected') {
+                                        statusText = 'Отклонена';
+                                        statusStyle = 'text-red-650 bg-red-50 border-red-200/50';
+                                    } else if (app.status === 'hired') {
+                                        statusText = 'Трудоустроен';
+                                        statusStyle = 'text-blue-600 bg-blue-50 border-blue-200/50';
+                                    }
+
+                                    return `
+                                    <div class="p-3.5 rounded-2xl bg-system-main/40 border border-system-border/80 hover:border-primary-205 transition-all duration-200 relative whitespace-normal flex flex-col gap-2.5">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-9 h-9 bg-system-surface rounded-xl border border-system-border flex items-center justify-center text-lg shadow-xs shrink-0">🏢</div>
+                                            <div class="flex-1 min-w-0">
+                                                <h4 class="font-bold text-system-text text-xs sm:text-sm truncate leading-tight">${appSalon ? appSalon.name : 'Салон'}</h4>
+                                                <p class="text-[10px] text-system-muted font-bold font-mono mt-0.5">${new Date(app.createdAt).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center justify-between border-t border-system-border/40 pt-2">
+                                            <span class="text-[9px] text-system-muted font-bold uppercase tracking-wider">Состояние</span>
+                                            <span class="px-2 py-0.5 rounded-md text-[9px] font-extrabold border ${statusStyle} uppercase tracking-wider">
+                                                ${statusText}
+                                            </span>
+                                        </div>
+                                        
+                                        ${app.status === 'approved' ? `
+                                            <div class="mt-1 pt-2 border-t border-dashed border-system-border text-left">
+                                                <p class="text-[10px] text-system-muted mb-2 font-medium">Салон одобрил вашу кандидатуру!</p>
+                                                <button onclick="handleMasterAcceptEmployment('${app.id}')" 
+                                                    class="w-full text-center py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-extrabold text-[10px] uppercase tracking-wider shadow-md transition-all">
+                                                    Принять приглашение
+                                                </button>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        ` : `
+                            <div class="p-6 text-center text-xs text-system-muted opacity-60 italic whitespace-normal">
+                                Все тихо. Ранее направленные вами запросы отсутствуют.
+                            </div>
+                        `}
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+    }
+
+    if (subTab === 'all_salons') {
+        const myApps = salonApplications.filter(a => a.userId === state.currentUser.id);
+        
+        let filtered = availableSalons.filter(s => {
+            const query = state.salonsCatalogSearchQuery.toLowerCase().trim();
+            const matchesQuery = !query || s.name.toLowerCase().includes(query) || (s.address && s.address.toLowerCase().includes(query));
+            const organizationType = s.organizationType || 'beauty_salon';
+            const matchesType = state.salonsCatalogTypeFilter === 'all' || organizationType === state.salonsCatalogTypeFilter;
+            const amenities = s.features || [];
+            const matchesAmenity = state.salonsCatalogAmenityFilter === 'all' || amenities.includes(state.salonsCatalogAmenityFilter);
+            return matchesQuery && matchesType && matchesAmenity;
+        });
+
+        filtered.sort((a, b) => {
+            if (state.salonsCatalogSort === 'name') {
+                return a.name.localeCompare(b.name);
+            } else if (state.salonsCatalogSort === 'address') {
+                return (a.address || '').localeCompare(b.address || '');
+            }
+            return 0;
+        });
+
+        return `
+        <div class="animate-fade-in space-y-5">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-black text-system-text tracking-tight">Каталог Салонов</h1>
+                <p class="text-[11px] text-system-muted mt-0.5 font-medium">Поиск и подача трудовых заявок в филиалы Suluu партнерской сети</p>
+            </div>
+            
+            ${subTabsHTML}
+
+            <!-- TOOLBAR -->
+            <div class="flex flex-col gap-3 bg-system-surface p-4 rounded-3xl border border-system-border shadow-sm">
+                <div class="relative w-full">
+                    <span class="absolute inset-y-0 left-3.5 flex items-center text-system-muted opacity-60">
+                        🔍
+                    </span>
+                    <input type="text" 
+                           class="w-full pl-9 pr-4 py-3 rounded-2xl border border-system-border bg-system-main outline-none focus:border-primary-400 focus:bg-system-surface focus:ring-2 focus:ring-primary-100 transition-all font-semibold text-xs text-system-text" 
+                           placeholder="Поиск по названию, адресу салона..." 
+                           value="${state.salonsCatalogSearchQuery}" 
+                           oninput="state.salonsCatalogSearchQuery=this.value; render()">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <select onchange="state.salonsCatalogTypeFilter=this.value; render()" 
+                            class="px-3 py-2.5 rounded-2xl border border-system-border bg-system-main text-system-text text-[11px] font-black outline-none cursor-pointer focus:border-primary-400">
+                        <option value="all">Все типы</option>
+                        <option value="beauty_salon" ${state.salonsCatalogTypeFilter === 'beauty_salon' ? 'selected' : ''}>Красота</option>
+                        <option value="barbershop" ${state.salonsCatalogTypeFilter === 'barbershop' ? 'selected' : ''}>Барбершоп</option>
+                        <option value="spa" ${state.salonsCatalogTypeFilter === 'spa' ? 'selected' : ''}>СПА</option>
+                        <option value="private" ${state.salonsCatalogTypeFilter === 'private' ? 'selected' : ''}>Кабинет</option>
+                    </select>
+                    <select onchange="state.salonsCatalogAmenityFilter=this.value; render()" 
+                            class="px-3 py-2.5 rounded-2xl border border-system-border bg-system-main text-system-text text-[11px] font-black outline-none cursor-pointer focus:border-primary-400">
+                        <option value="all">Все удобства</option>
+                        <option value="wifi" ${state.salonsCatalogAmenityFilter === 'wifi' ? 'selected' : ''}>Wi-Fi</option>
+                        <option value="parking" ${state.salonsCatalogAmenityFilter === 'parking' ? 'selected' : ''}>Парковка</option>
+                        <option value="coffee" ${state.salonsCatalogAmenityFilter === 'coffee' ? 'selected' : ''}>Кофе/Чай</option>
+                        <option value="conditioner" ${state.salonsCatalogAmenityFilter === 'conditioner' ? 'selected' : ''}>Кондиционер</option>
+                    </select>
+                </div>
+            </div>
+
+            ${filtered.length === 0 ? `
+                <div class="text-center py-12 text-system-muted opacity-70 bg-system-surface rounded-2xl border border-system-border">Салоны по заданным фильтрам не найдены</div>
+            ` : `
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    ${filtered.map(s => {
+                        const existingApp = myApps.find(a => a.salonId === s.id && a.status !== 'rejected');
+                        const orgTypeClean = statusLabels[s.organizationType || 'beauty_salon'];
+                        const featuresList = s.features || [];
+                        
+                        let actionsHTML = '';
+                        if (existingApp) {
+                            if (existingApp.status === 'pending') {
+                                actionsHTML = `
+                                <div class="w-full text-center py-3 bg-system-main text-system-muted rounded-xl font-bold text-xs border border-system-border">
+                                    ⌛ Заявка рассматривается ("Ожидает")
+                                </div>
+                                `;
+                            } else if (existingApp.status === 'approved') {
+                                actionsHTML = `
+                                <button onclick="handleMasterAcceptEmployment('${existingApp.id}')" 
+                                    class="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-xs shadow-md transition-all">
+                                    ✔️ Одобрено! Начать работу
+                                </button>
+                                `;
+                            } else if (existingApp.status === 'hired') {
+                                actionsHTML = `
+                                <div class="w-full text-center py-3 bg-blue-50 text-blue-600 rounded-xl font-bold text-xs border border-blue-105">
+                                    ✓ Вы работаете здесь
+                                </div>
+                                `;
+                            } else {
+                                actionsHTML = `
+                                <div class="w-full text-center py-3 bg-red-50 text-red-650 rounded-xl font-bold text-xs border border-red-105">
+                                    ✕ Заявка отклонена
+                                </div>
+                                `;
+                            }
+                        } else {
+                            actionsHTML = `
+                            <button onclick="handleApplyToSalon(${s.id})" 
+                                class="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-xs shadow-md shadow-primary-100 transition-all">
+                                Подать заявку
+                            </button>
+                            `;
+                        }
+
+                        return `
+                        <div class="bg-system-surface rounded-3xl p-5 border border-system-border shadow-xs hover:shadow-md hover:scale-[1.01] transition-all flex flex-col justify-between whitespace-normal">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider text-primary-500">${orgTypeClean}</span>
+                                    <span class="text-xs text-system-muted">🏢</span>
+                                </div>
+                                <h4 class="font-bold text-system-text text-base leading-tight mb-1">${s.name}</h4>
+                                <p class="text-xs text-system-muted mb-4">${s.address || 'Адрес не указан'}</p>
+                                
+                                ${featuresList.length > 0 ? `
+                                    <div class="flex flex-wrap gap-1 mb-5">
+                                        ${featuresList.map(f => `<span class="text-[9px] font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-lg border border-primary-100/30">${amenityLabels[f] || f}</span>`).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            ${actionsHTML}
                         </div>
                         `;
                     }).join('')}
                 </div>
-            </div>
-        ` : ''}
-
-        <div class="space-y-4">
-            <h3 class="text-sm font-bold text-system-muted opacity-70 uppercase tracking-wider">Доступные салоны</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                ${availableSalons.map(s => {
-                    const hasApp = myApps.find(a => a.salonId === s.id && a.status === 'pending');
-                    return `
-                    <div class="bg-system-surface rounded-3xl p-5 border border-system-border shadow-sm hover:shadow-md transition-all">
-                        <h4 class="font-bold text-system-text mb-1">${s.name}</h4>
-                        <p class="text-xs text-system-muted mb-4">${s.address}</p>
-                        <button onclick="handleApplyToSalon(${s.id})" ${hasApp ? 'disabled' : ''} 
-                            class="w-full py-3 rounded-xl font-bold text-xs transition-all ${hasApp ? 'bg-system-main text-system-muted opacity-70 cursor-default' : 'bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-100'}">
-                            ${hasApp ? 'Заявка подана' : 'Подать заявку'}
-                        </button>
-                    </div>
-                    `;
-                }).join('')}
-            </div>
+            `}
         </div>
-    </div>
-    `;
+        `;
+    }
+
+    if (subTab === 'salon_invites') {
+        const salonInvites = salonApplications.filter(a => a.userId === state.currentUser.id && a.initiatedBy === 'salon');
+        
+        return `
+        <div class="animate-fade-in space-y-6">
+            <div>
+                <h1 class="text-2xl font-bold text-system-text">Приглашения от салонов</h1>
+                <p class="text-xs text-system-muted mt-1 font-medium">Вакансии и приглашения на работу, направленные вам владельцами салонов.</p>
+            </div>
+            
+            ${subTabsHTML}
+
+            ${salonInvites.length === 0 ? `
+                <div class="text-center py-12 text-system-muted opacity-70 bg-system-surface rounded-2xl border border-system-border italic">
+                    У вас пока нет активных приглашений на работу
+                </div>
+            ` : `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${salonInvites.map(invite => {
+                        const salon = salons.find(s => s.id === invite.salonId);
+                        const featuresList = (salon && salon.features) || [];
+                        const orgTypeClean = statusLabels[(salon && salon.organizationType) || 'beauty_salon'];
+                        
+                        let inviteActions = '';
+                        if (invite.status === 'pending') {
+                            if (currentSalon) {
+                                inviteActions = `
+                                <div class="mt-4 p-3.5 bg-yellow-50 border border-yellow-200 rounded-xl whitespace-normal text-left">
+                                    <p class="text-[11px] text-yellow-800 font-semibold leading-relaxed">
+                                        ⚠️ Чтобы принять это приглашение, вы должны сначала выйти из текущего салона "${currentSalon.name}" во вкладке «Текущий салон».
+                                    </p>
+                                    <div class="flex gap-2 mt-3">
+                                        <button disabled class="flex-1 py-2 rounded-xl bg-green-300 text-white font-bold text-xs cursor-not-allowed">
+                                            Принять
+                                        </button>
+                                        <button onclick="handleMasterRejectEmployment('${invite.id}')" 
+                                            class="px-4 py-2 border border-red-200 text-red-600 hover:bg-red-50 rounded-xl font-bold text-xs transition-colors">
+                                            Отклонить
+                                        </button>
+                                    </div>
+                                </div>
+                                `;
+                            } else {
+                                inviteActions = `
+                                <div class="flex gap-2 mt-4 pt-3 border-t border-system-border">
+                                    <button onclick="handleMasterAcceptEmployment('${invite.id}')" 
+                                        class="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold text-xs shadow-md transition-all rounded-xl">
+                                        Принять предложение
+                                    </button>
+                                    <button onclick="handleMasterRejectEmployment('${invite.id}')" 
+                                        class="px-4 py-2.5 bg-system-surface hover:bg-system-main border border-system-border text-system-text font-bold text-xs rounded-xl transition-all">
+                                        Отклонить
+                                    </button>
+                                </div>
+                                `;
+                            }
+                        } else if (invite.status === 'hired') {
+                            inviteActions = `
+                            <div class="mt-4 pt-3 border-t border-system-border text-center whitespace-normal">
+                                <span class="inline-flex px-3 py-1 bg-green-50 text-green-700 text-xs font-bold border border-green-100 rounded-full">
+                                    ✓ Вы приняли это предложение ("Принят на работу")
+                                </span>
+                            </div>
+                            `;
+                        } else {
+                            inviteActions = `
+                            <div class="mt-4 pt-3 border-t border-system-border text-center whitespace-normal">
+                                <span class="inline-flex px-3 py-1 bg-red-50 text-red-650 text-xs font-bold border border-red-100 rounded-full">
+                                    ✕ Приглашение отклонено
+                                </span>
+                            </div>
+                            `;
+                        }
+
+                        return `
+                        <div class="bg-system-surface rounded-3xl p-5 border border-system-border shadow-xs flex flex-col justify-between whitespace-normal">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[10px] font-bold text-primary-500 uppercase tracking-widest">${orgTypeClean}</span>
+                                    <span class="text-[10px] font-bold text-system-muted p-1 bg-system-main rounded font-mono">${new Date(invite.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                <h3 class="font-bold text-system-text text-base leading-tight mb-1 truncate">${salon ? salon.name : 'Салон'}</h3>
+                                <p class="text-xs text-system-muted mb-4">${salon ? salon.address : 'Адрес не указан'}</p>
+                                
+                                ${featuresList.length > 0 ? `
+                                    <div class="flex flex-wrap gap-1">
+                                        ${featuresList.map(f => `<span class="text-[9px] font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-lg">${amenityLabels[f] || f}</span>`).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            ${inviteActions}
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+            `}
+        </div>
+        `;
+    }
 }
 
 window.renderMasterSalonsTab = renderMasterSalonsTab;
+
+async function handleMasterAcceptEmployment(appId) {
+    const res = await acceptSalonEmployment(appId);
+    if (res.success) {
+        showToast('Вы успешно приняты на работу в салон!');
+        render();
+    } else {
+        showToast(res.error || 'Ошибка при вступлении в салон', 'error');
+    }
+}
+window.handleMasterAcceptEmployment = handleMasterAcceptEmployment;
+
+async function handleMasterRejectEmployment(appId) {
+    const app = salonApplications.find(a => a.id === appId);
+    if (app) {
+        app.status = 'rejected';
+        showToast('Приглашение отклонено');
+        render();
+    } else {
+        showToast('Заявка не найдена', 'error');
+    }
+}
+window.handleMasterRejectEmployment = handleMasterRejectEmployment;
+
+async function handleMasterLeaveSalon() {
+    const res = await leaveCurrentSalon(state.currentUser.id);
+    if (res.success) {
+        showToast('Вы вышли из текущего салона');
+        state.showLeaveSalonConfirm = false;
+        render();
+    } else {
+        showToast(res.error || 'Ошибка при выходе из салона', 'error');
+    }
+}
+window.handleMasterLeaveSalon = handleMasterLeaveSalon;
 
 async function handleApplyToSalon(salonId) {
     const res = await applyToSalon(salonId, state.currentUser.id, 'master');
@@ -406,3 +983,70 @@ async function handleApplyToSalon(salonId) {
     }
 }
 window.handleApplyToSalon = handleApplyToSalon;
+
+async function handleMasterConfirmBooking(bookingId) {
+    const b = state.bookings.find(x => x.id == bookingId);
+    if (b) {
+        b.status = 'confirmed';
+        showToast('Запись подтверждена!');
+        render();
+    }
+}
+window.handleMasterConfirmBooking = handleMasterConfirmBooking;
+
+async function handleMasterCancelBooking(bookingId) {
+    const b = state.bookings.find(x => x.id == bookingId);
+    if (b) {
+        b.status = 'cancelled';
+        showToast('Запись отменена');
+        render();
+    }
+}
+window.handleMasterCancelBooking = handleMasterCancelBooking;
+
+async function handleMasterCompleteBooking(bookingId) {
+    const b = state.bookings.find(x => x.id == bookingId);
+    if (b) {
+        if (!b.paid) {
+            showToast('Ошибка: Запись должна быть сначала оплачена в салоне!');
+            return;
+        }
+        if (b.status === 'confirmed') {
+            b.status = 'completed';
+            showToast('Услуга успешно завершена!');
+            render();
+        }
+    }
+}
+window.handleMasterCompleteBooking = handleMasterCompleteBooking;
+
+export function toggleMasterSelfService(masterId, serviceId) {
+    const master = masters.find(m => m.id === masterId);
+    if (!master) return;
+    master.services = master.services || [];
+    const index = master.services.indexOf(serviceId);
+    if (index === -1) {
+        master.services.push(serviceId);
+        showToast('Услуга включена');
+    } else {
+        master.services.splice(index, 1);
+        showToast('Услуга отключена');
+    }
+    render();
+}
+window.toggleMasterSelfService = toggleMasterSelfService;
+
+export function updateMasterSelfPrice(masterId, serviceId, value) {
+    const master = masters.find(m => m.id === masterId);
+    if (!master) return;
+    master.customPrices = master.customPrices || {};
+    const price = parseInt(value, 10);
+    if (isNaN(price) || price < 0) {
+        showToast('Введите корректную цену', 'error');
+        return;
+    }
+    master.customPrices[serviceId] = price;
+    showToast('Персональная цена сохранена');
+    render();
+}
+window.updateMasterSelfPrice = updateMasterSelfPrice;

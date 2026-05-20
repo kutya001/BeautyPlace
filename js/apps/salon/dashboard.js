@@ -5,9 +5,9 @@ import { renderPriceHistoryModal } from '../../components/modals.js';
 import { 
     processSalonApplication, updateStaffPermissions, deleteStaff, buySubscription, getAvatarPlaceholder
 } from '../../api.js';
-import { formatPrice, getSalonPrice, getSalonDuration, getDurationText, showToast } from '../../utils.js';
+import { formatPrice, getSalonPrice, getSalonDuration, getDurationText, showToast, getSalonServices } from '../../utils.js';
 import { assignMasterToBooking, updateBookingTime, handleTimelineDrop, salonConfirmBooking, salonCancelBooking, salonCompleteBooking } from '../../features/booking/actions.js';
-import { state, timeSlots, services, salons, masters, users, salonStaff, salonSubscriptions, salonApplications, subscriptionPlans } from '../../state.js';
+import { state, timeSlots, services, salons, masters, users, salonStaff, salonSubscriptions, salonApplications, subscriptionPlans, checkPermission } from '../../state.js';
 
 export function renderSalonDashboard(salon, salonBookings, confirmedRevenue, salonMasters) {
     // Шаг 5: Аналитика
@@ -471,9 +471,18 @@ export function renderBookingEditModal(bookingId, salonMasters) {
                         <button onclick="window.salonCancelBooking('${b.id}'); state.editingBookingId=null;" class="flex-1 bg-red-50 text-red-600 border border-red-100 rounded-xl py-3 text-sm font-bold hover:bg-red-100 transition-colors">Отклонить</button>
                     ` : b.status === 'confirmed' ? `
                         <button onclick="window.salonCompleteBooking('${b.id}'); state.editingBookingId=null;" class="flex-1 bg-blue-500 text-white rounded-xl py-3 text-sm font-bold shadow-md shadow-blue-200 hover:bg-blue-600 transition-all hover:-translate-y-0.5">Завершить</button>
+                        ${!b.paid ? `<button onclick="window.triggerPaymentFlow('${b.id}'); state.editingBookingId=null;" class="flex-1 bg-amber-500 text-white rounded-xl py-3 text-sm font-bold shadow-md hover:bg-amber-600 transition-all hover:-translate-y-0.5">Принять оплату</button>` : ''}
                         <button onclick="window.salonCancelBooking('${b.id}'); state.editingBookingId=null;" class="flex-1 bg-system-main text-system-muted rounded-xl py-3 text-sm font-bold hover:bg-system-border transition-colors">Отменить</button>
                     ` : `
-                        <div class="w-full text-center py-3 rounded-xl ${b.status === 'completed' ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-700'} border ${b.status === 'completed' ? 'border-blue-100' : 'border-red-100'}">
+                        ${b.status === 'completed' && !b.paid ? `
+                            <div class="w-full text-center py-3 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 mb-2">
+                                <span class="font-bold text-sm"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 11 3 3L22 4"/></svg> Завершена (Ожидает оплаты)</span>
+                            </div>
+                            <button onclick="window.triggerPaymentFlow('${b.id}'); state.editingBookingId=null;" class="w-full bg-amber-500 text-white rounded-xl py-3 text-sm font-bold shadow-md hover:bg-amber-600 transition-all hover:-translate-y-0.5">💰 Принять оплату</button>
+                            <div class="hidden">
+                        ` : `
+                            <div class="w-full text-center py-3 rounded-xl ${b.status === 'completed' ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-700'} border ${b.status === 'completed' ? 'border-blue-100' : 'border-red-100'}">
+                        `}
                             <span class="font-bold text-sm">Статус: ${b.status === 'completed' ? '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 11 3 3L22 4"/></svg> Завершена' : '<svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 6 6 18"/><path stroke-linecap="round" stroke-linejoin="round" d="m6 6 12 12"/></svg> Отменена'}</span>
                         </div>
                     `}
@@ -486,6 +495,591 @@ export function renderBookingEditModal(bookingId, salonMasters) {
 window.renderBookingEditModal = renderBookingEditModal;
 
 export function renderSalonBookings(salonBookings) {
+    const statusColors = { pending: 'bg-yellow-100 text-yellow-700', confirmed: 'bg-green-100 text-green-700', completed: 'bg-blue-100 text-blue-700', cancelled: 'bg-red-100 text-red-700' };
+    const statusLabels = { pending: 'Ожидает', confirmed: 'Подтверждена', completed: 'Завершена', cancelled: 'Отменена' };
+    const salon = salons.find(s => s.id === state.currentUser.salonId);
+    const salonMasters = masters.filter(m => m.salonId === salon.id);
+    const viewMode = state.salonViewMode || 'table';
+
+    // Grid states
+    const activeColumns = state.visibleBookingColumns || ['client', 'phone', 'service', 'date', 'time', 'master', 'amount', 'status', 'actions'];
+    const activeSortField = state.bookingSortField || 'date';
+    const activeSortOrder = state.bookingSortOrder || 'desc';
+    const selectedServices = state.salonBookingServiceFilters || [];
+    const selectedMasters = state.salonBookingMasterFilters || [];
+    const salonServices = getSalonServices(salon, services);
+    const activeFiltersCount = selectedServices.length + selectedMasters.length;
+
+    // 1. Filter bookings
+    let filtered = [...salonBookings];
+    
+    // Status Filter (single status tab selection)
+    const activeStatusTab = state.salonBookingStatusFilter || 'all';
+    if (activeStatusTab !== 'all') {
+        filtered = filtered.filter(b => b.status === activeStatusTab);
+    }
+
+    const searchQuery = (state.bookingSearchQuery || '').toLowerCase().trim();
+    if (searchQuery) {
+        filtered = filtered.filter(b => 
+            (b.clientName && b.clientName.toLowerCase().includes(searchQuery)) ||
+            (b.clientPhone && b.clientPhone.toLowerCase().includes(searchQuery)) ||
+            (b.id && b.id.toLowerCase().includes(searchQuery))
+        );
+    }
+
+    // Service Filter (multi-select checkboxes)
+    if (selectedServices.length > 0) {
+        filtered = filtered.filter(b => selectedServices.includes(b.serviceId));
+    }
+
+    // Master Filter (multi-select checkboxes)
+    if (selectedMasters.length > 0) {
+        filtered = filtered.filter(b => selectedMasters.includes(b.masterId));
+    }
+
+    // 2. Sort bookings
+    filtered.sort((a, b) => {
+        let valA = '';
+        let valB = '';
+        
+        if (activeSortField === 'client') {
+            valA = a.clientName || '';
+            valB = b.clientName || '';
+        } else if (activeSortField === 'phone') {
+            valA = a.clientPhone || '';
+            valB = b.clientPhone || '';
+        } else if (activeSortField === 'service') {
+            const svcA = services.find(s => s.id === a.serviceId);
+            const svcB = services.find(s => s.id === b.serviceId);
+            valA = svcA ? svcA.name : '';
+            valB = svcB ? svcB.name : '';
+        } else if (activeSortField === 'date') {
+            const datePartsA = (a.date || '').split('.').reverse().join('-');
+            const datePartsB = (b.date || '').split('.').reverse().join('-');
+            valA = `${datePartsA}T${a.time || '00:00'}`;
+            valB = `${datePartsB}T${b.time || '00:00'}`;
+        } else if (activeSortField === 'time') {
+            valA = a.time || '00:00';
+            valB = b.time || '00:00';
+        } else if (activeSortField === 'master') {
+            const m1 = masters.find(m => m.id === a.masterId);
+            const m2 = masters.find(m => m.id === b.masterId);
+            valA = m1 ? m1.name : '';
+            valB = m2 ? m2.name : '';
+        } else if (activeSortField === 'amount') {
+            valA = getSalonPrice(salon.id, a.serviceId, services, a.masterId) || 0;
+            valB = getSalonPrice(salon.id, b.serviceId, services, b.masterId) || 0;
+        } else if (activeSortField === 'status') {
+            valA = a.status || '';
+            valB = b.status || '';
+        }
+
+        if (typeof valA === 'string') {
+            return activeSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        } else {
+            return activeSortOrder === 'asc' ? valA - valB : valB - valA;
+        }
+    });
+
+    const timelineHTML = (() => {
+        if (viewMode !== 'timeline') return '';
+        const slots = window.timeSlots || ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
+        const slotWidth = 100;
+
+        function timeToMinutes(t) {
+            if (!t) return 0;
+            const [h, m] = t.split(':').map(Number);
+            return h * 60 + (m || 0);
+        }
+
+        const startOfTimeline = timeToMinutes(slots[0] || '09:00'); 
+        const activeMasters = selectedMasters.length > 0 
+            ? salonMasters.filter(m => selectedMasters.includes(m.id)) 
+            : salonMasters;
+
+        return `
+        <div class="bg-system-surface rounded-2xl border border-system-border overflow-hidden relative shadow-sm">
+            <div class="overflow-x-auto min-h-[300px] timeline-container">
+                <div style="min-width: ${slots.length * slotWidth + 140}px;" class="relative pb-4">
+                    <!-- Header -->
+                    <div class="flex border-b border-system-border bg-system-main sticky top-0 z-20">
+                        <div class="p-3 text-left font-bold text-system-muted sticky left-0 bg-system-main z-30 border-r border-system-border" style="width: 140px; min-width: 140px;">Мастер</div>
+                        ${slots.map(t => `<div class="py-3 text-center text-xs font-medium text-system-muted border-l border-system-border shrink-0" style="width: ${slotWidth}px;"><span class="bg-system-main px-2 py-1 rounded-md">${t}</span></div>`).join('')}
+                    </div>
+                    
+                    <!-- Master Rows -->
+                    ${activeMasters.map((m, mIndex) => {
+                        const masterBookings = filtered.filter(b => b.masterId === m.id);
+                        
+                        return `
+                        <div class="flex border-b ${mIndex === activeMasters.length - 1 ? 'border-transparent' : 'border-system-border'} relative group min-h-[95px]">
+                            <!-- Sticky Master Column -->
+                            <div class="p-3 sticky left-0 bg-system-surface z-20 border-r border-system-border flex items-center gap-3 shrink-0" style="width: 140px; min-width: 140px;">
+                                <img src="${m.avatar}" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" alt="${m.name}">
+                                <span class="font-bold text-system-text text-xs truncate" title="${m.name}">${m.name}</span>
+                            </div>
+                            
+                            <!-- Timeline Grid Background Tracks -->
+                            <div class="flex flex-1 relative bg-repeat">
+                                ${slots.map(t => `
+                                    <div class="border-l border-system-border/50 shrink-0 hover:bg-primary-50/30 transition-colors" 
+                                         style="width: ${slotWidth}px;" 
+                                         ondragover="event.preventDefault()" 
+                                         ondrop="handleTimelineDrop(event, ${m.id}, '${t}')">
+                                    </div>`).join('')}
+                                
+                                <!-- Absolute position bookings -->
+                                ${masterBookings.map(booking => {
+                                    const svc = services.find(s => s.id === booking.serviceId);
+                                    const tMins = timeToMinutes(booking.time);
+                                    let startOffsetMins = tMins - startOfTimeline;
+                                    if (startOffsetMins < 0) startOffsetMins = 0;
+                                    
+                                    const durationMins = getSalonDuration(salon.id, svc ? svc.id : null, services) || (svc ? svc.duration : 60);
+                                    
+                                    const leftPx = (startOffsetMins / 60) * slotWidth;
+                                    const widthPx = (durationMins / 60) * slotWidth;
+                                    const finalWidthPx = Math.max(widthPx, 50); 
+                                    
+                                    const isConfirmed = booking.status === 'confirmed';
+                                    const isCompleted = booking.status === 'completed';
+                                    
+                                    let statusColorClass = 'bg-yellow-50 hover:bg-yellow-100 text-yellow-800 border-2 border-yellow-400';
+                                    if (isConfirmed) statusColorClass = 'bg-green-50 hover:bg-green-100 text-green-800 border-green-200';
+                                    if (isCompleted) statusColorClass = 'bg-blue-50 hover:bg-blue-100 text-blue-800 border-blue-200';
+                                    
+                                    return `
+                                    <div draggable="true" 
+                                         ondragstart="event.dataTransfer.setData('bookingId','${booking.id}'); event.target.style.opacity='0.5';"
+                                         ondragend="event.target.style.opacity='1';"
+                                         onclick="state.editingBookingId='${booking.id}'; render()"
+                                         class="absolute top-2 bottom-2 rounded-xl p-2 cursor-pointer transition-all shadow-sm hover:shadow-md hover:scale-[1.02] border flex flex-col justify-between overflow-hidden z-10 ${statusColorClass}"
+                                         style="left: ${leftPx + 4}px; width: ${finalWidthPx - 8}px;">
+                                        <div>
+                                            <div class="font-bold text-[10px] truncate leading-tight opacity-95">${svc ? svc.name : 'Без услуги'}</div>
+                                            <div class="text-[9px] font-medium truncate opacity-70 mt-0.5">${booking.clientName}</div>
+                                        </div>
+                                        
+                                        <!-- Quick interactive timeline actions -->
+                                        <div class="flex items-center justify-between mt-auto pt-1 border-t border-black/5" onclick="event.stopPropagation()">
+                                            <span class="text-[9px] font-bold whitespace-nowrap bg-black/5 px-1 py-0.5 rounded">${booking.time}</span>
+                                            <div class="flex items-center gap-1">
+                                                ${booking.status === 'pending' ? `
+                                                    <button onclick="salonConfirmBooking('${booking.id}')" class="bg-green-500 hover:bg-green-600 text-white rounded p-1 shadow-sm transition-all" title="Подтвердить">
+                                                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                                                    </button>
+                                                    <button onclick="salonCancelBooking('${booking.id}')" class="bg-red-500 hover:bg-red-600 text-white rounded p-1 shadow-sm transition-all" title="Отклонить">
+                                                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                                                    </button>
+                                                ` : booking.status === 'confirmed' ? `
+                                                    <button onclick="salonCompleteBooking('${booking.id}')" class="bg-blue-600 hover:bg-blue-700 text-white rounded p-1 shadow-sm transition-all" title="Завершить">
+                                                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+                                                    </button>
+                                                    <button onclick="salonCancelBooking('${booking.id}')" class="bg-gray-400 hover:bg-red-600 text-white rounded p-1 shadow-sm transition-all" title="Отменить">
+                                                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+                                                    </button>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>
+        </div>`;
+    })();
+
+    // Helper visibility toggler template logic
+    const columnVisibilityOpen = !!state.columnVisibilityOpen;
+    const togglerHTML = `
+    <div class="relative inline-block text-left" onclick="event.stopPropagation()">
+        <button onclick="state.columnVisibilityOpen = !state.columnVisibilityOpen; render()" class="px-3.5 py-2 rounded-xl border border-system-border hover:bg-system-main bg-system-surface font-semibold text-xs flex items-center gap-1.5 select-none text-system-muted hover:text-system-text transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17V7m0 10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m0 10a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2"/></svg>
+            Столбцы
+        </button>
+        ${columnVisibilityOpen ? `
+        <div class="absolute right-0 mt-2 w-48 rounded-2xl bg-system-surface border border-system-border shadow-2xl p-3 z-50 text-left">
+            <p class="text-[10px] font-bold text-system-muted opacity-80 uppercase tracking-wider mb-2">Видимые колонки</p>
+            <div class="grid gap-2">
+                ${[
+                    { key: 'client', label: 'Клиент' },
+                    { key: 'phone', label: 'Номер телефона' },
+                    { key: 'service', label: 'Услуга' },
+                    { key: 'date', label: 'Дата' },
+                    { key: 'time', label: 'Время' },
+                    { key: 'master', label: 'Мастер' },
+                    { key: 'amount', label: 'Сумма' },
+                    { key: 'status', label: 'Статус' },
+                    { key: 'actions', label: 'Действия' }
+                ].map(col => `
+                    <label class="flex items-center gap-2.5 cursor-pointer hover:bg-system-main p-1.5 rounded-lg text-xs leading-none">
+                        <input type="checkbox" ${activeColumns.includes(col.key) ? 'checked' : ''} onchange="toggleColumnVisibility('${col.key}')" class="w-4 h-4 rounded border-system-border text-primary-500 focus:ring-primary-400">
+                        <span class="text-system-text font-medium">${col.label}</span>
+                    </label>
+                `).join('')}
+            </div>
+        </div>` : ''}
+    </div>`;
+
+    return `
+<div class="animate-fade-in" onclick="if (state.columnVisibilityOpen || state.openActionsBookingId || state.masterFilterDropdownOpen || state.categoryServiceFilterDropdownOpen) { state.columnVisibilityOpen=false; state.openActionsBookingId=null; state.masterFilterDropdownOpen=false; state.categoryServiceFilterDropdownOpen=false; render(); }">
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+            <h1 class="text-2xl font-bold text-system-text">Записи салона</h1>
+            <button onclick="window.openBookingForSalon(${salon.id})" class="btn-primary px-4 py-2 rounded-xl text-white font-semibold text-sm flex items-center gap-1"><span class="text-lg leading-none">+</span> Добавить запись</button>
+        </div>
+        <div class="flex bg-system-main rounded-xl p-0.5">
+            <button onclick="state.salonViewMode='table'; render()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${viewMode === 'table' ? 'bg-system-surface shadow-sm text-system-text' : 'text-system-muted'}"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 3"/></svg> Таблица</button>
+            <button onclick="state.salonViewMode='timeline'; render()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${viewMode === 'timeline' ? 'bg-system-surface shadow-sm text-system-text' : 'text-system-muted'}"><svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg> Timeline</button>
+        </div>
+    </div>
+
+    <!-- ФИЛЬТР ПО СТАТУСУ (Вкладки) -->
+    <div class="flex items-center gap-2 mb-6 border-b border-system-border pb-2 overflow-x-auto hide-scrollbar select-none">
+        <button onclick="state.salonBookingStatusFilter='all'; render()" class="px-4 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap border-b-2 transition-all ${!state.salonBookingStatusFilter || state.salonBookingStatusFilter === 'all' ? 'border-primary-500 text-primary-600 font-extrabold' : 'border-transparent text-system-muted hover:text-system-text'}">Все записи</button>
+        <button onclick="state.salonBookingStatusFilter='pending'; render()" class="px-4 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap border-b-2 transition-all ${state.salonBookingStatusFilter === 'pending' ? 'border-primary-500 text-primary-600 font-extrabold' : 'border-transparent text-system-muted hover:text-system-text'}">Ожидают</button>
+        <button onclick="state.salonBookingStatusFilter='confirmed'; render()" class="px-4 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap border-b-2 transition-all ${state.salonBookingStatusFilter === 'confirmed' ? 'border-primary-500 text-primary-600 font-extrabold' : 'border-transparent text-system-muted hover:text-system-text'}">Подтвержденные</button>
+        <button onclick="state.salonBookingStatusFilter='completed'; render()" class="px-4 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap border-b-2 transition-all ${state.salonBookingStatusFilter === 'completed' ? 'border-primary-500 text-primary-600 font-extrabold' : 'border-transparent text-system-muted hover:text-system-text'}">Завершенные</button>
+        <button onclick="state.salonBookingStatusFilter='cancelled'; render()" class="px-4 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap border-b-2 transition-all ${state.salonBookingStatusFilter === 'cancelled' ? 'border-primary-500 text-primary-600 font-extrabold' : 'border-transparent text-system-muted hover:text-system-text'}">Отмененные</button>
+    </div>
+    
+    <!-- ТАБЛИЧНЫЕ ИНСТРУМЕНТЫ: ПОИСК, ФИЛЬТР КАТЕГОРИИ, НАСТРОЙКА ВИДИМОСТИ -->
+    <div class="flex flex-col gap-4 mb-6 bg-system-surface p-4 rounded-2xl border border-system-border">
+        <!-- Поиск + Фильтры Кнопка + Категории + Столбцы -->
+        <div class="flex flex-col lg:flex-row gap-3 items-center justify-between w-full">
+            <div class="relative w-full lg:w-80">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-system-muted opacity-60">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </span>
+                <input type="text" class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-system-border outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 bg-system-main" placeholder="Поиск по клиенту, телефону..." value="${state.bookingSearchQuery || ''}" oninput="state.bookingSearchQuery=this.value; render()">
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
+                <!-- Мастера dropdown (мультивыбор) -->
+                <div class="relative inline-block text-left" onclick="event.stopPropagation()">
+                    <button onclick="state.masterFilterDropdownOpen = !state.masterFilterDropdownOpen; state.categoryServiceFilterDropdownOpen = false; state.columnVisibilityOpen = false; render()" 
+                            class="px-3.5 py-2.5 text-xs font-semibold rounded-xl border border-system-border bg-system-surface text-system-text outline-none focus:ring-2 focus:ring-primary-100 flex items-center justify-between gap-2 cursor-pointer select-none min-w-[130px] hover:bg-system-main shadow-sm transition-all">
+                        <span>👤 Мастера ${selectedMasters.length > 0 ? `(${selectedMasters.length})` : 'Все'}</span>
+                        <svg class="w-3.5 h-3.5 text-system-muted ml-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </button>
+                    ${state.masterFilterDropdownOpen ? `
+                    <div class="absolute right-0 mt-2 w-64 rounded-2xl bg-system-surface border border-system-border shadow-2xl p-3.5 z-50 text-left animate-fade-in">
+                        <div class="flex items-center justify-between border-b border-system-border/60 pb-2 mb-2.5">
+                            <span class="text-[10px] font-bold text-system-muted uppercase tracking-wider">Мастера</span>
+                            ${selectedMasters.length > 0 ? `
+                                <button onclick="state.salonBookingMasterFilters=[]; render()" class="text-[10px] font-bold text-red-500 hover:text-red-600 transition-colors">Сбросить</button>
+                            ` : ''}
+                        </div>
+                        <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                            ${salonMasters.length > 0 ? salonMasters.map(m => {
+                                const isChecked = selectedMasters.includes(m.id);
+                                return `
+                                <label class="flex items-center gap-2.5 cursor-pointer hover:bg-system-main/40 p-1.5 rounded-lg text-xs transition-colors select-none leading-none">
+                                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleBookingMasterFilter(${m.id})" class="w-4 h-4 rounded border-system-border text-primary-500 focus:ring-primary-400">
+                                    <span class="text-system-text font-medium truncate" title="${m.name}">${m.name}</span>
+                                </label>
+                                `;
+                            }).join('') : `<p class="text-xs text-system-muted italic p-1.5">Нет мастеров</p>`}
+                        </div>
+                    </div>` : ''}
+                </div>
+
+                <!-- Категории/Услуги dropdown (группировка + мультивыбор) -->
+                <div class="relative inline-block text-left" onclick="event.stopPropagation()">
+                    <button onclick="state.categoryServiceFilterDropdownOpen = !state.categoryServiceFilterDropdownOpen; state.masterFilterDropdownOpen = false; state.columnVisibilityOpen = false; render()" 
+                            class="px-3.5 py-2.5 text-xs font-semibold rounded-xl border border-system-border bg-system-surface text-system-text outline-none focus:ring-2 focus:ring-primary-100 flex items-center justify-between gap-2 cursor-pointer select-none min-w-[150px] hover:bg-system-main shadow-sm transition-all">
+                        <span>💅 Услуги / Категории ${selectedServices.length > 0 ? `(${selectedServices.length})` : 'Все'}</span>
+                        <svg class="w-3.5 h-3.5 text-system-muted ml-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                    </button>
+                    ${state.categoryServiceFilterDropdownOpen ? `
+                    <div class="absolute right-0 mt-2 w-72 rounded-2xl bg-system-surface border border-system-border shadow-2xl p-4 z-50 text-left animate-fade-in">
+                        <div class="flex items-center justify-between border-b border-system-border/60 pb-2 mb-2.5">
+                            <span class="text-[10px] font-bold text-system-muted uppercase tracking-wider">Категории и Услуги</span>
+                            ${selectedServices.length > 0 ? `
+                                <button onclick="state.salonBookingServiceFilters=[]; render()" class="text-[10px] font-bold text-red-500 hover:text-red-600 transition-colors">Сбросить</button>
+                            ` : ''}
+                        </div>
+                        <div class="space-y-3 max-h-64 overflow-y-auto pr-1">
+                            ${categories.map(cat => {
+                                const catServices = salonServices.filter(s => s.category === cat.id);
+                                if (catServices.length === 0) return '';
+                                
+                                const catServiceIds = catServices.map(s => s.id);
+                                const selectedCatServices = catServiceIds.filter(id => selectedServices.includes(id));
+                                const isAllSelected = catServices.length > 0 && selectedCatServices.length === catServices.length;
+                                const isSomeSelected = selectedCatServices.length > 0 && selectedCatServices.length < catServices.length;
+                                
+                                return `
+                                <div class="space-y-1">
+                                    <!-- Родительская категория -->
+                                    <label class="flex items-center gap-2 cursor-pointer hover:bg-system-main/40 p-1 rounded-lg text-xs font-bold transition-colors select-none leading-none text-system-text">
+                                        <input type="checkbox" ${isAllSelected ? 'checked' : ''} 
+                                               onchange="toggleBookingCategoryGroup(${cat.id})" 
+                                               class="w-4 h-4 rounded border-system-border text-primary-500 focus:ring-primary-400 ${isSomeSelected ? 'opacity-70' : ''}">
+                                        <span class="truncate flex items-center gap-1">
+                                            <span>📂</span> ${cat.name} 
+                                            <span class="text-[10px] text-system-muted font-normal">(${selectedCatServices.length}/${catServices.length})</span>
+                                        </span>
+                                    </label>
+                                    
+                                    <!-- Дочерние услуги -->
+                                    <div class="pl-6 border-l border-system-border/60 ml-2 space-y-1">
+                                        ${catServices.map(svc => {
+                                            const isChecked = selectedServices.includes(svc.id);
+                                            return `
+                                            <label class="flex items-center gap-2 cursor-pointer hover:bg-system-main/40 p-1 rounded-lg text-xs font-medium transition-colors select-none leading-none text-system-text/80">
+                                                <input type="checkbox" ${isChecked ? 'checked' : ''} 
+                                                       onchange="toggleBookingServiceFilter(${svc.id})" 
+                                                       class="w-3.5 h-3.5 rounded border-system-border text-primary-500 focus:ring-primary-400">
+                                                <span class="truncate" title="${svc.name}">${svc.name}</span>
+                                            </label>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>` : ''}
+                </div>
+
+                <!-- Column toggler shown only in table mode -->
+                ${viewMode !== 'timeline' ? togglerHTML : ''}
+
+                <!-- Сброс всех фильтров (если есть активные) -->
+                ${activeFiltersCount > 0 ? `
+                    <button onclick="clearAllBookingFilters(); render()" class="px-3.5 py-2.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all shadow-xs flex items-center justify-center gap-1 active:scale-95" title="Сбросить все">
+                        ✕ Сбросить
+                    </button>
+                ` : ''}
+            </div>
+        </div>
+    </div>
+
+    ${(() => {
+        return viewMode === 'timeline' ? timelineHTML : (filtered.length > 0 ? `
+        <div class="bg-system-surface rounded-2xl border border-system-border overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="admin-table w-full text-sm">
+                    <thead><tr class="border-b border-system-border bg-system-main/30">
+                        ${activeColumns.includes('client') ? `<th onclick="toggleBookingsSort('client')" class="text-left p-3.5 font-bold text-system-muted select-none cursor-pointer hover:text-system-text transition-colors">Клиент ${renderSortIcon('client')}</th>` : ''}
+                        ${activeColumns.includes('phone') ? `<th onclick="toggleBookingsSort('phone')" class="text-left p-3.5 font-bold text-system-muted select-none cursor-pointer hover:text-system-text transition-colors">Номер телефона ${renderSortIcon('phone')}</th>` : ''}
+                        ${activeColumns.includes('service') ? `<th onclick="toggleBookingsSort('service')" class="text-left p-3.5 font-bold text-system-muted select-none cursor-pointer hover:text-system-text transition-colors">Услуга ${renderSortIcon('service')}</th>` : ''}
+                        ${activeColumns.includes('date') ? `<th onclick="toggleBookingsSort('date')" class="text-left p-3.5 font-bold text-system-muted select-none cursor-pointer hover:text-system-text transition-colors">Дата ${renderSortIcon('date')}</th>` : ''}
+                        ${activeColumns.includes('time') ? `<th onclick="toggleBookingsSort('time')" class="text-left p-3.5 font-bold text-system-muted select-none cursor-pointer hover:text-system-text transition-colors">Время ${renderSortIcon('time')}</th>` : ''}
+                        ${activeColumns.includes('master') ? `<th onclick="toggleBookingsSort('master')" class="text-left p-3.5 font-bold text-system-muted select-none cursor-pointer hover:text-system-text transition-colors">Мастер ${renderSortIcon('master')}</th>` : ''}
+                        ${activeColumns.includes('amount') ? `<th onclick="toggleBookingsSort('amount')" class="text-left p-3.5 font-bold text-system-muted select-none cursor-pointer hover:text-system-text transition-colors">Сумма ${renderSortIcon('amount')}</th>` : ''}
+                        ${activeColumns.includes('status') ? `<th onclick="toggleBookingsSort('status')" class="text-left p-3.5 font-bold text-system-muted select-none cursor-pointer hover:text-system-text transition-colors">Статус ${renderSortIcon('status')}</th>` : ''}
+                        ${activeColumns.includes('actions') ? `<th class="text-left p-3.5 font-bold text-system-muted select-none">Действия</th>` : ''}
+                    </tr></thead>
+                    <tbody>
+                        ${filtered.map(b => {
+                            const svc = services.find(s => s.id === b.serviceId);
+                            return `<tr class="border-b border-system-border hover:bg-system-main/20 transition-colors">
+                                ${activeColumns.includes('client') ? `
+                                <td data-label="Клиент" class="p-3 text-system-text text-right md:text-left font-semibold">
+                                    ${b.clientName}
+                                </td>` : ''}
+                                
+                                ${activeColumns.includes('phone') ? `
+                                <td data-label="Номер телефона" class="p-3 text-system-text text-right md:text-left">
+                                    <div class="flex items-center justify-end md:justify-start gap-1">
+                                        <span class="text-xs text-system-muted opacity-80 font-medium">${b.clientPhone}</span>
+                                        <button onclick="window.openContactModal('${b.id}')" class="text-blue-500 hover:text-blue-600 flex items-center justify-center transition-colors bg-blue-50 hover:bg-blue-100 p-1.5 rounded-lg text-xs font-bold" title="Написать">
+                                            <svg class="w-3.5 h-3.5 text-[#0088cc]" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg> 
+                                        </button>
+                                    </div>
+                                </td>` : ''}
+                                
+                                ${activeColumns.includes('service') ? `<td data-label="Услуга" class="p-3 text-right md:text-left font-medium text-system-muted">${svc ? svc.name : '-'}</td>` : ''}
+                                
+                                ${activeColumns.includes('date') ? `<td data-label="Дата" class="p-3 text-right md:text-left font-medium text-system-text">${b.date}</td>` : ''}
+
+                                ${activeColumns.includes('time') ? `<td data-label="Время" class="p-3 text-right md:text-left font-mono font-bold text-system-muted opacity-80">${b.time}</td>` : ''}
+                                
+                                ${activeColumns.includes('master') ? `
+                                <td data-label="Мастер" class="p-3 text-right md:text-left">
+                                    <select onchange="assignMasterToBooking('${b.id}', this.value)" class="text-xs border border-system-border bg-system-main rounded-xl p-2 font-semibold outline-none focus:ring-2 focus:ring-primary-200 cursor-pointer">
+                                        <option value="" ${!b.masterId ? 'selected' : ''}>— Назначить —</option>
+                                        ${salonMasters.map(m => `
+                                            <option value="${m.id}" ${b.masterId === m.id ? 'selected' : ''}>${m.name}</option>
+                                        `).join('')}
+                                    </select>
+                                </td>` : ''}
+                                
+                                ${activeColumns.includes('amount') ? `<td data-label="Сумма" class="p-3 font-bold text-primary-600 text-right md:text-left">${svc ? formatPrice(getSalonPrice(salon.id, svc.id, services)) : '-'}</td>` : ''}
+                                
+                                ${activeColumns.includes('status') ? `<td data-label="Статус" class="p-3 flex justify-end md:table-cell"><span class="badge ${statusColors[b.status]}">${statusLabels[b.status]}</span></td>` : ''}
+                                
+                                ${activeColumns.includes('actions') ? `
+                                <td data-label="Действия" class="p-3 text-right md:text-left relative">
+                                    <div class="relative inline-block text-left" onclick="event.stopPropagation()">
+                                        <button onclick="state.openActionsBookingId = state.openActionsBookingId === '${b.id}' ? null : '${b.id}'; render()" 
+                                                class="px-2.5 py-1.5 rounded-xl border border-system-border hover:bg-system-main bg-system-surface font-semibold text-xs flex items-center gap-1 select-none text-system-muted hover:text-system-text transition-colors">
+                                            <span>Действия</span>
+                                            <svg class="w-4 h-4 text-system-muted" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                                        </button>
+                                        ${state.openActionsBookingId === b.id ? `
+                                        <div class="absolute right-0 mt-1 w-40 rounded-xl bg-system-surface border border-system-border shadow-lg p-1.5 z-40 text-left">
+                                            ${b.status === 'pending' ? `
+                                                <button onclick="salonConfirmBooking('${b.id}'); state.openActionsBookingId = null; render()" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-green-600 hover:bg-green-50 flex items-center gap-1.5 transition-colors">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg> Подтвердить
+                                                </button>
+                                                <button onclick="salonCancelBooking('${b.id}'); state.openActionsBookingId = null; render()" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 flex items-center gap-1.5 transition-colors">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg> Отклонить
+                                                </button>
+                                            ` : b.status === 'confirmed' ? `
+                                                ${!b.paid ? `
+                                                <button onclick="window.triggerPaymentFlow('${b.id}'); state.openActionsBookingId = null; render()" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-amber-600 hover:bg-amber-50 flex items-center gap-1.5 transition-colors">
+                                                    💰 Принять оплату
+                                                </button>
+                                                ` : ''}
+                                                <button onclick="salonCompleteBooking('${b.id}'); state.openActionsBookingId = null; render()" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-blue-600 hover:bg-blue-50 flex items-center gap-1.5 transition-colors">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg> Завершить
+                                                 </button>
+                                                <button onclick="salonCancelBooking('${b.id}'); state.openActionsBookingId = null; render()" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-red-500 hover:bg-red-50 flex items-center gap-1.5 transition-colors">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg> Отменить
+                                                 </button>
+                                            ` : b.status === 'completed' && !b.paid ? `
+                                                <button onclick="window.triggerPaymentFlow('${b.id}'); state.openActionsBookingId = null; render()" class="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold text-amber-600 hover:bg-amber-50 flex items-center gap-1.5 transition-colors">
+                                                    💰 Принять оплату
+                                                </button>
+                                            ` : `
+                                                <div class="px-3 py-2 text-xs text-system-muted font-medium">Нет действий</div>
+                                            `}
+                                        </div>` : ''}
+                                    </div>
+                                </td>` : ''}
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    ` : '<div class="text-center py-12 text-system-muted opacity-70 bg-system-surface rounded-2xl border border-system-border">Записей пока нет</div>');
+    })()}
+    ${state.editingBookingId ? renderBookingEditModal(state.editingBookingId, salonMasters) : ''}
+    
+    ${state.contactBookingId ? renderContactModal() : ''}
+</div>`; 
+}
+
+window.toggleBookingsSort = function(field) {
+    if (state.bookingSortField === field) {
+        state.bookingSortOrder = state.bookingSortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+        state.bookingSortField = field;
+        state.bookingSortOrder = 'asc';
+    }
+    render();
+};
+
+window.toggleBookingStatusFilter = function(status) {
+    if (!state.salonBookingStatusFilters) {
+        state.salonBookingStatusFilters = [];
+    }
+    const idx = state.salonBookingStatusFilters.indexOf(status);
+    if (idx >= 0) {
+        state.salonBookingStatusFilters.splice(idx, 1);
+    } else {
+        state.salonBookingStatusFilters.push(status);
+    }
+    render();
+};
+
+window.toggleBookingServiceFilter = function(serviceId) {
+    if (!state.salonBookingServiceFilters) {
+        state.salonBookingServiceFilters = [];
+    }
+    const idx = state.salonBookingServiceFilters.indexOf(serviceId);
+    if (idx >= 0) {
+        state.salonBookingServiceFilters.splice(idx, 1);
+    } else {
+        state.salonBookingServiceFilters.push(serviceId);
+    }
+    render();
+};
+
+window.toggleBookingCategoryGroup = function(catId) {
+    const salon = salons.find(s => s.id === state.currentUser.salonId);
+    const salonServices = getSalonServices(salon, services);
+    const catServices = salonServices.filter(s => s.category === catId);
+    const catServiceIds = catServices.map(s => s.id);
+    
+    if (!state.salonBookingServiceFilters) {
+        state.salonBookingServiceFilters = [];
+    }
+    
+    const selectedCatServices = catServiceIds.filter(id => state.salonBookingServiceFilters.includes(id));
+    const allSelected = catServices.length > 0 && selectedCatServices.length === catServices.length;
+    
+    if (allSelected) {
+        // Deselect all services in this category
+        state.salonBookingServiceFilters = state.salonBookingServiceFilters.filter(id => !catServiceIds.includes(id));
+    } else {
+        // Select all services in this category
+        catServiceIds.forEach(id => {
+            if (!state.salonBookingServiceFilters.includes(id)) {
+                state.salonBookingServiceFilters.push(id);
+            }
+        });
+    }
+    render();
+};
+
+window.toggleBookingMasterFilter = function(masterId) {
+    if (!state.salonBookingMasterFilters) {
+        state.salonBookingMasterFilters = [];
+    }
+    const idx = state.salonBookingMasterFilters.indexOf(masterId);
+    if (idx >= 0) {
+        state.salonBookingMasterFilters.splice(idx, 1);
+    } else {
+        state.salonBookingMasterFilters.push(masterId);
+    }
+    render();
+};
+
+window.clearAllBookingFilters = function() {
+    state.salonBookingStatusFilters = [];
+    state.salonBookingServiceFilters = [];
+    state.salonBookingMasterFilters = [];
+    state.bookingCategoryFilter = 'all';
+    state.bookingSearchQuery = '';
+    state.salonBookingStatusFilter = 'all';
+    state.masterFilterDropdownOpen = false;
+    state.serviceFilterDropdownOpen = false;
+    state.categoryServiceFilterDropdownOpen = false;
+    render();
+};
+
+window.renderSortIcon = function(field) {
+    const activeField = state.bookingSortField || 'date';
+    if (activeField !== field) return '<span class="text-gray-300 ml-1">↕</span>';
+    return state.bookingSortOrder === 'asc' ? '<span class="text-primary-500 ml-1">↑</span>' : '<span class="text-primary-500 ml-1">↓</span>';
+};
+
+window.toggleColumnVisibility = function(colKey) {
+    if (!state.visibleBookingColumns) {
+        state.visibleBookingColumns = ['client', 'phone', 'service', 'date', 'time', 'master', 'amount', 'status', 'actions'];
+    }
+    const idx = state.visibleBookingColumns.indexOf(colKey);
+    if (idx >= 0) {
+        if (state.visibleBookingColumns.length > 1) {
+            state.visibleBookingColumns.splice(idx, 1);
+        } else {
+            showToast('Должен быть включен хотя бы один столбец', 'error');
+        }
+    } else {
+        state.visibleBookingColumns.push(colKey);
+    }
+    render();
+};
+
+export function renderOldSalonBookings(salonBookings) {
     const statusColors = { pending: 'bg-yellow-100 text-yellow-700', confirmed: 'bg-green-100 text-green-700', completed: 'bg-blue-100 text-blue-700', cancelled: 'bg-red-100 text-red-700' };
     const statusLabels = { pending: 'Ожидает', confirmed: 'Подтверждена', completed: 'Завершена', cancelled: 'Отменена' };
     const salon = salons.find(s => s.id === state.currentUser.salonId);
@@ -901,7 +1495,29 @@ export function updateMasterServiceCommission(masterId, serviceId, value) {
 
 window.updateMasterServiceCommission = updateMasterServiceCommission;
 
+window.toggleSalonProfileFeature = function(salonId, feature, checked) {
+    const s = salons.find(x => x.id === salonId);
+    if (!s) return;
+    if (!s.features) s.features = [];
+    if (checked) {
+        if (!s.features.includes(feature)) s.features.push(feature);
+    } else {
+        s.features = s.features.filter(f => f !== feature);
+    }
+};
+
 export function renderSalonProfile(salon) {
+    const orgTypes = ['ИП', 'ОсОО', 'Самозанятый', 'Физическое лицо'];
+    const currentOrgType = salon.organizationType || 'ИП';
+    const themes = [
+        { key: 'beauty', label: 'Бьюти-салон (Beauty)' },
+        { key: 'barber', label: 'Барбершоп (Barber)' },
+        { key: 'eco', label: 'Эко-спа и массаж (Eco)' }
+    ];
+    const currentTheme = salon.theme || 'beauty';
+    const availableFeatures = ['Wi-Fi', 'Кофе', 'Парковка', 'Детская зона', 'Оплата картой', 'Кондиционер'];
+    const currentFeatures = salon.features || [];
+
     return `
 <div class="animate-fade-in max-w-lg">
     <h1 class="text-2xl font-bold text-system-text mb-6">Профиль салона</h1>
@@ -909,6 +1525,88 @@ export function renderSalonProfile(salon) {
         <div>
             <label class="block text-sm font-medium text-system-text mb-1.5">Название</label>
             <input type="text" class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm" value="${salon.name}" oninput="salons.find(s=>s.id===${salon.id}).name=this.value">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-system-text mb-1.5">Тип организации</label>
+            <select class="w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm bg-system-surface text-system-text font-medium animate-none" onchange="salons.find(s=>s.id===${salon.id}).organizationType=this.value">
+                ${orgTypes.map(t => `<option value="${t}" ${currentOrgType === t ? 'selected' : ''}>${t}</option>`).join('')}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-system-text mb-1.5">Телефон салона</label>
+            <input type="text" class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm" value="${salon.phone || ''}" oninput="salons.find(s=>s.id===${salon.id}).phone=this.value">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-system-text mb-1.5">Адрес</label>
+            <input type="text" class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm" value="${salon.address}" oninput="salons.find(s=>s.id===${salon.id}).address=this.value">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-system-text mb-1.5">Тема оформления</label>
+            <select class="w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm bg-system-surface text-system-text font-medium animate-none" onchange="salons.find(s=>s.id===${salon.id}).theme=this.value; render()">
+                ${themes.map(t => `<option value="${t.key}" ${currentTheme === t.key ? 'selected' : ''}>${t.label}</option>`).join('')}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-system-text mb-1.5">Время работы</label>
+            <div class="flex gap-3">
+                <input type="text" class="auth-input flex-1 px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm" value="${salon.openTime}" oninput="salons.find(s=>s.id===${salon.id}).openTime=this.value">
+                <span class="flex items-center text-system-muted opacity-70">—</span>
+                <input type="text" class="auth-input flex-1 px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm" value="${salon.closeTime}" oninput="salons.find(s=>s.id===${salon.id}).closeTime=this.value">
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-system-text mb-2.5">Удобства салона</label>
+            <div class="grid grid-cols-2 gap-2">
+                ${availableFeatures.map(f => {
+                    const checked = currentFeatures.includes(f);
+                    return `
+                    <label class="flex items-center gap-2 px-3 py-2 rounded-xl border border-system-border hover:bg-system-main cursor-pointer select-none transition-all">
+                        <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleSalonProfileFeature(${salon.id}, '${f}', this.checked)" class="w-4 h-4 rounded border-system-border text-primary-500 focus:ring-primary-400">
+                        <span class="text-xs font-semibold text-system-muted">${f}</span>
+                    </label>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+        <button onclick="showToast('Профиль салона сохранён')" class="w-full btn-primary py-3.5 rounded-2xl text-white font-semibold text-sm">Сохранить</button>
+    </div>
+</div>`;
+}
+
+export function renderOldSalonProfile(salon) {
+    const orgTypes = ['ИП', 'ОсОО', 'Самозанятый', 'Физическое лицо'];
+    const currentOrgType = salon.organizationType || 'ИП';
+    const themes = [
+        { key: 'beauty', label: 'Бьюти-салон (Beauty)' },
+        { key: 'barber', label: 'Барбершоп (Barber)' },
+        { key: 'eco', label: 'Эко-спа и массаж (Eco)' }
+    ];
+    const currentTheme = salon.theme || 'beauty';
+    const availableFeatures = ['Wi-Fi', 'Кофе', 'Парковка', 'Детская зона', 'Оплата картой', 'Кондиционер'];
+    const currentFeatures = salon.features || [];
+    return `
+<div class="animate-fade-in max-w-lg">
+    <h1 class="text-2xl font-bold text-system-text mb-6">Профиль салона</h1>
+    <div class="bg-system-surface rounded-2xl border border-system-border p-6 space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-system-text mb-1.5">Название</label>
+            <input type="text" class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm" value="${salon.name}" oninput="salons.find(s=>s.id===${salon.id}).name=this.value">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-system-text mb-1.5">Тип организации</label>
+            <select class="w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm bg-system-surface text-system-text font-medium" onchange="salons.find(s=>s.id===${salon.id}).organizationType=this.value">
+                ${orgTypes.map(t => `<option value="${t}" ${currentOrgType === t ? 'selected' : ''}>${t}</option>`).join('')}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-system-text mb-1.5">Телефон салона</label>
+            <input type="text" class="auth-input w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm" value="${salon.phone || ''}" oninput="salons.find(s=>s.id===${salon.id}).phone=this.value">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-system-text mb-1.5">Тема оформления</label>
+            <select class="w-full px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm bg-system-surface text-system-text font-medium" onchange="salons.find(s=>s.id===${salon.id}).theme=this.value; render()">
+                ${themes.map(t => `<option value="${t.key}" ${currentTheme === t.key ? 'selected' : ''}>${t.label}</option>`).join('')}
+            </select>
         </div>
         <div>
             <label class="block text-sm font-medium text-system-text mb-1.5">Адрес</label>
@@ -920,6 +1618,23 @@ export function renderSalonProfile(salon) {
                 <input type="text" class="auth-input flex-1 px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm" value="${salon.openTime}" oninput="salons.find(s=>s.id===${salon.id}).openTime=this.value">
                 <span class="flex items-center text-system-muted opacity-70">—</span>
                 <input type="text" class="auth-input flex-1 px-4 py-3 rounded-xl border border-system-border outline-none text-base sm:text-sm" value="${salon.closeTime}" oninput="salons.find(s=>s.id===${salon.id}).closeTime=this.value">
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-system-text mb-2.5">Удобства салона</label>
+            <div class="grid grid-cols-2 gap-2">
+                ${availableFeatures.map(f => {
+                    const checked = currentFeatures.includes(f);
+                    return `
+                    <label class="flex items-center gap-2 px-3 py-2 rounded-xl border border-system-border hover:bg-system-main cursor-pointer select-none transition-all">
+                        <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleSalonProfileFeature(${salon.id}, '${f}', this.checked)" class="w-4 h-4 rounded border-system-border text-primary-500 focus:ring-primary-400">
+                        <span class="text-xs font-semibold text-system-muted">${f}</span>
+                    </label>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+
             </div>
         </div>
         <button onclick="showToast('Профиль салона сохранён')" class="w-full btn-primary py-3.5 rounded-2xl text-white font-semibold text-sm">Сохранить</button>
@@ -1308,6 +2023,356 @@ async function handleBuySub(planId) {
     }
 }
 window.handleBuySub = handleBuySub;
+
+
+
+export function renderSalonMastersCatalogTab(salon) {
+    state.salonMastersSubTab = state.salonMastersSubTab || 'catalog';
+    
+    const hasApplicationsPermission = checkPermission(state.currentUser.id, salon.id, 'applications:view');
+    const apps = salonApplications.filter(a => a.salonId === salon.id);
+    const pendingApps = apps.filter(a => a.status === 'pending');
+    const historyApps = apps.filter(a => a.status !== 'pending');
+    const pendingCount = pendingApps.length;
+
+    // Sub-tab Navigation Header
+    const tabsHeader = `
+    <div class="flex items-center gap-2 mb-6 border-b border-system-border pb-2 overflow-x-auto hide-scrollbar">
+        <button onclick="state.salonMastersSubTab='catalog'; render()" class="px-4 py-2 font-semibold text-sm whitespace-nowrap border-b-2 transition-colors ${state.salonMastersSubTab === 'catalog' ? 'border-primary-500 text-primary-600' : 'border-transparent text-system-muted hover:text-system-text'}">Список мастеров</button>
+        ${hasApplicationsPermission ? `
+        <button onclick="state.salonMastersSubTab='applications'; render()" class="px-4 py-2 font-semibold text-sm whitespace-nowrap border-b-2 transition-colors ${state.salonMastersSubTab === 'applications' ? 'border-primary-500 text-primary-600' : 'border-transparent text-system-muted hover:text-system-text'}">
+            Заявки мастеров 
+            ${pendingCount > 0 ? `<b class="ml-1 px-1.5 py-0.5 rounded bg-red-100 text-red-600 font-bold text-xs">${pendingCount}</b>` : ''}
+        </button>
+        ` : ''}
+    </div>
+    `;
+
+    if (state.salonMastersSubTab === 'applications' && hasApplicationsPermission) {
+        return `
+        <div class="animate-fade-in space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-system-text">Мастера</h1>
+                    <p class="text-xs text-system-muted mt-1">Управление каталогом специалистов и заявками на вступление в команду.</p>
+                </div>
+            </div>
+            
+            ${tabsHeader}
+
+            <div class="space-y-4">
+                <h3 class="text-sm font-bold text-system-muted opacity-70 uppercase tracking-wider">Новые заявки</h3>
+                ${pendingApps.length === 0 ? '<div class="p-8 bg-system-surface rounded-2xl border border-dashed border-system-border text-center text-system-muted opacity-70 italic">Нет новых заявок</div>' : `
+                    <div class="grid grid-cols-1 gap-4">
+                        ${pendingApps.map(app => {
+                            const user = users.find(u => u.id === app.userId);
+                            return `
+                            <div class="bg-system-surface p-5 rounded-2xl border border-system-border flex items-center justify-between shadow-xs">
+                                <div class="flex items-center gap-4">
+                                    <img src="${getAvatarPlaceholder(user?.name)}" class="w-12 h-12 rounded-xl object-cover">
+                                    <div>
+                                        <h4 class="font-bold text-system-text">${user?.name || 'Пользователь'}</h4>
+                                        <p class="text-xs text-system-muted">${user?.phone} • Желаемая роль: <span class="font-medium text-system-text">${app.baseRole}</span></p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="handleProcessApp('${app.id}', 'reject')" class="px-4 py-2 rounded-xl border border-red-100 text-red-500 text-sm font-medium hover:bg-red-50 transition-colors">Отклонить</button>
+                                    <button onclick="handleProcessApp('${app.id}', 'approve')" class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">Принять</button>
+                                </div>
+                            </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `}
+            </div>
+
+            ${historyApps.length > 0 ? `
+                <div class="space-y-4 pt-4">
+                    <h3 class="text-sm font-bold text-system-muted opacity-70 uppercase tracking-wider">История</h3>
+                    <div class="bg-system-surface rounded-2xl border border-system-border overflow-hidden shadow-sm">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-system-main border-b border-system-border">
+                                <tr>
+                                    <th class="px-6 py-4 font-bold text-system-muted">Кандидат</th>
+                                    <th class="px-6 py-4 font-bold text-system-muted">Роль</th>
+                                    <th class="px-6 py-4 font-bold text-system-muted">Дата</th>
+                                    <th class="px-6 py-4 font-bold text-system-muted">Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-system-border">
+                                ${historyApps.map(app => {
+                                    const user = users.find(u => u.id === app.userId);
+                                    const statusColor = app.status === 'approved' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50';
+                                    return `
+                                    <tr>
+                                        <td class="px-6 py-4 font-medium text-system-text">${user?.name || '---'}</td>
+                                        <td class="px-6 py-4 text-system-muted">${app.baseRole}</td>
+                                        <td class="px-6 py-4 text-system-muted opacity-70 font-mono text-xs">${new Date(app.createdAt).toLocaleDateString()}</td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-2 py-1 rounded-lg text-xs font-bold ${statusColor}">${app.status}</span>
+                                        </td>
+                                    </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+        `;
+    }
+
+    // Default: 'catalog'
+    const list = [...masters];
+
+    state.mastersCatalogSort = state.mastersCatalogSort || 'rating';
+    state.mastersCatalogSortOrder = state.mastersCatalogSortOrder || 'desc';
+    state.mastersCatalogView = state.mastersCatalogView || 'cards';
+    state.mastersCatalogSpecialtyFilter = state.mastersCatalogSpecialtyFilter || 'all';
+    state.mastersCatalogSearchQuery = state.mastersCatalogSearchQuery || '';
+    state.mastersCatalogAvailabilityFilter = state.mastersCatalogAvailabilityFilter || 'all';
+
+    // 1. Filtering
+    let filtered = list.filter(m => {
+        // search query
+        const query = state.mastersCatalogSearchQuery.toLowerCase().trim();
+        const matchesQuery = !query || m.name.toLowerCase().includes(query) || (m.specialty && m.specialty.toLowerCase().includes(query));
+        
+        // specialty filter
+        const matchesSpec = state.mastersCatalogSpecialtyFilter === 'all' || m.specialty === state.mastersCatalogSpecialtyFilter;
+
+        // availability
+        const matchesAvail = state.mastersCatalogAvailabilityFilter === 'all' || (state.mastersCatalogAvailabilityFilter === 'available' && m.available);
+
+        return matchesQuery && matchesSpec && matchesAvail;
+    });
+
+    // 2. Sorting
+    filtered.sort((a, b) => {
+        let valA, valB;
+        if (state.mastersCatalogSort === 'name') {
+            valA = a.name;
+            valB = b.name;
+        } else if (state.mastersCatalogSort === 'experience') {
+            valA = a.experience || 0;
+            valB = b.experience || 0;
+        } else { // rating
+            valA = parseFloat(a.rating) || 0;
+            valB = parseFloat(b.rating) || 0;
+        }
+
+        if (typeof valA === 'string') {
+            return state.mastersCatalogSortOrder === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        } else {
+            return state.mastersCatalogSortOrder === 'asc' ? valA - valB : valB - valA;
+        }
+    });
+
+    // Unique specialty list for filter dropdown
+    const specialties = [...new Set(masters.map(m => m.specialty).filter(Boolean))];
+
+    const view = state.mastersCatalogView;
+
+    return `
+    <div class="animate-fade-in space-y-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-system-text">Мастера</h1>
+                <p class="text-xs text-system-muted mt-1">Ищите и нанимайте лучших специалистов индустрии красоты в вашу команду.</p>
+            </div>
+            
+            <div class="flex bg-system-main rounded-xl p-0.5 shadow-sm border border-system-border">
+                <button onclick="state.mastersCatalogView='cards'; render()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors ${view === 'cards' ? 'bg-system-surface shadow-xs text-system-text' : 'text-system-muted'}">Плитка</button>
+                <button onclick="state.mastersCatalogView='table'; render()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors ${view === 'table' ? 'bg-system-surface shadow-xs text-system-text' : 'text-system-muted'}">Таблица</button>
+            </div>
+        </div>
+
+        ${tabsHeader}
+
+        <!-- TOOLS: SEARCH AND FILTERS -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-system-surface p-4 rounded-2xl border border-system-border shadow-xs">
+            <!-- Search -->
+            <div class="relative md:col-span-2">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-system-muted opacity-60">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </span>
+                <input type="text" class="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-system-border outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-100 bg-system-main font-semibold" placeholder="Поиск по имени, специализации..." value="${state.mastersCatalogSearchQuery}" oninput="state.mastersCatalogSearchQuery=this.value; render()">
+            </div>
+            
+            <!-- Specialty -->
+            <div>
+                <select onchange="state.mastersCatalogSpecialtyFilter=this.value; render()" class="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-system-border bg-system-main text-system-muted outline-none cursor-pointer">
+                    <option value="all">Все специальности</option>
+                    ${specialties.map(spec => `<option value="${spec}" ${state.mastersCatalogSpecialtyFilter === spec ? 'selected' : ''}>${spec}</option>`).join('')}
+                </select>
+            </div>
+
+            <!-- Sorting & Status -->
+            <div>
+                <select onchange="state.mastersCatalogSort=this.value; render()" class="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-system-border bg-system-main text-system-muted outline-none cursor-pointer">
+                    <option value="rating" ${state.mastersCatalogSort === 'rating' ? 'selected' : ''}>Рейтинг: по убыванию</option>
+                    <option value="experience" ${state.mastersCatalogSort === 'experience' ? 'selected' : ''}>Опыт работы: по убыванию</option>
+                    <option value="name" ${state.mastersCatalogSort === 'name' ? 'selected' : ''}>Имя: от А до Я</option>
+                </select>
+            </div>
+        </div>
+
+        ${filtered.length === 0 ? `
+            <div class="text-center py-12 text-system-muted opacity-70 bg-system-surface rounded-2xl border border-system-border">Мастера по заданным фильтрам не найдены</div>
+        ` : view === 'table' ? `
+            <!-- TABLE STYLE GRID -->
+            <div class="bg-system-surface rounded-2xl border border-system-border overflow-hidden shadow-xs">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-system-main border-b border-system-border">
+                            <tr>
+                                <th class="p-3.5 font-bold text-system-muted text-xs">Мастер</th>
+                                <th class="p-3.5 font-bold text-system-muted text-xs">Специализация</th>
+                                <th class="p-3.5 font-bold text-system-muted text-xs">Опыт (лет)</th>
+                                <th class="p-3.5 font-bold text-system-muted text-xs">Рейтинг</th>
+                                <th class="p-3.5 font-bold text-system-muted text-xs">Статус</th>
+                                <th class="p-3.5 font-bold text-system-muted text-xs text-right">Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-system-border">
+                            ${filtered.map(m => {
+                                const isMember = m.salonId === salon.id;
+                                const user = users.find(u => u.role === 'master' && u.masterId === m.id);
+                                const hasPendingApp = user && salonApplications.some(a => a.salonId === salon.id && a.userId === user.id && a.status === 'pending');
+                                
+                                return `
+                                <tr class="hover:bg-system-main/30 transition-colors">
+                                    <td class="p-3.5 font-bold text-system-text flex items-center gap-3">
+                                        <img src="${m.avatar}" class="w-8 h-8 rounded-full object-cover animate-fade-in shadow-xs">
+                                        <span>${m.name}</span>
+                                    </td>
+                                    <td class="p-3.5 font-medium text-system-muted">${m.specialty}</td>
+                                    <td class="p-3.5 font-mono text-xs">${m.experience || 0}</td>
+                                    <td class="p-3.5 text-yellow-500 font-bold">★ ${m.rating}</td>
+                                    <td class="p-3.5">
+                                        ${m.available ? '<span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-md">Доступен</span>' : '<span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-md">Занят</span>'}
+                                    </td>
+                                    <td class="p-3.5 text-right">
+                                        ${isMember ? `
+                                            <span class="text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-xl border border-green-100">В штате</span>
+                                        ` : hasPendingApp ? `
+                                            <span class="text-xs font-medium text-yellow-600 bg-yellow-50 px-3 py-1.5 rounded-xl border border-yellow-100">Заявка отправлена</span>
+                                        ` : `
+                                            <button onclick="inviteMasterToSalon(${m.id})" class="text-xs font-bold bg-primary-500 hover:bg-primary-600 text-white px-3 py-1.5 rounded-xl transition-all shadow-xs">
+                                                Заявка на работу
+                                            </button>
+                                        `}
+                                    </td>
+                                </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        ` : `
+            <!-- CARDS STYLE GRID -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                ${filtered.map(m => {
+                    const isMember = m.salonId === salon.id;
+                    const user = users.find(u => u.role === 'master' && u.masterId === m.id);
+                    const hasPendingApp = user && salonApplications.some(a => a.salonId === salon.id && a.userId === user.id && a.status === 'pending');
+                    
+                    return `
+                    <div class="bg-system-surface rounded-3xl p-5 border border-system-border shadow-xs hover:shadow-md hover:scale-[1.01] transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-4 mb-3">
+                                <img src="${m.avatar}" class="w-14 h-14 rounded-full object-cover shadow-xs border-2 border-white">
+                                <div>
+                                    <h4 class="font-bold text-system-text leading-tight text-base">${m.name}</h4>
+                                    <p class="text-xs text-primary-500 font-medium mt-0.5">${m.specialty}</p>
+                                </div>
+                            </div>
+                            
+                            <p class="text-xs text-system-muted leading-relaxed line-clamp-2 mt-3 mb-4 italic p-2 bg-system-main rounded-xl">
+                                «${m.about || 'Опытный профессионал своего дела.'}»
+                            </p>
+                            
+                            <div class="grid grid-cols-2 gap-2 text-center bg-system-main rounded-xl p-2 mb-4 border border-system-border/60">
+                                <div>
+                                    <div class="text-[10px] text-system-muted font-bold uppercase tracking-wider">Опыт работы</div>
+                                    <div class="text-xs font-bold text-system-text mt-0.5">${m.experience || 0} лет</div>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-system-muted font-bold uppercase tracking-wider">Рейтинг</div>
+                                    <div class="text-xs font-bold text-yellow-500 mt-0.5">★ ${m.rating}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            ${isMember ? `
+                                <div class="text-center w-full py-2.5 rounded-xl font-bold text-xs text-green-600 bg-green-50 border border-green-100">
+                                    ✓ Уже работает у вас
+                                </div>
+                            ` : hasPendingApp ? `
+                                <div class="text-center w-full py-2.5 rounded-xl font-medium text-xs text-yellow-600 bg-yellow-50 border border-yellow-100 font-bold">
+                                    ⌛ Заявка отправлена
+                                </div>
+                            ` : `
+                                <button onclick="inviteMasterToSalon(${m.id})" class="w-full py-2.5 rounded-xl font-bold text-xs bg-primary-500 hover:bg-primary-600 text-white shadow-xs hover:shadow-sm leading-none transition-all">
+                                    Заявка на работу
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                    `;
+                }).join('')}
+            </div>
+        `}
+    </div>
+    `;
+}
+
+window.renderSalonMastersCatalogTab = renderSalonMastersCatalogTab;
+
+window.inviteMasterToSalon = function(masterId) {
+    const salon = salons.find(s => s.id === state.currentUser.salonId);
+    if (!salon) return;
+    
+    // Find associated user
+    let user = users.find(u => u.role === 'master' && u.masterId === masterId);
+    if (!user) {
+        // Create user placeholder associated to the master
+        const m = masters.find(ma => ma.id === masterId);
+        const nameClean = m ? m.name : 'Мастер';
+        const newUserId = users.length ? Math.max(...users.map(u => u.id)) + 1 : 101;
+        user = {
+            id: newUserId,
+            phone: '+996 700 ' + Math.floor(100000 + Math.random() * 900000),
+            password: 'master123',
+            name: nameClean,
+            role: 'master',
+            masterId: masterId
+        };
+        users.push(user);
+    }
+    
+    const existing = salonApplications.find(a => a.salonId === salon.id && a.userId === user.id && a.status === 'pending');
+    if (existing) {
+        showToast('Заявка на работу уже отправлена этому мастеру', 'error');
+        return;
+    }
+    
+    salonApplications.push({
+        id: 'APP' + Date.now(),
+        salonId: salon.id,
+        userId: user.id,
+        baseRole: 'master',
+        status: 'pending',
+        initiatedBy: 'salon',
+        createdAt: new Date().toISOString()
+    });
+    
+    showToast('Заявка на работу успешно отправлена!');
+    render();
+};
 
 
 
