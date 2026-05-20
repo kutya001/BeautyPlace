@@ -326,7 +326,10 @@ export function salonCompleteBooking(id) {
     if (b && !checkActiveShiftForBooking(b)) return;
     if (b) {
         if (!b.paid) {
-            showToast('Ошибка: Запись должна быть сначала оплачена!');
+            showToast('Сначала необходимо принять оплату за услугу. Открываем окно оплаты...');
+            state.paymentBookingId = id;
+            state.autoCompleteBookingId = id;
+            render();
             return;
         }
         if (b.status === 'confirmed') {

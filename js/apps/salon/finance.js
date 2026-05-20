@@ -362,10 +362,24 @@ export function renderSalonFinanceTab(salon) {
     });
 
     const renderWallets = () => {
+        const getWalletMetrics = (w) => {
+            let inflow = 0;
+            let outflow = 0;
+            txs.forEach(t => {
+                if (t.type === 'income' && t.walletId === w.id) inflow += t.amount;
+                if (t.type === 'expense' && t.walletId === w.id) outflow += t.amount;
+                if (t.type === 'transfer') {
+                    if (t.toWalletId === w.id) inflow += t.amount;
+                    if (t.fromWalletId === w.id) outflow += t.amount;
+                }
+            });
+            return { inflow, outflow };
+        };
+
         return `
-        <div class="space-y-6">
+        <div class="space-y-6 animate-fade-in">
             <div class="flex items-center justify-between mb-4">
-                <div>
+                <div class="text-left">
                     <h3 class="text-base font-bold text-system-text">Кошельки и Кассы</h3>
                     <p class="text-xs text-system-muted">Места накопления денежных средств салона</p>
                 </div>
@@ -387,32 +401,81 @@ export function renderSalonFinanceTab(salon) {
                             <span class="px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${w.type === 'cash' ? 'bg-amber-50 text-amber-700' : 'bg-indigo-50 text-indigo-700'}">${w.type === 'cash' ? 'Наличные' : 'Безналичный'}</span>
                             <span class="text-xs font-bold text-system-muted">${w.currency}</span>
                         </div>
-                        <h4 class="font-bold text-sm text-system-text mb-1 truncate" title="${w.name}">${w.name}</h4>
-                        <div class="text-xl font-black text-primary-600 mt-2">${formatPrice(bal)}</div>
+                        <h4 class="font-bold text-sm text-system-text mb-1 truncate text-left" title="${w.name}">${w.name}</h4>
+                        <div class="text-xl font-black text-primary-600 mt-2 text-left">${formatPrice(bal)}</div>
+                        
+                        <!-- Редактирование и детализация -->
+                        <div class="mt-4 flex items-center gap-2 select-none">
+                            <button onclick="state.editingWalletId = '${w.id}'; state.showEditWalletModal = true; render();" class="flex-1 py-1.5 rounded-lg border border-system-border hover:bg-system-main font-bold text-[10px] text-system-muted hover:text-system-text transition-all" title="Редактировать">
+                                ✏️ Изменить
+                            </button>
+                            <button onclick="state.financeSubTab = 'transactions'; state.txSearch = '${w.name}'; render();" class="flex-1 py-1.5 rounded-lg bg-primary-50 hover:bg-primary-100 font-bold text-[10px] text-primary-600 transition-all" title="Посмотреть операции">
+                                📋 История
+                            </button>
+                        </div>
                     </div>
                     `;
                 }).join('')}
             </div>
 
+            <!-- Детализация по кошелькам оборотов -->
+            <div class="bg-system-surface rounded-2xl border border-system-border p-5 shadow-xs mt-6">
+                <h4 class="font-extrabold text-sm text-system-text mb-1 text-left">Детализация оборотов по кошелькам</h4>
+                <p class="text-[11px] text-system-muted mb-4 text-left">Сравнение приходов, расходов и чистых остатков по каждому расчетному счету</p>
+                <div class="overflow-x-auto w-full">
+                    <table class="w-full text-xs">
+                        <thead>
+                            <tr class="bg-system-main border-b border-system-border text-system-muted font-bold text-left">
+                                <th class="p-3">Кошелек / Касса</th>
+                                <th class="p-3">Тип</th>
+                                <th class="p-3 text-right">Поступления (+ Приход)</th>
+                                <th class="p-3 text-right font-medium text-rose-500">Списания (- Расход)</th>
+                                <th class="p-3 text-right font-black">Текущий баланс</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-system-border/60">
+                            ${wallets.map(w => {
+                                const metrics = getWalletMetrics(w);
+                                const bal = getWalletBalance(salon.id, w.id);
+                                return `
+                                <tr class="hover:bg-system-main/20 text-system-text">
+                                    <td class="p-3 font-semibold text-left">${w.name}</td>
+                                    <td class="p-3 text-left">
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-medium ${w.type === 'cash' ? 'bg-amber-50 text-amber-700' : 'bg-indigo-50 text-indigo-700'}">
+                                            ${w.type === 'cash' ? 'Наличные' : 'Безналичный'}
+                                        </span>
+                                    </td>
+                                    <td class="p-3 text-right text-green-600 font-bold">+ ${formatPrice(metrics.inflow)}</td>
+                                    <td class="p-3 text-right text-red-500 font-medium">- ${formatPrice(metrics.outflow)}</td>
+                                    <td class="p-3 text-right font-black text-primary-600">${formatPrice(bal)}</td>
+                                </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Добавление кошелька модал -->
             ${state.showAddWalletModal ? `
                 <div class="fixed inset-0 z-[200] background-blur bg-black/40 flex items-center justify-center p-4" onclick="state.showAddWalletModal = false; render();">
                     <div class="bg-system-surface rounded-3xl border border-system-border w-full max-w-md p-6 shadow-2xl relative animate-scale-up" onclick="event.stopPropagation()">
-                        <h4 class="text-lg font-extrabold text-system-text mb-4">Новый кошелек/касса</h4>
+                        <h4 class="text-lg font-extrabold text-system-text mb-4 text-left">Новый кошелек/касса</h4>
                         <div class="space-y-4">
                             <div>
-                                <label class="text-xs text-system-muted font-bold block mb-1">Название</label>
+                                <label class="text-xs text-system-muted font-bold block mb-1 text-left">Название</label>
                                 <input type="text" id="new_wallet_name" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-medium text-system-text focus:ring-2 focus:ring-primary-100 outline-none" placeholder="Например: Касса Бутик №2, MBank Салон">
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="text-xs text-system-muted font-bold block mb-1">Вид оплаты</label>
+                                    <label class="text-xs text-system-muted font-bold block mb-1 text-left">Вид оплаты</label>
                                     <select id="new_wallet_type" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-medium text-system-text outline-none">
                                         <option value="cash">Наличный</option>
                                         <option value="bank">Безналичный</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="text-xs text-system-muted font-bold block mb-1">Валюта</label>
+                                    <label class="text-xs text-system-muted font-bold block mb-1 text-left">Валюта</label>
                                     <select id="new_wallet_currency" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-medium text-system-text outline-none">
                                         <option value="KGS">KGS</option>
                                         <option value="USD">USD</option>
@@ -422,12 +485,51 @@ export function renderSalonFinanceTab(salon) {
                             </div>
                             <div class="flex gap-3 pt-2">
                                 <button onclick="state.showAddWalletModal = false; render();" class="flex-1 py-3 text-sm font-bold border border-system-border rounded-xl text-system-muted hover:bg-system-main transition-colors">Отмена</button>
-                                <button onclick="window.submitAddWallet('${salon.id}');" class="flex-1 py-3 text-sm font-bold bg-primary-505 bg-primary-500 text-white rounded-xl shadow-md hover:bg-primary-600 transition-colors">Создать</button>
+                                <button onclick="window.submitAddWallet('${salon.id}');" class="flex-1 py-3 text-sm font-bold bg-primary-500 text-white rounded-xl shadow-md hover:bg-primary-600 transition-colors">Создать</button>
                             </div>
                         </div>
                     </div>
                 </div>
             ` : ''}
+
+            <!-- Редактирование кошелька модал -->
+            ${state.showEditWalletModal && state.editingWalletId ? (() => {
+                const w = wallets.find(x => x.id === state.editingWalletId);
+                if (!w) return '';
+                return `
+                <div class="fixed inset-0 z-[200] background-blur bg-black/40 flex items-center justify-center p-4" onclick="state.showEditWalletModal = false; render();">
+                    <div class="bg-system-surface rounded-3xl border border-system-border w-full max-w-md p-6 shadow-2xl relative animate-scale-up" onclick="event.stopPropagation()">
+                        <h4 class="text-lg font-extrabold text-system-text mb-4 font-sans text-left">Редактирование кошелька</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs text-system-muted font-bold block mb-1 text-left">Название</label>
+                                <input type="text" id="edit_wallet_name" value="${w.name}" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-medium text-system-text focus:ring-2 focus:ring-primary-100 outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-xs text-system-muted font-bold block mb-1 text-left">Вид оплаты</label>
+                                    <select id="edit_wallet_type" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-medium text-system-text outline-none">
+                                        <option value="cash" ${w.type === 'cash' ? 'selected' : ''}>Наличный</option>
+                                        <option value="bank" ${w.type === 'bank' ? 'selected' : ''}>Безналичный</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-system-muted font-bold block mb-1 text-left">Валюта</label>
+                                    <select id="edit_wallet_currency" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-medium text-system-text outline-none">
+                                        <option value="KGS" ${w.currency === 'KGS' ? 'selected' : ''}>KGS</option>
+                                        <option value="USD" ${w.currency === 'USD' ? 'selected' : ''}>USD</option>
+                                        <option value="EUR" ${w.currency === 'EUR' ? 'selected' : ''}>EUR</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 pt-2">
+                                <button onclick="state.showEditWalletModal = false; render();" class="flex-1 py-3 text-sm font-bold border border-system-border rounded-xl text-system-muted hover:bg-system-main transition-colors">Отмена</button>
+                                <button onclick="window.submitEditWallet('${salon.id}', '${w.id}');" class="flex-1 py-3 text-sm font-bold bg-primary-500 text-white rounded-xl shadow-md hover:bg-primary-600 transition-colors">Сохранить</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            })() : ''}
         </div>`;
     };
 
@@ -841,6 +943,141 @@ export function renderSalonFinanceTab(salon) {
         </div>`;
     };
 
+
+    const renderDebts = () => {
+        const debts = getDebts(salon.id);
+        const counterparties = getCounterparties(salon.id);
+
+        let totalReceivable = 0; // ДЗ (Нам должны)
+        let totalPayable = 0;    // КЗ (Мы должны)
+
+        debts.forEach(d => {
+            if (d.type === 'receivable') totalReceivable += d.amount;
+            if (d.type === 'payable') totalPayable += d.amount;
+        });
+
+        return `
+        <div class="space-y-6 animate-fade-in">
+            <div class="flex items-center justify-between mb-4">
+                <div class="text-left">
+                    <h3 class="text-base font-bold text-system-text">Учет задолженностей (ДЗ / КЗ)</h3>
+                    <p class="text-xs text-system-muted">Контроль взаиморасчетов, дебиторской (нам должны) и кредиторской (мы должны) задолженностей</p>
+                </div>
+                <button onclick="state.showAddDebtModal = true; render();" class="px-3.5 py-2 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-xs shadow-sm flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    Добавить задолженность
+                </button>
+            </div>
+
+            <!-- KPI Cards Block -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 text-left">
+                <div class="bg-indigo-50/40 border border-indigo-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 text-indigo-400 opacity-10 text-[72px] font-black pointer-events-none select-none">ДЗ</div>
+                    <span class="text-xs text-indigo-700 font-extrabold uppercase tracking-wider block mb-1">Дебиторская задолженность (Нам должны)</span>
+                    <span class="text-2xl font-black text-indigo-600">${formatPrice(totalReceivable)}</span>
+                    <p class="text-[10px] text-indigo-500 mt-1">Сумма долга контрагентов и клиентов перед салоном</p>
+                </div>
+                
+                <div class="bg-rose-50/40 border border-rose-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 text-rose-400 opacity-10 text-[72px] font-black pointer-events-none select-none">КЗ</div>
+                    <span class="text-xs text-rose-700 font-extrabold uppercase tracking-wider block mb-1">Кредиторская задолженность (Мы должны)</span>
+                    <span class="text-2xl font-black text-rose-600">${formatPrice(totalPayable)}</span>
+                    <p class="text-[10px] text-rose-500 mt-1">Обязательства салона перед поставщиками, партнерами и персоналом</p>
+                </div>
+            </div>
+
+            <!-- Debts Table -->
+            <div class="bg-system-surface rounded-2xl border border-system-border overflow-hidden shadow-sm">
+                <div class="overflow-x-auto w-full">
+                    <table class="w-full text-xs">
+                        <thead>
+                            <tr class="bg-system-main border-b border-system-border text-system-muted font-bold text-left">
+                                <th class="p-3">Дата формирования</th>
+                                <th class="p-3">Контрагент / ФИО</th>
+                                <th class="p-3">Вид задолженности</th>
+                                <th class="p-3 text-right">Сумма долга</th>
+                                <th class="p-3">Основание / Примечание</th>
+                                <th class="p-3 text-center">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-system-border/60">
+                            ${debts.length > 0 ? debts.map(d => {
+                                const cp = counterparties.find(c => c.id === d.counterpartyId);
+                                return `
+                                <tr class="hover:bg-system-main/20 text-system-text">
+                                    <td class="p-3 text-left text-system-muted font-medium whitespace-nowrap">${new Date(d.createdAt).toLocaleDateString('ru-RU')}</td>
+                                    <td class="p-3 text-left font-bold text-system-text">
+                                        👤 ${cp ? cp.name : 'Неизвестно'}
+                                    </td>
+                                    <td class="p-3 text-left">
+                                        ${d.type === 'receivable' ? `
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-100 uppercase tracking-wide">
+                                                ДЗ (Нам должны)
+                                            </span>
+                                        ` : `
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-rose-50 text-rose-700 border border-rose-100 uppercase tracking-wide">
+                                                КЗ (Мы должны)
+                                            </span>
+                                        `}
+                                    </td>
+                                    <td class="p-3 text-right font-black ${d.type === 'receivable' ? 'text-indigo-600' : 'text-rose-600'} whitespace-nowrap">
+                                        ${formatPrice(d.amount)}
+                                    </td>
+                                    <td class="p-3 text-left max-w-xs truncate" title="${d.description}">${d.description || '—'}</td>
+                                    <td class="p-3 text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
+                                        <button onclick="window.payOrResolveDebt('${salon.id}', '${d.id}');" class="p-1 px-2.5 bg-green-50 hover:bg-green-100 rounded-lg text-green-700 font-bold text-[10px] transition-colors border border-green-200" title="Зафиксировать погашение долга">Погасить долг</button>
+                                        <button onclick="window.deleteDebt('${salon.id}', '${d.id}');" class="p-1 px-2.5 bg-red-50 hover:bg-red-100 rounded-lg text-red-500 font-bold text-[10px] transition-colors border border-red-200" title="Удалить">Удалить</button>
+                                    </td>
+                                </tr>
+                                `;
+                            }).join('') : `
+                            <tr>
+                                <td colspan="6" class="p-8 text-center text-system-muted italic text-xs">Активных долгов или обязательств не зафиксировано</td>
+                            </tr>
+                            `}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Modal for Adding Debt -->
+            ${state.showAddDebtModal ? `
+                <div class="fixed inset-0 z-[200] background-blur bg-black/40 flex items-center justify-center p-4" onclick="state.showAddDebtModal = false; render();">
+                    <div class="bg-system-surface rounded-3xl border border-system-border w-full max-w-md p-6 shadow-2xl relative animate-scale-up" onclick="event.stopPropagation()">
+                        <h4 class="text-lg font-extrabold text-system-text mb-4 text-left font-sans">Новое обязательство / задолженность</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs text-system-muted font-bold block mb-1 text-left">Выберите контрагента</label>
+                                <select id="debt_counterparty" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text outline-none">
+                                    ${counterparties.map(c => `<option value="\${c.id}">\${c.name}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-system-muted font-bold block mb-1 text-left">Тип обязательства</label>
+                                <select id="debt_type" class="w-full text-sm border border-system-border rounded-xl p-3 bg-system-main font-semibold text-system-text outline-none">
+                                    <option value="receivable">Дебиторская задолженность (Нам должны)</option>
+                                    <option value="payable">Кредиторская задолженность (Мы должны)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-system-muted font-bold block mb-1 text-left">Сумма (KGS)</label>
+                                <input type="number" id="debt_amount" min="1" class="w-full text-base border-2 border-primary-100 hover:border-primary-200 block text-primary-600 font-bold rounded-xl p-3 bg-system-main outline-none" placeholder="Сумма долга">
+                            </div>
+                            <div>
+                                <label class="text-xs text-system-muted font-bold block mb-1 text-left">Основание / Описание долга</label>
+                                <textarea id="debt_description" rows="2" class="w-full text-xs border border-system-border rounded-xl p-3 bg-system-main font-medium text-system-text outline-none focus:ring-2 focus:ring-primary-100 placeholder:text-system-muted" placeholder="Например: Закупка партии лаков Estel Professional, Накладная №31"></textarea>
+                            </div>
+                            <div class="flex gap-3 pt-2">
+                                <button onclick="state.showAddDebtModal = false; render();" class="flex-1 py-3 text-sm font-bold border border-system-border rounded-xl text-system-muted hover:bg-system-main transition-colors">Отмена</button>
+                                <button onclick="window.submitAddDebt('${salon.id}');" class="flex-1 py-3 text-sm font-bold bg-primary-500 text-white rounded-xl shadow-md hover:bg-primary-600 transition-colors">Создать задолженность</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ` : ''}
+        </div>`;
+    };
+
     return `
     <div class="animate-fade-in p-2">
         <div class="flex items-center justify-between mb-6 pb-4 border-b border-system-border">
@@ -858,6 +1095,7 @@ export function renderSalonFinanceTab(salon) {
             <button onclick="state.financeSubTab='articles'; render();" class="px-4 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${subTab === 'articles' ? 'border-primary-500 text-primary-600 font-extrabold' : 'border-transparent text-system-muted hover:text-system-text'}">📂 Статьи ДР</button>
             <button onclick="state.financeSubTab='transactions'; render();" class="px-4 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${subTab === 'transactions' ? 'border-primary-500 text-primary-600 font-extrabold' : 'border-transparent text-system-muted hover:text-system-text'}">📝 Журнал операций</button>
             <button onclick="state.financeSubTab='counterparties'; render();" class="px-4 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${subTab === 'counterparties' ? 'border-primary-500 text-primary-600 font-extrabold' : 'border-transparent text-system-muted hover:text-system-text'}">👤 Контрагенты</button>
+            <button onclick="state.financeSubTab='debts'; render();" class="px-4 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${subTab === 'debts' ? 'border-primary-500 text-primary-600 font-extrabold' : 'border-transparent text-system-muted hover:text-system-text'}">🤝 Задолженность (ДЗ/КЗ)</button>
             <button onclick="state.financeSubTab='cashflow'; render();" class="px-4 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap ${subTab === 'cashflow' ? 'border-primary-500 text-primary-600 font-extrabold' : 'border-transparent text-system-muted hover:text-system-text'}">📊 Аналитика (ДДС)</button>
         </div>
 
@@ -866,6 +1104,7 @@ export function renderSalonFinanceTab(salon) {
             ${subTab === 'articles' ? renderArticles() : ''}
             ${subTab === 'transactions' ? renderTransactions() : ''}
             ${subTab === 'counterparties' ? renderCounterparties() : ''}
+            ${subTab === 'debts' ? renderDebts() : ''}
             ${subTab === 'cashflow' ? renderCashFlow() : ''}
         </div>
     </div>`;
@@ -1286,6 +1525,13 @@ window.submitBookingPayment = function(amount) {
     b.paidShiftId = active.id;
     b.completedShiftId = active.id;
 
+    if (state.autoCompleteBookingId === b.id) {
+        if (b.status === 'confirmed') {
+            b.status = 'completed';
+        }
+        state.autoCompleteBookingId = null;
+    }
+
     // Auto add transaction of type income
     const svc = services.find(s => s.id === b.serviceId);
     let desc = `Оплата по записи #${b.id}`;
@@ -1475,4 +1721,127 @@ window.submitCloseShift = function(salonId) {
     closeShift(salonId, name, bal);
     state.showCloseShiftModal = false;
     render();
+};
+
+
+// ==========================================
+// DEBTSPERSISTENCE & CONTROLLERS (DZK&Z)
+// ==========================================
+export function getDebts(salonId) {
+    if (!localStorage.getItem('debts_' + salonId)) {
+        const defaultDebts = [
+            { id: 'debt-1', salonId, counterpartyId: 'cp-estel', type: 'payable', amount: 15200, description: 'Закупка крем-красок по накладной №82', createdAt: new Date(Date.now() - 4 * 24 * 3600 * 1000).toISOString() },
+            { id: 'debt-2', salonId, counterpartyId: 'cp-landlord', type: 'payable', amount: 45000, description: 'Задолженность по аренде за текущий месяц', createdAt: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString() }
+        ];
+        localStorage.setItem('debts_' + salonId, JSON.stringify(defaultDebts));
+    }
+    return JSON.parse(localStorage.getItem('debts_' + salonId)) || [];
+}
+
+export function saveDebts(salonId, list) {
+    localStorage.setItem('debts_' + salonId, JSON.stringify(list));
+}
+
+window.submitAddDebt = function(salonId) {
+    const cpSelect = document.getElementById('debt_counterparty');
+    const typeSelect = document.getElementById('debt_type');
+    const amountInput = document.getElementById('debt_amount');
+    const descInput = document.getElementById('debt_description');
+
+    if (!amountInput || Number(amountInput.value) <= 0) {
+        showToast('Пожалуйста, введите корректную сумму задолженности!');
+        return;
+    }
+
+    const list = getDebts(salonId);
+    const newDebt = {
+        id: 'debt-' + Date.now(),
+        salonId,
+        counterpartyId: cpSelect.value,
+        type: typeSelect.value,
+        amount: Number(amountInput.value),
+        description: descInput ? descInput.value.trim() : '',
+        createdAt: new Date().toISOString()
+    };
+
+    list.push(newDebt);
+    saveDebts(salonId, list);
+    state.showAddDebtModal = false;
+    showToast('Задолженность успешно зарегистрирована!');
+    render();
+};
+
+window.deleteDebt = function(salonId, debtId) {
+    if (!confirm('Вы действительно хотите удалить запись этой задолженности?')) return;
+    const list = getDebts(salonId);
+    const filtered = list.filter(d => d.id !== debtId);
+    saveDebts(salonId, filtered);
+    showToast('Запись о задолженности удалена');
+    render();
+};
+
+window.payOrResolveDebt = function(salonId, debtId) {
+    const list = getDebts(salonId);
+    const d = list.find(x => x.id === debtId);
+    if (!d) return;
+
+    const wallets = getWallets(salonId);
+    const active = getActiveShift(salonId);
+
+    if (active) {
+        const option = confirm(`Хотите автоматически провести платеж по кассе?\n\nЕсли ДА - в кассу внесется приход/расход по долгу.\nЕсли НЕТ - долг просто спишется из реестра.`);
+        if (option) {
+            const defaultWalletId = wallets[0]?.id || ('w-cash-' + salonId);
+            const counterparties = getCounterparties(salonId);
+            const cpName = counterparties.find(c => c.id === d.counterpartyId)?.name || 'Контрагент';
+
+            if (d.type === 'receivable') {
+                addTransaction(salonId, {
+                    type: 'income',
+                    amount: d.amount,
+                    walletId: defaultWalletId,
+                    itemId: 'art-other',
+                    counterpartyId: d.counterpartyId,
+                    description: `Погашение дебиторской задолженности от: ${cpName}. Основание: ${d.description || ''}`
+                });
+            } else {
+                addTransaction(salonId, {
+                    type: 'expense',
+                    amount: d.amount,
+                    walletId: defaultWalletId,
+                    itemId: 'art-other',
+                    counterpartyId: d.counterpartyId,
+                    description: `Погашение кредиторской задолженности перед: ${cpName}. Основание: ${d.description || ''}`
+                });
+            }
+        }
+    }
+
+    const filtered = list.filter(x => x.id !== debtId);
+    saveDebts(salonId, filtered);
+    showToast('Задолженность успешно погашена и списана!');
+    render();
+};
+
+window.submitEditWallet = function(salonId, walletId) {
+    const nameInput = document.getElementById('edit_wallet_name');
+    const typeSelect = document.getElementById('edit_wallet_type');
+    const currencySelect = document.getElementById('edit_wallet_currency');
+
+    if (!nameInput || !nameInput.value.trim()) {
+        showToast('Пожалуйста, введите название кошелька!');
+        return;
+    }
+
+    const wallets = getWallets(salonId);
+    const wallet = wallets.find(w => w.id === walletId);
+    if (wallet) {
+        wallet.name = nameInput.value.trim();
+        wallet.type = typeSelect.value;
+        wallet.currency = currencySelect.value;
+        saveWallets(salonId, wallets);
+        state.showEditWalletModal = false;
+        showToast('Кошелек успешно обновлен!');
+        render();
+    }
 };

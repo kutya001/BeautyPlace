@@ -3,7 +3,7 @@
 import { render } from '../core/engine.js';
 import { handleLogout } from '../features/auth/actions.js';
 import { navigate } from '../core/router.js';
-import { state, salons, masters, users, checkPermission } from '../state.js';
+import { state, salons, masters, users, checkPermission, getSalonRole } from '../state.js';
 import { getUserBookings, ThemeManager } from '../utils.js';
 
 export function renderThemeSwitcher() {
@@ -97,6 +97,7 @@ export function renderSalonMobileNav() {
 
     const tabs = [
         { id: 'dashboard', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 17V9"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 17V5"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 17v-3"/></svg>', label: 'Дашборд', show: checkPermission(state.currentUser.id, salon.id, 'dashboard:view') },
+        { id: 'cash_shift', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>', label: 'Кассовая смена', show: ['owner', 'manager', 'receptionist'].includes(getSalonRole(state.currentUser.id, salon.id) || 'owner') },
         { id: 'bookings', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line stroke-linecap="round" stroke-linejoin="round" x1="16" x2="16" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="8" x2="8" y1="2" y2="6"/><line stroke-linecap="round" stroke-linejoin="round" x1="3" x2="21" y1="10" y2="10"/></svg>', label: 'Записи', show: checkPermission(state.currentUser.id, salon.id, 'bookings:view') },
         { id: 'masters_catalog', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="4" y2="15.88"/><line stroke-linecap="round" stroke-linejoin="round" x1="14.47" x2="14.48" y1="14.48" y2="14.48"/><line stroke-linecap="round" stroke-linejoin="round" x1="20" x2="8.12" y1="20" y2="8.12"/></svg>', label: 'Мастера', show: true },
         { id: 'staff', icon: '<svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path stroke-linecap="round" stroke-linejoin="round" d="M22 21v-2a4 4 0 0 0-3-3.87"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>', label: 'Штат', show: checkPermission(state.currentUser.id, salon.id, 'staff:view') },
