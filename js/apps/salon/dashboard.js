@@ -1568,9 +1568,10 @@ export function renderSalonProfile(salon) {
     const themes = [
         { key: 'beauty', label: 'Бьюти-салон (Beauty)' },
         { key: 'barber', label: 'Барбершоп (Barber)' },
+        { key: 'hair', label: 'Парикмахерская (Hair)' },
         { key: 'eco', label: 'Эко-спа и массаж (Eco)' }
     ];
-    const currentTheme = salon.theme || 'beauty';
+    const currentTheme = salon.theme || 'hair';
     const availableFeatures = ['Wi-Fi', 'Кофе', 'Парковка', 'Детская зона', 'Оплата картой', 'Кондиционер'];
     const currentFeatures = salon.features || [];
 
@@ -1635,9 +1636,10 @@ export function renderOldSalonProfile(salon) {
     const themes = [
         { key: 'beauty', label: 'Бьюти-салон (Beauty)' },
         { key: 'barber', label: 'Барбершоп (Barber)' },
+        { key: 'hair', label: 'Парикмахерская (Hair)' },
         { key: 'eco', label: 'Эко-спа и массаж (Eco)' }
     ];
-    const currentTheme = salon.theme || 'beauty';
+    const currentTheme = salon.theme || 'hair';
     const availableFeatures = ['Wi-Fi', 'Кофе', 'Парковка', 'Детская зона', 'Оплата картой', 'Кондиционер'];
     const currentFeatures = salon.features || [];
     return `

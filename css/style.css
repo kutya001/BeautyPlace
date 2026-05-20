@@ -1,14 +1,10 @@
-/* Базовая тема (Маникюр и Ресницы) */
-:root, html[data-theme="beauty"] {
-  --theme-50: #fdfafb;
-  --theme-100: #faeef1;
-  --theme-500: #e58b9b;
-  --theme-600: #c97181;
-  --bg-main: #fcfafb;
-  --bg-surface: #ffffff;
-  --text-main: #4a3b40;
-  --text-muted: #8c7b80;
-  --border-color: #f2e6e9;
+/* Базовая тема (Парикмахерская - Лаванда) */
+:root, html[data-theme="hair"] {
+  --theme-50: #fbfaff;  --theme-100: #f2eff7;
+  --theme-500: #9e8abc; --theme-600: #8370a1;
+  --bg-main: #f9f8fa;   --bg-surface: #ffffff;
+  --text-main: #3a3645; --text-muted: #827c8f;
+  --border-color: #ebe7f0;
 }
 
 @theme {
@@ -37,13 +33,17 @@ html[data-theme="barber"] {
   --border-color: #45403d;
 }
 
-/* Парикмахерская (Лаванда) */
-html[data-theme="hair"] {
-  --theme-50: #fbfaff;  --theme-100: #f2eff7;
-  --theme-500: #9e8abc; --theme-600: #8370a1;
-  --bg-main: #f9f8fa;   --bg-surface: #ffffff;
-  --text-main: #3a3645; --text-muted: #827c8f;
-  --border-color: #ebe7f0;
+/* Бьюти-салон (Маникюр и Ресницы) */
+html[data-theme="beauty"] {
+  --theme-50: #fdfafb;
+  --theme-100: #faeef1;
+  --theme-500: #e58b9b;
+  --theme-600: #c97181;
+  --bg-main: #fcfafb;
+  --bg-surface: #ffffff;
+  --text-main: #4a3b40;
+  --text-muted: #8c7b80;
+  --border-color: #f2e6e9;
 }
 
 /* SPA и Эко (Шалфей) */

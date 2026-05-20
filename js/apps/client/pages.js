@@ -236,6 +236,13 @@ export function renderSalonDetailPage() {
     const salonServices = getSalonServices(salon, services);
     const isPrivateMaster = salonMasters.length === 1;
 
+    const groupedServices = {};
+    salonServices.forEach(svc => {
+        const catId = svc.category || 'other';
+        if (!groupedServices[catId]) groupedServices[catId] = [];
+        groupedServices[catId].push(svc);
+    });
+
     return `
     <main class="island max-w-7xl mx-auto px-4 sm:px-6 mt-6 mx-4">
 <button onclick="navigate('salons')" class="flex items-center gap-2 text-sm text-system-muted hover:text-primary-500 mb-6 transition-colors">
@@ -267,20 +274,34 @@ export function renderSalonDetailPage() {
     </div>
 </div>
 <div class="mb-8">
-    <h2 class="text-xl font-bold text-system-text mb-4">Услуги ${isPrivateMaster ? `мастер` : `салона`}</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        ${salonServices.map(svc => `
-            <div class="bg-system-surface rounded-xl border border-system-border/50 p-4 flex items-center justify-between card-hover cursor-pointer" onclick="openBookingForServiceInSalon(${svc.id}, ${salon.id})">
-                <div class="flex-1 min-w-0 pr-2">
-                    <h3 class="font-medium text-system-text truncate">
-                        <span class="text-xs mr-1 opacity-60">${svc.gender === 'male' ? '👨' : svc.gender === 'female' ? '👩' : '🚻'}</span>
-                        ${svc.name}
-                    </h3>
-                    <p class="text-sm text-system-muted opacity-80">${getDurationText(getSalonDuration(salon.id, svc.id, services))} · <span class="star text-xs">★</span> ${svc.rating}</p>
+    <h2 class="text-xl font-bold text-system-text mb-6">Услуги ${isPrivateMaster ? `мастера` : `салона`}</h2>
+    <div class="space-y-6">
+        ${categories.map(cat => {
+            const catSvcs = groupedServices[cat.id] || [];
+            if (catSvcs.length === 0) return '';
+            return `
+            <div class="bg-system-main/30 p-5 rounded-2xl border border-system-border/40 font-sans">
+                <h3 class="font-bold text-base text-system-text mb-4 px-1 flex items-center gap-2">
+                    <span class="text-xl">${cat.icon}</span>
+                    <span class="text-base font-black tracking-tight text-system-text">${cat.name}</span>
+                    <span class="text-xs text-system-muted font-normal">(${catSvcs.length})</span>
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    ${catSvcs.map(svc => `
+                        <div class="bg-system-surface rounded-xl border border-system-border/50 p-4 flex items-center justify-between card-hover cursor-pointer" onclick="openBookingForServiceInSalon(${svc.id}, ${salon.id})">
+                            <div class="flex-1 min-w-0 pr-2">
+                                <h4 class="font-medium text-system-text truncate">
+                                    <span class="text-xs mr-1 opacity-60">${svc.gender === 'male' ? '👨' : svc.gender === 'female' ? '👩' : '🚻'}</span>
+                                    ${svc.name}
+                                </h4>
+                                <p class="text-sm text-system-muted opacity-80">${getDurationText(getSalonDuration(salon.id, svc.id, services))} · <span class="star text-xs">★</span> ${svc.rating}</p>
+                            </div>
+                            <div class="text-right"><p class="font-bold text-system-text">${formatPrice(getSalonPrice(salon.id, svc.id, services, undefined))}</p></div>
+                        </div>
+                    `).join('')}
                 </div>
-                <div class="text-right"><p class="font-bold text-system-text">${formatPrice(getSalonPrice(salon.id, svc.id, services, typeof master !== 'undefined' ? master.id : undefined))}</p></div>
-            </div>
-        `).join('')}
+            </div>`;
+        }).join('')}
     </div>
 </div>
 ${salonMasters.length > 0 ? `
@@ -302,6 +323,13 @@ export function renderMasterDetailPage() {
     if (!master) return '<div class="text-center py-20"><p>Мастер не найден</p></div>';
     const masterServices = services.filter(s => master.services.includes(s.id));
     const salon = master.salonId ? salons.find(s => s.id === master.salonId) : null;
+
+    const groupedMasterServices = {};
+    masterServices.forEach(svc => {
+        const catId = svc.category || 'other';
+        if (!groupedMasterServices[catId]) groupedMasterServices[catId] = [];
+        groupedMasterServices[catId].push(svc);
+    });
 
     return `
     <main class="island max-w-7xl mx-auto px-4 sm:px-6 mt-6 mx-4">
@@ -330,20 +358,34 @@ export function renderMasterDetailPage() {
     </div>
 </div>
 <div>
-    <h2 class="text-xl font-bold text-system-text mb-4">Услуги мастера</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        ${masterServices.map(svc => `
-            <div class="bg-system-surface rounded-xl border border-system-border/50 p-4 flex items-center justify-between card-hover cursor-pointer" onclick="openBookingForServiceWithMaster(${svc.id}, ${master.id})">
-                <div class="flex-1 min-w-0 pr-2">
-                    <h3 class="font-medium text-system-text truncate">
-                        <span class="text-xs mr-1 opacity-60">${svc.gender === 'male' ? '👨' : svc.gender === 'female' ? '👩' : '🚻'}</span>
-                        ${svc.name}
-                    </h3>
-                    <p class="text-sm text-system-muted opacity-70">${getDurationText(salon ? getSalonDuration(salon.id, svc.id, services) : svc.duration)} · <span class="star text-xs">★</span> ${svc.rating}</p>
+    <h2 class="text-xl font-bold text-system-text mb-6">Услуги мастера</h2>
+    <div class="space-y-6">
+        ${categories.map(cat => {
+            const catSvcs = groupedMasterServices[cat.id] || [];
+            if (catSvcs.length === 0) return '';
+            return `
+            <div class="bg-system-main/30 p-5 rounded-2xl border border-system-border/40 font-sans">
+                <h3 class="font-bold text-base text-system-text mb-4 px-1 flex items-center gap-2">
+                    <span class="text-xl">${cat.icon}</span>
+                    <span class="text-base font-black tracking-tight text-system-text">${cat.name}</span>
+                    <span class="text-xs text-system-muted font-normal">(${catSvcs.length})</span>
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    ${catSvcs.map(svc => `
+                        <div class="bg-system-surface rounded-xl border border-system-border/50 p-4 flex items-center justify-between card-hover cursor-pointer" onclick="openBookingForServiceWithMaster(${svc.id}, ${master.id})">
+                            <div class="flex-1 min-w-0 pr-2">
+                                <h4 class="font-medium text-system-text truncate">
+                                    <span class="text-xs mr-1 opacity-60">${svc.gender === 'male' ? '👨' : svc.gender === 'female' ? '👩' : '🚻'}</span>
+                                    ${svc.name}
+                                </h4>
+                                <p class="text-sm text-system-muted opacity-70">${getDurationText(salon ? getSalonDuration(salon.id, svc.id, services) : svc.duration)} · <span class="star text-xs">★</span> ${svc.rating}</p>
+                            </div>
+                            <div class="text-right"><p class="font-bold text-system-text">${formatPrice(salon ? getSalonPrice(salon.id, svc.id, services, master.id) : svc.price)}</p></div>
+                        </div>
+                    `).join('')}
                 </div>
-                <div class="text-right"><p class="font-bold text-system-text">${formatPrice(salon ? getSalonPrice(salon.id, svc.id, services, typeof master !== 'undefined' ? master.id : undefined) : svc.price)}</p></div>
-            </div>
-        `).join('')}
+            </div>`;
+        }).join('')}
     </div>
 </div>
 ${renderReviewsSection('master', master.id)}

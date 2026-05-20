@@ -25,7 +25,7 @@ export const DATABASE = {
         { id: 15, name: 'SPA-программа "Релакс"', category: 5, duration: 120, price: 4500, rating: 5.0, gender: 'all' }
     ],
     salons: [
-        { id: 1, name: 'Suluu Luxe', address: 'Бишкек, ул. Киевская, 124', phone: '+996 555 111 222', rating: 4.9, reviews: 128, image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=800', categories: [1, 2, 3, 4], openTime: '09:00', closeTime: '21:00', features: ['Wi-Fi', 'Кофе', 'Парковка'], theme: 'beauty' },
+        { id: 1, name: 'Suluu Luxe', address: 'Бишкек, ул. Киевская, 124', phone: '+996 555 111 222', rating: 4.9, reviews: 128, image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=800', categories: [1, 2, 3, 4], openTime: '09:00', closeTime: '21:00', features: ['Wi-Fi', 'Кофе', 'Парковка'], theme: 'hair' },
         { id: 2, name: 'Aura Beauty', address: 'Бишкек, пр. Чуй, 150', phone: '+996 555 333 444', rating: 4.7, reviews: 85, image: 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&q=80&w=800', categories: [1, 4, 6], openTime: '10:00', closeTime: '20:00', features: ['Детская зона', 'Оплата картой'], theme: 'barber' },
         { id: 3, name: 'Silk Road Spa', address: 'Бишкек, ул. Токтогула, 90', phone: '+996 555 555 666', rating: 5.0, reviews: 42, image: 'https://images.unsplash.com/photo-1519415510236-85591199766e?auto=format&fit=crop&q=80&w=800', categories: [5, 6], openTime: '08:00', closeTime: '22:00', features: ['Бассейн', 'Сауна'], theme: 'eco' }
     ],

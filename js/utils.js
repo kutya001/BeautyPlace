@@ -222,7 +222,7 @@ window.getSalonServices = getSalonServices;
 export const ThemeManager = {
   setTheme: (themeName) => {
     const validThemes = ['beauty', 'barber', 'hair', 'eco', 'medical', 'graphite'];
-    const theme = validThemes.includes(themeName) ? themeName : 'beauty';
+    const theme = validThemes.includes(themeName) ? themeName : 'hair';
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('app_theme', theme);
     if (state.currentUser) {
@@ -231,7 +231,7 @@ export const ThemeManager = {
   },
   toggleTheme: () => {
     const themes = ['beauty', 'barber', 'hair', 'eco', 'medical', 'graphite'];
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'beauty';
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'hair';
     const currentIndex = themes.indexOf(currentTheme);
     const nextIndex = (currentIndex + 1) % themes.length;
     const nextTheme = themes[nextIndex];
@@ -239,7 +239,7 @@ export const ThemeManager = {
     if (window.render) window.render();
   },
   initTheme: () => {
-    const savedTheme = localStorage.getItem('app_theme') || 'beauty';
+    const savedTheme = localStorage.getItem('app_theme') || 'hair';
     document.documentElement.setAttribute('data-theme', savedTheme);
   }
 };

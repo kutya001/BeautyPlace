@@ -7,7 +7,7 @@ import { state, salons, masters, users, checkPermission, getSalonRole } from '..
 import { getUserBookings, ThemeManager } from '../utils.js';
 
 export function renderThemeSwitcher() {
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'beauty';
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'hair';
     
     const themeIcons = {
         beauty: '<svg class="w-5 h-5 inline-block text-primary-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 22c-4.97-1.63-8-6-8-12a8 8 0 0 1 16 0c0 6-3.03 10.37-8 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 22V10"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 10a4 4 0 1 1 0-8 4 4 0 0 1 0 8Z"/></svg>',

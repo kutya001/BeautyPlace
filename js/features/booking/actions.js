@@ -94,7 +94,9 @@ window.nextStepDefault = nextStepDefault;
 
 export function submitBooking() {
     const bd = state.bookingData;
-    if (!checkActiveShiftForBooking(bd)) return;
+    if (bd && bd.editingId) {
+        if (!checkActiveShiftForBooking(bd)) return;
+    }
     const nameInput = document.getElementById('clientNameInput');
     if (nameInput) bd.clientName = nameInput.value;
     const phoneInput = document.getElementById('clientPhoneInput') || document.getElementById('bookingPhoneInput');
